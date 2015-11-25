@@ -53,6 +53,10 @@ import javax.swing.table.TableRowSorter;
 import javax.swing.SwingConstants;
 
 import java.awt.Font;
+import net.miginfocom.swing.MigLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 
 public class Image_Upload extends  JPanel implements ActionListener{
@@ -71,28 +75,26 @@ public class Image_Upload extends  JPanel implements ActionListener{
 	public Image_Upload() {
 		
 		setBounds(0, 0, 1020, 665);
-		setLayout(null);
+		setLayout(new MigLayout("", "[996px,grow]", "[300px,grow][326px]"));
+		
+		ms_connect = new Ms_Connect();
 		
 		JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
-		panel.setBounds(12, 10, 996, 305);
-		add(panel);
-		panel.setLayout(null);
+		add(panel, "cell 0 0,grow");
+		panel.setLayout(new MigLayout("", "[200px,grow][99px][278px][12px][97px,grow][97px][89px][64px]", "[23px][158px][10px][31px][10px][45px,grow]"));
 		
 		text_path = new JTextField();
-		text_path.setBounds(12, 10, 200, 21);
-		panel.add(text_path);
+		panel.add(text_path, "cell 0 0,growx,aligny center");
 		text_path.setColumns(10);
 		text_path.setText("C:\\");
 		
 		JButton btn_path = new JButton("< \uD3F4\uB354\uC120\uD0DD");
-		btn_path.setBounds(224, 9, 99, 23);
-		panel.add(btn_path);
+		panel.add(btn_path, "cell 1 0,growx,aligny top");
 		btn_path.addActionListener(this);
 		
 		JButton btn_upload = new JButton("\uC5C5\uB85C\uB4DC >>");
-		btn_upload.setBounds(224, 250, 99, 45);
-		panel.add(btn_upload);
+		panel.add(btn_upload, "cell 1 5,grow");
 		btn_upload.addActionListener(this);
 		
 		dlm = new DefaultListModel<String>();
@@ -101,37 +103,30 @@ public class Image_Upload extends  JPanel implements ActionListener{
 		list_image.setBounds(0, 0, 274, 254);
 		//panel.add(list_image);
 		list_image.setModel(dlm);
-				
+		
 		JScrollPane jsp = new JScrollPane();
-		jsp.setBounds(12,41,200,254);
 		jsp.setViewportView(list_image);
 		
-		panel.add(jsp);
+		panel.add(jsp, "cell 0 1 1 5,grow");
 		
 		JLabel lblFtp = new JLabel("\uB2E8\uB3C5\uD3F4\uB354 FTP \uC774\uBBF8\uC9C0");
 		lblFtp.setFont(new Font("굴림", Font.PLAIN, 13));
 		lblFtp.setHorizontalAlignment(SwingConstants.CENTER);
-		lblFtp.setBounds(335, 13, 278, 15);
-		panel.add(lblFtp);
+		panel.add(lblFtp, "cell 2 0,growx,aligny center");
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(335, 41, 387, 254);
-		panel.add(scrollPane);
+		panel.add(scrollPane, "cell 2 1 3 5,grow");
 		
-		
-		/**
-		 * 셀 간격 조정
-		 */
 		DefaultTableCellRenderer celAlignCenter = new DefaultTableCellRenderer();
-		celAlignCenter.setHorizontalAlignment(JLabel.CENTER);
+    	celAlignCenter.setHorizontalAlignment(JLabel.CENTER);
+    	
+    	DefaultTableCellRenderer celAlignRight = new DefaultTableCellRenderer();
+    	celAlignRight.setHorizontalAlignment(JLabel.RIGHT);
 		
-		DefaultTableCellRenderer celAlignRight = new DefaultTableCellRenderer();		
-		celAlignRight.setHorizontalAlignment(JLabel.RIGHT);
-						
-		String[] head = {"순번", "파일명(바코드)", "확장자", "비고"};
+    	String[] head = {"순번", "파일명(바코드)", "확장자", "비고"};
 		dtm = new DefaultTableModel();
 		dtm.setColumnIdentifiers(head);		
-		
+    	
 		table_ftp_view = new JTable();
 		table_ftp_view.setModel(dtm);
 		
@@ -160,7 +155,7 @@ public class Image_Upload extends  JPanel implements ActionListener{
 		table_ftp_view.getColumn("파일명(바코드)").setPreferredWidth(80);
 		
 		table_ftp_view.getColumn("확장자").setPreferredWidth(40);
-				
+		
 		table_ftp_view.getColumn("비고").setPreferredWidth(100);
 		
 		table_ftp_view.addMouseListener(new MouseListener() {
@@ -201,49 +196,38 @@ public class Image_Upload extends  JPanel implements ActionListener{
 		});
 		
 		JButton btn_ftpview = new JButton("\uAC80\uC0C9");
-		btn_ftpview.setBounds(625, 9, 97, 23);
-		panel.add(btn_ftpview);
+		panel.add(btn_ftpview, "cell 4 0,growx,aligny top");
 		btn_ftpview.setActionCommand("검색");
 		btn_ftpview.addActionListener(this);
-				
+		
 		label_show_image = new JLabel();
 		label_show_image.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		label_show_image.setBounds(734, 41, 250, 254);
 		//label_show_image.setBounds(0, 0, 250, 250);
-		panel.add(label_show_image);
+		panel.add(label_show_image, "cell 5 1 3 5,grow");
 		
 		JButton btn_delete = new JButton("\uC0AD\uC81C");
-		btn_delete.setBounds(920, 9, 64, 23);
 		btn_delete.addActionListener(this);
-		panel.add(btn_delete);
+		panel.add(btn_delete, "cell 7 0,growx,aligny top");
 		
 		
 		JButton btn_download = new JButton("\uB2E4\uC6B4\uB85C\uB4DC");
-		btn_download.setBounds(734, 9, 97, 23);
 		btn_download.addActionListener(this);
-		panel.add(btn_download);
+		panel.add(btn_download, "cell 5 0,growx,aligny top");
 		
 		
 		JButton btn_all_select = new JButton("< \uC804\uCCB4\uC120\uD0DD");
-		btn_all_select.setBounds(224, 209, 99, 31);
 		btn_all_select.addActionListener(this);
-		panel.add(btn_all_select);
+		panel.add(btn_all_select, "cell 1 3,grow");
 		
 		
 		JButton btn_select_delete = new JButton("< \uC120\uD0DD\uC0AD\uC81C");
-		btn_select_delete.setBounds(224, 168, 99, 31);
 		btn_select_delete.addActionListener(this);
-		panel.add(btn_select_delete);
-		
-		
+		panel.add(btn_select_delete, "cell 1 1,growx,aligny bottom");
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new LineBorder(new Color(0, 0, 0)));
-		panel_1.setBounds(12, 325, 996, 326);
-		
-		add(panel_1);
-		
-		ms_connect = new Ms_Connect();
+		add(panel_1, "cell 0 1,grow");
+		panel_1.setLayout(new MigLayout("", "[]", "[]"));
 		
 	}
 

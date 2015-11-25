@@ -74,6 +74,7 @@ public class Main_Config extends JDialog implements ActionListener{
 	 * Create the panel.
 	 */
 	public Main_Config() {
+		setResizable(false);
 		
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Main_Config.class.getResource("/Icon/btn_config.png")));
 				

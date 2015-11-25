@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
@@ -28,6 +30,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -66,6 +69,17 @@ public class Main_Frame extends JFrame implements ActionListener{
 	
 	private static final long serialVersionUID = 1L;
 	
+	
+	private final String Shop_Manager = "쇼핑몰관리"; 
+	private final String Pro_Manager = "상품관리";
+	private final String Img_Manager = "이미지관리";
+	private final String Ord_Manager = "주문관리";
+	private final String Mem_Manager = "회원관리";
+	private final String Msg_Manager = "메세지관리";
+	private final String Evt_Manager = "이벤트관리";
+	private final String Con_Manager = "환경설정";
+	private final String Close_Manager = "종료";
+	
 	private  Goods_Manage goods_manage;
 	private Image_Upload image_upload;
 	private Main_Config config;
@@ -98,7 +112,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		initLocation();		
 		
 		//메뉴바				
-		menu_frame();
+		//menu_frame();
 				
 		//하단 버튼
 		bottom_button();
@@ -148,7 +162,8 @@ public class Main_Frame extends JFrame implements ActionListener{
 		tabbedPane.setBounds(0, 0, 1008, 681);
 				
 		Main_Contents mc = new Main_Contents();
-		tabbedPane.add("쇼핑몰관리", mc);
+		tabbedPane.add(Shop_Manager, mc);
+		close_button(Shop_Manager);
 		
 		jdp.add(tabbedPane);
 		
@@ -222,9 +237,44 @@ public class Main_Frame extends JFrame implements ActionListener{
     }	
     
     
-    //상단메뉴    
-    private void menu_frame(){
-    	    				
+    //탭종료 버튼
+    private void close_button(String title){
+    	
+    	int index = tabbedPane.indexOfTab(title);
+    	
+    	JPanel pnlTab = new JPanel(new GridBagLayout());
+    	pnlTab.setOpaque(false);
+    	
+    	JLabel lblTitle = new JLabel(title);
+    	JButton btnClose = new JButton();    	
+
+    	btnClose.setIcon(new ImageIcon(getClass().getClassLoader().getResource("Icon/btn_tab_close.png")));
+    	btnClose.setMargin(new Insets(2, 2, 2, 2));
+    	
+    	GridBagConstraints gbc = new GridBagConstraints();
+    	gbc.gridx = 0;
+    	gbc.gridy = 0;
+    	
+    	gbc.weightx = 1;
+    	pnlTab.add(lblTitle, gbc);
+
+    	gbc.gridx++;
+    	//Top, Left, Bottom, Right
+    	gbc.insets = new Insets(0, 10, 0, 5);
+    	pnlTab.add(btnClose, gbc);
+   	
+    	tabbedPane.setTabComponentAt(index, pnlTab);
+    	
+    	btnClose.addActionListener(new ActionListener() {			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				int index = tabbedPane.getSelectedIndex();
+		        if (index >= 0) {
+		        	tabbedPane.removeTabAt(index);		          
+		        }
+			}
+		});				
     }
         
     //하단 기능 버튼
@@ -240,40 +290,42 @@ public class Main_Frame extends JFrame implements ActionListener{
 		String action = e.getActionCommand();		
 		
 		System.out.println(action);
-		if(tabbedPane.indexOfTab(action) > 0){
+		if(tabbedPane.indexOfTab(action) >= 0){
 			tabbedPane.setSelectedIndex(tabbedPane.indexOfTab(action));
 			//이미 실행 되었다면 위치로 이동합니다.
 			return;
 		}
 		
 		switch(action){
-		case "상품관리":
+		case Pro_Manager:
 			//상품관리
 			goods_manage = new Goods_Manage();			
-			tabbedPane.add("상품관리", goods_manage);
+			tabbedPane.add(Pro_Manager, goods_manage);
+			close_button(Pro_Manager);
 			break;
-		case "이미지관리":			
+		case Img_Manager:			
 			//이미지 관리
 			image_upload = new Image_Upload();
-			tabbedPane.add("이미지관리", image_upload);
+			tabbedPane.add(Img_Manager, image_upload);
+			close_button(Img_Manager);
 			break;
-		case "주문관리":
+		case Ord_Manager:
 			//주문관리
 			
 			
 			break;
 			
-		case "회원관리":
+		case Mem_Manager:
 			//회원관리
 			
 			break;
-		case "메세지관리":
+		case Msg_Manager:
 			//메세지관리
 			break;
-		case "이벤트관리":
+		case Evt_Manager:
 			//이벤트관리
 			break;
-		case "환경설정":
+		case Con_Manager:
 			JPanel panel = new JPanel();
 			JLabel label = new JLabel("비밀번호 : ");
 			JPasswordField pass = new JPasswordField(10);
@@ -302,7 +354,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 			panel.add(label);
 			panel.add(pass);
 			String[] options = new String[]{"확인", "취소"};
-			int option = JOptionPane.showOptionDialog(null, panel, "환경설정",
+			int option = JOptionPane.showOptionDialog(null, panel, Con_Manager,
 			                         JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
 			                         null, options, pass);
 			if(option == 0) // pressing OK button
@@ -320,7 +372,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 			    }
 			}	
 			break;
-		case "종료":
+		case Close_Manager:
 			if(JOptionPane.showConfirmDialog(this, "프로그램을 종료 합니다.", "프로그램 종료", JOptionPane.YES_NO_OPTION) == 0){
 				System.exit(0);
 			}
@@ -328,7 +380,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		}	
 		
 		//위치로 이동합니다.
-		if(tabbedPane.indexOfTab(action) > 0){
+		if(tabbedPane.indexOfTab(action) >= 0){
 			tabbedPane.setSelectedIndex(tabbedPane.indexOfTab(action));			
 		}	
 		

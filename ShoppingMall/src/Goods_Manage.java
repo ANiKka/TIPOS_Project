@@ -1391,7 +1391,8 @@ public class Goods_Manage extends JPanel {
     	
 		//table.setBounds(12, 138, 693, 304);
 		
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);  //가로 스크롤 
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);  //가로 스크롤
+		
 		table.getTableHeader().setReorderingAllowed(false);  //이동불가
 		
 		table.setAutoCreateRowSorter(true);
@@ -1524,7 +1525,9 @@ public class Goods_Manage extends JPanel {
 		panel_1.add(scrollPane, BorderLayout.CENTER);
     }
     
+    
     private void getImageData(){
+    	
     	
     	//폴더선택 구분에 따라서 쿼리를 각 서버로 보냅니다.
 		//폴더 선택값 불러오기
