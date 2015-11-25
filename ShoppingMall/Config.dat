@@ -1,0 +1,24 @@
+#\uD658\uACBD\uC124\uC815 \uC800\uC7A5
+#Mon Nov 02 21:31:21 KST 2015
+FTPpath=.
+ServerPort=16000
+ServerDBname=tips
+ImageIp=14.38.161.45
+FTPip=14.38.161.45\:7000
+ServerIp=localhost
+ImagePort=18975
+FTPgong=main_goods
+FTPpw=tips
+FTPid=xodlfvhtm
+FTPdan=0000001
+OfficeName=\uD0DC\uC77C\uD3EC\uC2A4
+OfficeCode=0000001
+ServerDBpw=tips
+OfficeShop=tipsmall01.tipos.or.kr
+ServerDBid=sa
+Officepw=tips
+ShopKey=d508b54d44ff38db048affc0651c8887
+Officeid=tipsmall01
+ImageDBname=ShoppingMall
+ImageDBpw=tips
+ImageDBid=sa
