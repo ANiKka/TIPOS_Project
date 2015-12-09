@@ -20,16 +20,35 @@ import javax.swing.SwingConstants;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+
 import javax.swing.UIManager;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Vector;
 import java.awt.Font;
+import javax.swing.JComboBox;
 
 
 public class AllChangeDialog extends JDialog implements ActionListener{
@@ -47,6 +66,8 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 	private JButton btn_Cancel;
 	private JButton btn_imagecall;
 	private JButton btn_Change;
+	
+	private JComboBox<String> cb_maincode_list;
 	
 	private Thread thread;
 	
@@ -68,10 +89,9 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		this.table = table;
 				
 		setTitle("\uC77C\uAD04\uBCC0\uACBD");
-		setBounds(0,0,399, 495);
+		setBounds(0,0,399, 570);
 		getContentPane().setLayout(new BorderLayout());	
 		
-
 		ImageIcon im = new ImageIcon(getClass().getClassLoader().getResource("Icon/dialog_allchange.png"));		
 		
 		setIconImage(im.getImage());
@@ -116,8 +136,7 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		JRadioButton radio_shoppingmall_off = new JRadioButton("\uC5F0\uB3D9\uC548\uD568");
 		panel.add(radio_shoppingmall_off);
 		radio_shoppingmall_off.setActionCommand("연동안함");
-		
-		
+				
 		bg_shoppingmall[0].add(radio_shopmall);
 		bg_shoppingmall[0].add(radio_shoppingmall_off);
 		bg_shoppingmall[0].add(radio_shoppingmall_on);
@@ -150,7 +169,7 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		//폴더선택 여부 그룹
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\uC774\uBBF8\uC9C0\uD3F4\uB354", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		panel_2.setBounds(12, 266, 359, 55);
+		panel_2.setBounds(12, 335, 359, 55);
 		contentPanel.add(panel_2);
 		
 		JRadioButton radio_image = new JRadioButton("\uC120\uD0DD\uC548\uD568");
@@ -212,7 +231,7 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		JPanel panel_5 = new JPanel();
 		panel_5.setBorder(new TitledBorder(null, "\uC774\uBBF8\uC9C0\uC5F0\uB3D9", TitledBorder.LEFT, TitledBorder.TOP, null, null));
 		//panel_5.setLayout(null);
-		panel_5.setBounds(12, 331, 359, 60);
+		panel_5.setBounds(12, 402, 359, 60);
 		contentPanel.add(panel_5);
 		panel_5.setLayout(null);
 				
@@ -229,21 +248,33 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		
 		btn_Change = new JButton("\uC120\uD0DD\uC635\uC158\uBCC0\uACBD");
 		btn_Change.setActionCommand("OK");
-		btn_Change.setBounds(12, 396, 108, 50);
+		btn_Change.setBounds(12, 472, 108, 50);
 		btn_Change.addActionListener(this);
 		contentPanel.add(btn_Change);
 		
 		btn_Cancel = new JButton("닫기");
 		btn_Cancel.setActionCommand("Close");
-		btn_Cancel.setBounds(132, 396, 102, 50);
+		btn_Cancel.setBounds(132, 472, 102, 50);
 		btn_Cancel.addActionListener(this);
 		contentPanel.add(btn_Cancel);
-		
-		
+				
 		btn_imagecall = new JButton("\uC774\uBBF8\uC9C0\uC5F0\uB3D9\uC2DC\uC791");
-		btn_imagecall.setBounds(246, 396, 125, 50);
+		btn_imagecall.setBounds(246, 472, 125, 50);
 		contentPanel.add(btn_imagecall);
 		btn_imagecall.setActionCommand("Image");
+		
+		JPanel panel_maincode_title = new JPanel();
+		panel_maincode_title.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\uBA54\uC778\uC0C1\uD488 \uCD9C\uB825\uCF54\uB4DC", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panel_maincode_title.setBounds(12, 270, 359, 55);
+		contentPanel.add(panel_maincode_title);
+		
+		JLabel label_maincode = new JLabel("\uBA54\uC778\uCD9C\uB825\uCF54\uB4DC :  ");
+		panel_maincode_title.add(label_maincode);
+		
+		cb_maincode_list = new JComboBox<String>();
+		panel_maincode_title.add(cb_maincode_list);
+		
+		getMainCode();
 		
 		btn_imagecall.addActionListener(this);
 	}
@@ -428,9 +459,7 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		thread.start();
 		
 	}
-	
-	
-	
+			
 	private void setAllSave(){
 			
 		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -443,145 +472,126 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		//int col = table.getColumnCount();
 		
 		ArrayList<String> query_list = new ArrayList<String>();
-				
+		
+		//수정여루를 확인 합니다.
+		boolean edit_check_info = false;
+		
+		//선택 수량만큼 변경된 내용을 저장합니다.
 		for(int j = 0; j < row.length; j++){
 			
 			Vector<Object> temp = new Vector<Object>();
-			String goods_info_query = "Update Goods_Info Set ";
-			String goods_query = "Update Goods Set ";
-			boolean edit_check = false;
-			boolean edit_check_info = false;
-									
-			temp.add(table.getModel().getValueAt(row[j], 1));			
+			String goods_info_query = "Update Goods_Info Set Edit_Tran='1' ";						
+												
+			temp.add(table.getModel().getValueAt(row[j], 1));
+			temp.add(table.getModel().getValueAt(row[j], 17));
 						
-			String barcode = temp.get(0).toString(); //바코드			
+			String barcode = temp.get(0).toString(); //바코드
+			String goods_connect = temp.get(1).toString(); //연동여부
 			
 			//옵션 불러오기
 			//0. 쇼핑몰연동여부/1.진열여부/2.재고사용여부/3.이미지폴더/
 			switch(bg_shoppingmall[0].getSelection().getActionCommand()){			
 			case "연동함":
-				goods_info_query += "ShoppingMall_Use='1' ";
+				goods_info_query += ", ShoppingMall_Use='1' ";
 				edit_check_info = true;
-				break;
+				break;				
 				
 			case "연동안함":
-				goods_info_query += "ShoppingMall_Use='0' ";
-				edit_check_info = true;
+				if(goods_connect.equals("업로드안됨")){
+					goods_info_query += ", ShoppingMall_Use='0' ";				
+					edit_check_info = true;
+				}
 				break;
 			}
 			
 			switch(bg_shoppingmall[1].getSelection().getActionCommand()){				
 			case "진열함":
-				if(edit_check_info){
-					goods_info_query += ", shop_view='1' ";					
-				}else{
-					goods_info_query += "shop_view='1' ";
-					edit_check_info = true;
-				}				
+				goods_info_query += ", shop_view='1' ";					
+				edit_check_info = true;
 				break;
 				
 			case "진열안함":
-				if(edit_check_info){
-					goods_info_query += ", shop_view='0' ";					
-				}else{
-					goods_info_query += "shop_view='0' ";
-					edit_check_info = true;
-				}			
+				goods_info_query += ", shop_view='0' ";					
+				edit_check_info = true;
 				break;
 			}
 			
 			switch(bg_shoppingmall[3].getSelection().getActionCommand()){
 			case "사용함":
-				if(edit_check_info){
-					goods_info_query += ", sto_use='1' ";					
-				}else{
-					goods_info_query += "sto_use='1' ";
-					edit_check_info = true;
-				}			
+				goods_info_query += ", sto_use='1' ";					
+				edit_check_info = true;
 				break;
 				
 			case "사용안함":
-				if(edit_check_info){
-					goods_info_query += ", sto_use='0' ";					
-				}else{
-					goods_info_query += "sto_use='0' ";
-					edit_check_info = true;
-				}	
+				goods_info_query += ", sto_use='0' ";					
+				edit_check_info = true;
 				break;
 			}
 			
-			switch(bg_shoppingmall[2].getSelection().getActionCommand()){				
+			switch(bg_shoppingmall[2].getSelection().getActionCommand()){			
 			case "단독폴더":
-				if(edit_check_info){
-					goods_info_query += ", img_path_use='0' ";					
-				}else{
-					goods_info_query += "img_path_use='0' ";
-					edit_check_info = true;
-				}	
+				goods_info_query += ", img_path_use='0' ";					
+				edit_check_info = true;
 				break;
 				
 			case "공용폴더":
-				if(edit_check_info){
-					goods_info_query += ", img_path_use='1' ";					
-				}else{
-					goods_info_query += "img_path_use='1' ";
-					edit_check_info = true;
-				}
+				goods_info_query += ", img_path_use='1' ";					
+				edit_check_info = true;
 				break;
 			}
 						
 			//안전재고 설정
 			if(text_anstock.getText().length() > 0){
-				goods_query += "pro_sto='"+text_anstock.getText()+"' ";
-				edit_check = true;
+				goods_info_query += ", pro_sto='"+text_anstock.getText()+"' ";
+				edit_check_info = true;
 			}
 			
+			//메인출력 코드(선택 되어있는 인덱스를 불러와서 결정합니다.)
+			switch(cb_maincode_list.getSelectedIndex()){
+			case 0:
+				//선택 된게 없습니다. 변경을 하지 않습니다.
+				break;
+			case 1:
+				//선택되어 있는 내용을 삭제합니다.
+				goods_info_query += ", Shop_MainCode='' ";
+				edit_check_info = true;
+				break;
+			default:
+				//선택 옵션을 불러와서 저장합니다.
+				String select_item = cb_maincode_list.getSelectedItem().toString();				
+				select_item = select_item.substring(select_item.indexOf("[")+1, select_item.lastIndexOf("]"));
+				goods_info_query += ", Shop_MainCode='"+select_item+"' ";
+				edit_check_info = true;
+				break;	
+			}
 						
 			//마무리 Goods_Info
 			if(edit_check_info){
-				goods_info_query += ", Edit_Tran='1' where barcode='"+barcode+"' ";
+				goods_info_query += " where barcode='"+barcode+"' ";
 				query_list.add(goods_info_query);	
 				if(DEBUGE){
 					System.out.println(goods_info_query);
 				}
 			}
-			
-			//마무리 Goods
-			if(edit_check){				
-				goods_query += "Where Barcode='"+barcode+"' ";
-				query_list.add(goods_query);
-				if(DEBUGE){
-					System.out.println(goods_query.toString());
-				}
-				
-				if(!edit_check_info){
-					goods_info_query += " Edit_Tran='1' where barcode='"+barcode+"' ";
-					query_list.add(goods_info_query);
-					if(DEBUGE){
-						System.out.println(goods_info_query);
-					}
-				}
-			}			
-			
-			if(!edit_check && !edit_check_info){
-				JOptionPane.showMessageDialog(this, "변경할 옵션을 선택해 주세요~!!");
-				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-				return;
-			}
 		}
 		
 		//쿼리 실행
-		ms_connect.setMainSetting();
-		int result = ms_connect.connect_update(query_list);
-		switch(result){		
-		case 0:
-			JOptionPane.showMessageDialog(this, "변경 완료 했습니다.");
+		if(edit_check_info){
+			ms_connect.setMainSetting();
+			int result = ms_connect.connect_update(query_list);
+			switch(result){		
+			case 0:
+				JOptionPane.showMessageDialog(this, "변경 완료 했습니다.");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				break;
+			default:
+				JOptionPane.showMessageDialog(this, "DB 연결에 실패 했습니다.");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				break;
+			}		
+		}else{
+			JOptionPane.showMessageDialog(this, "변경할 옵션 상품이 없습니다.");
 			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			break;
-		default:
-			JOptionPane.showMessageDialog(this, "DB 연결에 실패 했습니다.");
-			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			break;
 		}
 	}
 	
@@ -589,6 +599,101 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		setVisible(true);
 	}
 
+	//쇼핑몰 메인코드를 불러 옵니다.
+	public void getMainCode(){
+		
+		//환경설정
+		String shop_key = Server_Config.getSHOPKEY();
+		
+		//접속 쇼핑몰정보 정의하기
+		String shop_address = "https://ssl.anybuild.co.kr/API/goods/main_code.php";	
+		System.out.println(" 동기화를 시작합니다. 접속 주소 --> " + shop_address);
+		
+		shop_address += "?api_key="+shop_key.toString();
+		System.out.println(shop_address);
+		//기록을 남길 파일을 생성합니다.
+		
+		File file = new File("result.log");
+				
+		if(!file.isFile()){
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		JSONArray data = new JSONArray();
+		
+		//결과를 전송 합니다.
+		//전송폼을 생성합니다.
+		try {
+			
+			URL url = new URL(shop_address);
+			HttpURLConnection shop_url = (HttpURLConnection)url.openConnection();
+			
+			shop_url.setDoInput(true);
+			
+			System.out.println("전송상태 출력");			
+			System.out.println(" URL : "+shop_url.getURL());			
+
+			//전송 결과 수신
+			InputStreamReader isr = new InputStreamReader(shop_url.getInputStream(), "UTF-8");	
+			JSONObject object = (JSONObject)JSONValue.parseWithException(isr);							
+						
+			isr.close();
+			
+			data = (JSONArray)object.get("result_data");
+			System.out.println(data.toJSONString());
+			//결과출력
+			System.out.println(object.toString());
+			
+			SimpleDateFormat formatter = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss", Locale.KOREA );
+			Date currentTime = new Date ( );
+			String dTime = formatter.format ( currentTime );
+			
+			String sb = "전송 시간 : " + dTime + "메인코드조회 결과 \r\n" ;
+					sb += "result_msg : "+object.get("result_msg")+","+" result_cnt : "+object.get("result_cnt");					
+			
+			char[] paser = sb.toCharArray();
+			
+			//로그파일을 작성합니다.
+			OutputStreamWriter bos = new OutputStreamWriter(new FileOutputStream(file, true), "euc-kr");					
+			StringBuffer result_str = new StringBuffer();
+			for(char str : paser){				
+				bos.write(str);
+				result_str.append(str);
+			}			
+			System.out.println(result_str);
+			
+			bos.write('\r');
+			bos.write('\n');	
+			
+			bos.close();
+			System.out.println("조회가 완료 되었습니다.");
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();		
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		
+		cb_maincode_list.addItem("선택안함");
+		cb_maincode_list.addItem("지우기");
+		
+		Iterator itr =data.iterator();
+		
+		while(itr.hasNext()){
+			
+			JSONObject temp = (JSONObject)itr.next();
+			
+			cb_maincode_list.addItem(temp.get("subject").toString()+" ["+temp.get("group_code").toString()+"]");
+		}		
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub

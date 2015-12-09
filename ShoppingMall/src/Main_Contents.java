@@ -1,8 +1,4 @@
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Panel;
-
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
@@ -17,6 +13,27 @@ public class Main_Contents extends JPanel {
 		setBorder(new EmptyBorder(5, 5, 5, 5));				
 		setLayout(null);
 		setLayout(new BorderLayout());		
+		
+		openUrl("jeilmart.kr");
 	}
 
+	
+	public static void openUrl(String url){
+		
+		String os = System.getProperty("os.name");
+		Runtime runtime = Runtime.getRuntime();
+			try {            
+				// Block for Windows Platform        
+				System.out.println(os.toString());
+				if (os.startsWith("Windows")) {                
+					String cmd = "rundll32 url.dll,FileProtocolHandler " + url;                
+					Process p = runtime.exec(cmd);					
+					System.out.println("실행완료");
+				}
+			} catch (Exception x) {
+					System.err.println("Exception occurd while invoking Browser!");            
+					x.printStackTrace();       
+			}
+	}
+	
 }

@@ -1,3 +1,4 @@
+import java.util.Vector;
 
 public class Server_Config {	
 	
@@ -31,7 +32,7 @@ public class Server_Config {
 	private static String IMAGE_DBNAME="ShoppingMall";
 	private static String IMAGE_DBID="sa";
 	private static String IMAGE_DBPW="tips";
-	
+		
 	//SERVER
 	public static void setSERVER_DBID(String sERVER_DBID) {
 		SERVER_DBID = sERVER_DBID;

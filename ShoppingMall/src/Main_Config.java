@@ -17,15 +17,18 @@ import javax.swing.JPasswordField;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,6 +50,8 @@ import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import java.awt.Toolkit;
+import javax.swing.JScrollPane;
+import javax.swing.JList;
 
 
 public class Main_Config extends JDialog implements ActionListener{
@@ -84,8 +89,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		//db접속 도구를 생성한다.
 		ms_connect = new Ms_Connect();
 				
-		//설정파일을 불러옵니다.
-		//pathConfig();
+		//설정파일을 불러옵니다.		
 		pathConfig();
 		
 		//설정파일을 불러옵니다.
@@ -105,8 +109,7 @@ public class Main_Config extends JDialog implements ActionListener{
 				temp_config = 	temp_al.get(0);
 				setOnlineValues();
 			}
-		}
-		
+		}		
 	}
 			
 	public void init() {
@@ -175,10 +178,6 @@ public class Main_Config extends JDialog implements ActionListener{
 		pass_server_dbpw.setBounds(94, 159, 216, 21);
 		panel_server.add(pass_server_dbpw);
 		
-		JButton btn_server_save = new JButton("\uC800\uC7A5");
-		btn_server_save.setBounds(213, 253, 97, 41);
-		panel_server.add(btn_server_save);
-		
 		text_ftp_dandock = new JTextField();
 		text_ftp_dandock.setBounds(94, 187, 216, 21);
 		panel_server.add(text_ftp_dandock);
@@ -188,7 +187,6 @@ public class Main_Config extends JDialog implements ActionListener{
 		label_ftp_dandock.setBounds(12, 190, 70, 15);
 		panel_server.add(label_ftp_dandock);
 		label_ftp_dandock.setHorizontalAlignment(SwingConstants.CENTER);
-		btn_server_save.addActionListener(this);
 		
 		JPanel panel_ftp = new JPanel();
 		panel_ftp.setLayout(null);
@@ -265,22 +263,11 @@ public class Main_Config extends JDialog implements ActionListener{
 		pass_shop_key.setText((String) null);
 		pass_shop_key.setColumns(10);
 		
-		JButton btn_office_save = new JButton("\uC800\uC7A5");
-		btn_office_save.setBounds(213, 255, 97, 41);
-		panel_ftp.add(btn_office_save);
-		btn_office_save.addActionListener(this);
-		
 		JPanel panel_office = new JPanel();
 		panel_office.setLayout(null);
 		panel_office.setBorder(new LineBorder(new Color(0, 0, 0)));
 		panel_office.setBounds(686, 10, 322, 310);
 		getContentPane().add(panel_office);
-		
-		JPanel panel = new JPanel();
-		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
-		panel.setBounds(12, 330, 322, 310);
-		getContentPane().add(panel);
-		panel.setLayout(null);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -296,12 +283,23 @@ public class Main_Config extends JDialog implements ActionListener{
 		
 		JButton btn_Shyc_Start = new JButton("\uB3D9\uAE30\uD654 \uC2DC\uC791");
 		btn_Shyc_Start.addActionListener(this);
-		btn_Shyc_Start.setBounds(12, 265, 298, 35);
+		btn_Shyc_Start.setBounds(12, 186, 298, 35);
 		panel_2.add(btn_Shyc_Start);
 		
 		JButton btn_xls_output = new JButton("\uBD84\uB958\uC5D1\uC140\uCD9C\uB825");
-		btn_xls_output.setBounds(12, 220, 298, 35);
+		btn_xls_output.setBounds(12, 141, 298, 35);
 		panel_2.add(btn_xls_output);
+		
+		JButton btn_server_save = new JButton("\uC800\uC7A5");
+		btn_server_save.setBounds(12, 231, 298, 69);
+		panel_2.add(btn_server_save);
+		
+		JPanel panel = new JPanel();
+		panel.setLayout(null);
+		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		panel.setBounds(12, 330, 322, 310);
+		getContentPane().add(panel);
+		btn_server_save.addActionListener(this);
 		btn_xls_output.addActionListener(this);
 				
 	}
@@ -325,8 +323,7 @@ public class Main_Config extends JDialog implements ActionListener{
 			// TODO Auto-generated catch block
 			e.printStackTrace();	
 			return;
-		}
-		
+		}		
 	}
 		
 	//파일이 있는지 검사 합니다.
@@ -402,8 +399,7 @@ public class Main_Config extends JDialog implements ActionListener{
 			text_office_http.setText(temp_config.get("Online_Address"));			
 			text_office_id.setText(temp_config.get("Online_ID"));
 			text_office_pw.setText(temp_config.get("Online_PW"));
-			pass_shop_key.setText(temp_config.get("Online_Key"));
-	
+			pass_shop_key.setText(temp_config.get("Online_Key"));	
 	}
 	
 	private void setSave(){
@@ -455,12 +451,24 @@ public class Main_Config extends JDialog implements ActionListener{
 		
 		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
-		String query = "Select a.Barcode, a.ShoppingMall_Use, a.UpLoad, a.Shop_View, a.Sto_Use, a.Img_path_use, a.img_path, b.G_Name, b.Pur_Pri, b.Sell_Pri,  "
+		/*String query = "Select a.Barcode, a.ShoppingMall_Use, a.UpLoad, a.Shop_View, a.Sto_Use, a.Img_path_use, a.img_path, b.G_Name, b.Pur_Pri, b.Sell_Pri,  "
 						+ "(b.L_Code+b.M_Code+b.S_Code) + Replicate('0', 8 - Len(b.L_Code+b.M_Code+b.S_Code) ) as Goods_Cate, b.Real_Sto, "
 						+ "b.Sale_Pur, b.Sale_Sell, b.Sale_Use, b.Write_Date"
 						+" From goods_info as a inner join goods as b on a.barcode=b.barcode" 
-						+" Where a.edit_tran='1' and img_path <> '' and a.shoppingmall_use='1' ";
+						+" Where a.edit_tran='1' and img_path <> '' and a.shoppingmall_use='1' ";*/
 		
+		String query = "Select * From ( "
+						+ " Select * From goods_info Where edit_tran='1' and img_path <> '' and shoppingmall_use='1' "
+						+ " ) C inner join ( "
+						+ " Select A.Barcode, A.G_Name, A.Pur_Pri, A.Sell_Pri, A.Real_Sto, A.Sale_Pur, A.Sale_Sell, A.Sale_Use, A.Write_Date, B.Goods_NewCate as Goods_Cate " 
+						+ " From ( "
+						+ " Select BarCode, G_Name, Pur_Pri, Sell_Pri, (L_Code+M_Code+S_Code) + Replicate('0', 8 - Len(L_Code+M_Code+S_Code) ) as Goods_Cate, Real_Sto, Sale_Pur, Sale_Sell, Sale_Use, Write_Date " 
+						+ " From Goods " 
+						+ " ) A inner join ( "
+						+ " Select  (L_Code+M_Code+SM_SCode) + Replicate('0', 8 - Len(L_Code+M_Code+SM_SCode)) as Goods_NewCate,(L_Code+M_Code+S_Code) + Replicate('0', 8 - Len(L_Code+M_Code+S_Code) ) as Goods_OldCate From s_branch "
+						+ " ) B on A.Goods_Cate=B.Goods_OldCate "
+						+ " ) D on C.Barcode=D.Barcode ";
+				
 		//전송결과를 서버에 저장합니다. (성공시 Edit_Tran을 1->0 으로 변경)
 		String resultQuery = "Update goods_info set UpLoad = '1', Edit_Tran='0' where barcode in (";
 		String queryIn = "";
@@ -472,7 +480,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		//전송할 상품을 담아 둡니다.
 		JSONArray json_map = new JSONArray();
 				
-		if(temp_map.size() <= 0 ){								
+		if(temp_map.size() <= 0 ){					
 			JOptionPane.showMessageDialog(this, "업로드할 상품이 없습니다.");
 			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;
@@ -489,11 +497,11 @@ public class Main_Config extends JDialog implements ActionListener{
 			HashMap<String, String> map =  iter.next();
 			
 			//임시저장소
-			JSONObject obj = new JSONObject();
+			JSONObject obj = new JSONObject();			
 			
-			obj.put("goods_cate", map.get("Goods_Cate"));			
+			obj.put("goods_cate", map.get("Goods_Cate"));
 			obj.put("goods_img", map.get("img_path"));			
-			obj.put("goods_name", map.get("G_Name"));			
+			obj.put("goods_name", map.get("G_Name"));
 			obj.put("user_code", map.get("Barcode"));						
 			obj.put("view_yn", map.get("Shop_View"));			
 			obj.put("goods_regdate", map.get("Write_Date"));
@@ -512,6 +520,9 @@ public class Main_Config extends JDialog implements ActionListener{
 				obj.put("in_price", map.get("Pur_Pri"));
 			}
 			
+			//메인출력 코드를 입력합니다.
+			obj.put("main_code", map.get("Shop_MainCode"));				
+						
 			//재고 사용 유무를 체크합니다.
 			if(map.get("Sto_Use").equals("1")){
 				//재고가 0이하일때는 0개로 표시해줍니다.
@@ -529,8 +540,7 @@ public class Main_Config extends JDialog implements ActionListener{
 			
 			queryIn += "'"+map.get("Barcode")+"', ";
 			
-			if(i%10 == 0){
-					
+			if(i%20 == 0){					
 				//전송할 쿼리를 넘깁니다.
 				queryIn = queryIn.substring(0, queryIn.length()-2);							
 				queryIn += ")";
@@ -539,7 +549,7 @@ public class Main_Config extends JDialog implements ActionListener{
 				//전송 후 클리어 합니다.
 				json_map.clear();
 				queryIn = "";
-			}			
+			}
 			i++;
 		}	
 				
@@ -553,23 +563,30 @@ public class Main_Config extends JDialog implements ActionListener{
 		}			
 			
 		//접속 끊기
-		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-		
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));		
 	}
 	
 	//전송함수를 분리 합니다.
-	private void tranStart(ArrayList<HashMap<String, String>> jsonData, String query){
+	private void tranStart(JSONArray jsonData, String query){
 		
 		//환경설정
 		String shop_key = Server_Config.getSHOPKEY();
 		
 		//접속 쇼핑몰정보 정의하기
-		String shop_address = "https://ssl.anybuild.co.kr/API/goods/goods_insert.php";
-		System.out.println(" 동기화를 시작합니다. 접속 주소 --> " + shop_address);	
+		String shop_address = "https://ssl.anybuild.co.kr/API/goods/goods_insert.php";		
+		System.out.println(" 동기화를 시작합니다. 접속 주소 --> " + shop_address);
 		
-		shop_address += "?api_key="+shop_key+"&json_data=";
-		shop_address += jsonData.toString();
+		String shop_data = "";	
 		
+		try {
+			shop_data = "api_key="+shop_key.toString()+"&json_data="+URLEncoder.encode(jsonData.toString(), "UTF-8");
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		System.out.println(shop_data);
+				
 		//기록을 남길 파일을 생성합니다.
 		File file = new File("result.log");
 				
@@ -581,42 +598,52 @@ public class Main_Config extends JDialog implements ActionListener{
 				e.printStackTrace();
 			}
 		}
-		
+				
 		//결과를 전송 합니다.
 		//전송폼을 생성합니다.
 		try {
 			
-			URL url = new URL(shop_address);		
-			URLConnection shop_url = (HttpURLConnection)url.openConnection();
+			URL url = new URL(shop_address);
+			HttpURLConnection shop_url = (HttpURLConnection)url.openConnection();
 			
+			shop_url.setRequestMethod("POST");					
+			shop_url.setRequestProperty("Accept-Language", "ko-kr,ko;q=0.8,en-us;q=0.5,en;q=0.3");
 			shop_url.setDoInput(true);
-			shop_url.setDoOutput(true);			
-			shop_url.setRequestProperty("Content-Type", "application/json");
-			shop_url.connect();
-		
-			//전송 결과 수신
-			InputStreamReader isr = new InputStreamReader(shop_url.getInputStream(), "UTF-8");			
-			JSONObject object = (JSONObject)JSONValue.parseWithException(isr);								
-			//System.out.println(object.toJSONString());				
-			isr.close();			
+			shop_url.setDoOutput(true);
+						
+			System.out.println("전송상태 출력");			
+			System.out.println(" URL : "+shop_url.getURL());			
+
+			OutputStreamWriter output = new OutputStreamWriter(shop_url.getOutputStream());
 			
+			output.write(shop_data);				
+			
+			output.flush();			
+			output.close();			
+			
+			//전송 결과 수신
+			InputStreamReader isr = new InputStreamReader(shop_url.getInputStream(), "UTF-8");	
+			JSONObject object = (JSONObject)JSONValue.parseWithException(isr);							
+						
+			isr.close();
+						
 			SimpleDateFormat formatter = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss", Locale.KOREA );
 			Date currentTime = new Date ( );
 			String dTime = formatter.format ( currentTime );
-			System.out.println ( dTime );
 			
 			String sb = "전송 시간 : " + dTime + "결과 \r\n" ;
 					sb += object.toJSONString();
 			
-			char[] paser = sb.toCharArray();//object.toJSONString().toCharArray();
+			char[] paser = sb.toCharArray();
 			
 			//로그파일을 작성합니다.
-			OutputStreamWriter bos = new OutputStreamWriter(new FileOutputStream(file, true), "euc-kr");
-			//BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file, true));		
-			
+			OutputStreamWriter bos = new OutputStreamWriter(new FileOutputStream(file, true), "euc-kr");					
+			StringBuffer result_str = new StringBuffer();
 			for(char str : paser){				
 				bos.write(str);
-			}
+				result_str.append(str);
+			}			
+			System.out.println(result_str);
 			
 			bos.write('\r');
 			bos.write('\n');	
@@ -624,16 +651,18 @@ public class Main_Config extends JDialog implements ActionListener{
 			bos.close();
 			System.out.println("전송이 완료 되었습니다.");
 			
-			int result = ms_connect.connect_update(query);
-			
-			switch(result){			
-			case 0:
-				System.out.println("정상 등록 되었습니다.");
-				break;
-			default:
-				System.out.println("오류가 발생 되었습니다.");
-				break;			
-			}
+			//전송 결과를 확인 합니다. 
+			if(object.get("result_code").equals("OK")){
+				int result = ms_connect.connect_update(query);
+				switch(result){			
+				case 0:
+					System.out.println("정상 등록 되었습니다.");
+					break;
+				default:
+					System.out.println("오류가 발생 되었습니다.");
+					break;			
+				}
+			}			
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -649,6 +678,66 @@ public class Main_Config extends JDialog implements ActionListener{
 	private void creat_xls(){
 		
 		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		
+		// 분류 소코드를 새로 생성합니다. 분류 소코드 컬럼 SM_Scode 입니다. 
+		// 소분류 세자리를 두자리로 변경 합니다. 
+		
+		//분류를 불러 옵니다.		
+		String query_count = "Select l_code, m_code, count(*) as count from s_branch where sm_scode is null group by l_code, m_code";
+		
+		ms_connect.setMainSetting();        
+        ArrayList<HashMap<String, String>> branch_count = ms_connect.connection(query_count);
+		
+        //분류 코드 생성을 안했을 때만 합니다.
+        if(branch_count.size() > 0) {
+        	
+        	//업데이트 해야하는 분류들만 골라서 담습니다.
+	        ArrayList<String> result_query = new ArrayList<String>();
+	        
+			//불러온 분류에 새로운 코드 번호를 생성 합니다.
+			Iterator<HashMap<String, String>> itr = branch_count.iterator();
+	        while(itr.hasNext()){        	
+	        	
+	        	HashMap<String, String> map = itr.next();        	
+	        	
+	        	//분류를 정리 합니다.
+	        	String l_code = map.get("l_code");
+	        	String m_code = map.get("m_code");        	
+	        	        	
+	        	//해당하는 분류만 다시 불러 냅니다.
+	        	String query_branch = "select * from s_branch where l_code='"+l_code+"' and m_code='"+m_code+"' order by s_code";
+	        	ArrayList<HashMap<String, String>> branch_map = ms_connect.connection(query_branch);
+	        		
+	        		Iterator<HashMap<String, String>> itr_def = branch_map.iterator();
+	        		int i =1;
+	        		while(itr_def.hasNext()){
+	        			HashMap<String, String> map_def = itr_def.next();
+	        			
+	        			String lcode = map_def.get("L_Code");
+	        			String mcode = map_def.get("M_Code");
+	        			String scode = map_def.get("S_Code");
+	        			
+	        			String result = "Update S_Branch Set SM_Scode='"+String.format("%02d", i)+"' Where l_code='"+lcode+"' and m_code='"+mcode+"' and s_code='"+scode+"' ";
+	            		result_query.add(result);
+	            		i++;
+	        		}        		
+	        }
+	        
+	        System.out.println(result_query);
+	        
+			//엑셀 생성 데이터를 디비에서 불러온다. 
+	        switch(ms_connect.connect_update(result_query)){
+	        case 0:
+	        	System.out.println("분류 정보를 수정 하였습니다.");
+	        	break;
+	        case 1:
+	        	System.out.println("네트워크 오류입니다. 확인 하세요 ");
+	        	break;
+	        default:
+	        	System.out.println("분류 정보를 수정하지 못했습니다. ");
+	        	break;	        
+	        }	        
+        }
 		
 		 // 엑셀파일 객체 생성
         WritableWorkbook workbook = null;
@@ -677,10 +766,10 @@ public class Main_Config extends JDialog implements ActionListener{
         //쿼리를 작성합니다.
         String query = "Select L_Code, L_Code + Replicate('0', 8 - Len(L_Code) ) as Code, L_Name, 1 as Gubun From L_Branch Where L_code <> 'AA'  UNION "
         				+ "Select L_Code, (L_Code+M_Code) + Replicate('0', 8 - Len(L_Code+M_Code)) as Code, M_Name, 2 as Gubun From M_Branch Where L_Code <> 'AA' UNION "
-        				+ "Select L_Code, (L_Code+M_Code+S_Code) + Replicate('0', 8 - Len(L_Code+M_Code+S_Code)) as Code, S_Name, 3 as Gubun From S_Branch Where L_Code <> 'AA' ";
+        				+ "Select L_Code, (L_Code+M_Code+SM_SCode) + Replicate('0', 8 - Len(L_Code+M_Code+SM_SCode)) as Code, S_Name, 3 as Gubun From S_Branch Where L_Code <> 'AA' ";
                 
         //엑셀 생성 데이터를 디비에서 불러온다.     
-        ms_connect.setMainSetting();
+        //ms_connect.setMainSetting();
         ArrayList<HashMap<String, String>> temp_map = ms_connect.connection(query);
          
         try{
@@ -750,8 +839,7 @@ public class Main_Config extends JDialog implements ActionListener{
                 label = new Label(7, (i+1), "1");
                 sheet.addCell(label);
                 
-            }
-                          
+            }                          
             workbook.write();
             workbook.close();
  
@@ -782,8 +870,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		case "분류엑셀출력":
 			creat_xls();
 			break;
-		}
-		
+		}		
 		
 	}
 }

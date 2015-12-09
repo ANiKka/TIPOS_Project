@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
@@ -58,6 +59,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import javax.swing.border.BevelBorder;
 
 import com.oroinc.net.ftp.FTPClient;
@@ -99,6 +104,7 @@ public class Goods_Manage extends JPanel {
 	private JTextField text_Detail_AnStock;
 	private JComboBox<String> combo_Detail_View;
 	private JComboBox<String> combox_Detail_ImageConnectUse;
+	private JComboBox<String> cb_maincode;
 	
 	private JToggleButton btnToggle_Detail_ConnectState;
 	private JToggleButton btnToggle_Detail_SaleUse; 
@@ -125,21 +131,29 @@ public class Goods_Manage extends JPanel {
 	private JTextField tx_officecode;
 		
 	private AllChangeDialog changeDialog = null;
+	private JTextField text_imagename;
 	
+	private Trans_ShopAPI shop_api;
+	private JSONArray main_code;
+		
+	Vector<Object> temp_detail = new Vector<Object>();
 	
+	private JComboBox<String> cb_top_maincode;
 	/**
 	 * Create the panel.
 	 */
 	public Goods_Manage() {
 		//super(title, resize, close);
-		ms_connect = new Ms_Connect();    	    
-        
-		//contentPane_Goods = this;		
+		ms_connect = new Ms_Connect();
+		shop_api = new Trans_ShopAPI();
+        main_code = shop_api.getMainCode("상품관리");
+		
+		//contentPane_Goods = this;	
 		setBorder(new EmptyBorder(5, 5, 5, 5));
 		
 		//this.add(contentPane_Goods, BorderLayout.CENTER);
 				
-		//setBounds(0, 0, 1024, 690);		
+		//setBounds(0, 0, 1024, 690);	
 		//javax.swing.plaf.InternalFrameUI ifu = this.getUI(); ((javax.swing.plaf.basic.BasicInternalFrameUI)ifu). setNorthPane(null); 
 		
 		//상단 검색조건
@@ -150,11 +164,13 @@ public class Goods_Manage extends JPanel {
 		
 		//상품상세정보 및 수정 창
 		goods_detail();		
-				
+	
+		//메인코드 출력 설정하기
+		if(main_code.size() > 0)	maincode_setList();
 	}
 
 	/*
-	 * 	 * [검색 항목 초기화 ]
+	 * [검색 항목 초기화 ]
 	 * 검색 항목 초기화 하기
 	 * 
 	 */	
@@ -178,14 +194,10 @@ public class Goods_Manage extends JPanel {
 		combo_Goods_Gubun.setSelectedIndex(0);
 		combo_top_stockuse.setSelectedIndex(0);
 		combo_image_get.setSelectedIndex(0);
-		
-		
-		chkeck_top_anstock.setSelected(false);
-		
-		dtm.setRowCount(0);
-		
-		tx_barcode.requestFocus();
-		
+				
+		chkeck_top_anstock.setSelected(false);		
+		dtm.setRowCount(0);		
+		tx_barcode.requestFocus();		
 		detail_Renew();
 	}
 	
@@ -196,7 +208,12 @@ public class Goods_Manage extends JPanel {
 	 */
 	private void saveGoodsInfo(){
 		
+		//쿼리 Goods 기본 설정
 		String query1 = "Update Goods Set ";
+		
+		//수정된것이 있는지 확인합니다.		
+		boolean edit_goods = false;
+		boolean edit_goods_info = false;
 		
 		try{
 			int number = Integer.parseInt(label_Detail_Number.getText());
@@ -206,65 +223,136 @@ public class Goods_Manage extends JPanel {
 			return;
 		}
 		
+		//"0 순번", "1 바코드", "2 상품명", "3 규격", "4 매입가", "5 판매가", "6 현재고", "7 안전재고", 
+		// "8 분류코드", "9 대코드", "10 대명", "11 중코드", "12 중명", "13 소코드", "14 소명", "15 행사", "16 상품연동",
+		//"`17 쇼핑몰", "`18 진열유무", "`19 재고연동", (20.추가 메인출력코드) "21 이미지설정", "22 이미지경로"  (23.추가 이미지명)};	
+		
+		//상품정보 수정되었는지 확인합니다.
 		String barcode= text_Detail_Barcode.getText();
-		String g_name = text_Detail_Name.getText();
-		String an_stock = text_Detail_AnStock.getText();
+		String g_name = text_Detail_Name.getText();		
 		System.out.println(g_name.length());
+				
+		//상품명이 바뀌었으면 상품명을 변경합니다.
+		if(!g_name.equals(temp_detail.get(2))){
+			query1 += "G_Name='"+g_name+"' Where Barcode='"+barcode+"'; ";
+			edit_goods = true;
+		}
+						
+		//Goods_Info 기본설정
+		String query2 = "Update Goods_Info Set Edit_Tran='1'";
 		
-		query1 += "G_Name='"+g_name+"', Pro_Sto='"+an_stock+"' ";		
-		query1 += "Where Barcode='"+barcode+"'; ";
-		
-		
-		String query2 = "Update Goods_Info Set ";
-		
-		String shop_use="1";		
-		if(combo_Detail_ShopConnectUse.getSelectedIndex() == 1){
-			shop_use="0";
+		//안전재고 변경 여부 
+		String an_stock = text_Detail_AnStock.getText();
+		System.out.println("안전재고 : "+temp_detail.get(7).toString() + " 저장값 : "+an_stock);
+		if(!temp_detail.get(7).equals(an_stock)){			
+			query2 += ", pro_sto = '"+an_stock+"'";
+			edit_goods_info = true;
 		}
 		
-		String shop_view = "1";
-		if(combo_Detail_View.getSelectedIndex() == 1){
-			shop_view="0";
+		//연동사용 여부 변경확인  (서로 틀리다면 변경된것)
+		String shop_use= temp_detail.get(16).toString();
+		System.out.println("연동사용 : "+temp_detail.get(16).toString() + " 저장값 : "+combo_Detail_ShopConnectUse.getSelectedItem());
+		if(!combo_Detail_ShopConnectUse.getSelectedItem().equals(shop_use)){
+			if(combo_Detail_ShopConnectUse.getSelectedIndex() == 0){
+				query2 += ", ShoppingMall_use='1'";
+			}else{
+				query2 += ", ShoppingMall_use='0'";
+			}			
+			edit_goods_info = true;
 		}
 		
-		String sto_use="0";		
+		//진열여부 변경확인  (서로 같다면 변경된것)
+		String shop_view = temp_detail.get(18).toString();
+		System.out.println("진열여부 : "+temp_detail.get(18).toString() + " 저장값 : "+combo_Detail_View.getSelectedIndex());
+		if(combo_Detail_View.getSelectedIndex() == Integer.parseInt(shop_view)){			
+			if(combo_Detail_View.getSelectedIndex() == 1){
+				query2 += ", Shop_View='0'";
+			}else{
+				query2 += ", Shop_View='1'";
+			}			
+			edit_goods_info = true;
+		}
+		
+		//재고 사용 여부 확인
+		String sto_use = "0";		
 		if(checkBox_Detail_Stock.isSelected()){
-			sto_use="1";
+			sto_use = "1";
+		}				
+		System.out.println("재고사용여부 : "+sto_use + " 저장값 : "+temp_detail.get(19));
+		//재고 사용 유무를 현재 값 하고 틀린지 비교 합니다.  (서로 틀리다면 변경된것)
+		if(!temp_detail.get(19).toString().equals(sto_use)){
+			query2 += ", Sto_Use='0'";
+			edit_goods_info = true;
 		}
 		
-		String img_path_use = String.valueOf(combox_Detail_ImageConnectUse.getSelectedIndex());
-		
+		//메인출력코드 설정변경을 확인 합니다.
+		String maincode = temp_detail.get(20).toString();
+		String select_item = cb_maincode.getSelectedItem().toString();				
+		select_item = select_item.substring(select_item.indexOf("[")+1, select_item.lastIndexOf("]"));
+		System.out.println("메인출력코드 : "+maincode + " 저장값 : "+select_item);
+		if(!select_item.equals(maincode)){
+			if(cb_maincode.getSelectedIndex() == 0){
+				query2 += ", Shop_MainCode = '' ";				
+			}else{
+				query2 += ", Shop_MainCode = '"+select_item+"' ";
+			}			
+			edit_goods_info = true;
+		}
+				
+		//이미지 폴더선택 변경 확인 (서로 틀리다면 변경된것)
+		String img_path_use = temp_detail.get(21).toString(); 
+		System.out.println("이미지폴더 : "+temp_detail.get(21).toString() + " 저장값 : "+combox_Detail_ImageConnectUse.getSelectedItem());
+		if(!img_path_use.equals(combox_Detail_ImageConnectUse.getSelectedItem())){
+			query2 += ", Img_path_use='"+String.valueOf(combox_Detail_ImageConnectUse.getSelectedIndex())+"' ";
+			edit_goods_info = true;			
+		}
+				
+		//이미지 경로를 변경 했는지 확인 합니다.
 		String img_path = text_Detail_ImagePath.getText();
-		
-		//System.out.println(shop_use + shop_view + sto_use + img_path_use);
-		
-		query2 += "ShoppingMall_use='"+shop_use+"',  Shop_View='"+shop_view+"', Sto_Use='"+sto_use+"', Img_path_use='"+img_path_use+"', img_path='"+img_path+"', ";
-		
-		query2 += " Edit_Tran='1' where Barcode='"+barcode+"'; ";
-		
-		String[] query_multi = {query1, query2};
-				
-		ms_connect.setMainSetting();
-		int result = ms_connect.connect_update(query_multi);
-				
-		switch(result){
-		case 0 :
-			detail_Renew();
-			JOptionPane.showMessageDialog(null, "저장이 완료 되었습니다.");
-			//상품검색 시작
-			search_goods(query);
-			
-			break;
-		default :
-			JOptionPane.showMessageDialog(null, "오류로 저장하지 못했습니다. \r\n 서버를 점검해 주세요!!");
-			break;
+		System.out.println("이미지경로 : "+temp_detail.get(22).toString() + " 저장값 : "+img_path);
+		if(!temp_detail.get(22).equals(img_path)){
+			query2 += ", img_path='"+img_path+"' ";
+			edit_goods_info = true;	
 		}
 		
+		//System.out.println(query2);				
+		query2 += " where Barcode='"+barcode+"'; ";		
+		
+		int result = 0;
+		
+		if(edit_goods){
+			System.out.println(query1);
+			//result = ms_connect.connect_update(query1);
+		}
+		
+		if(edit_goods_info){
+			System.out.println(query2);
+			//result = ms_connect.connect_update(query2);
+		}
+		
+		if(edit_goods || edit_goods_info){
+			switch(result){
+			case 0 :
+				detail_Renew();
+				JOptionPane.showMessageDialog(null, "저장이 완료 되었습니다.");
+				//상품검색 시작
+				search_goods(query);
+				
+				break;
+			default :
+				JOptionPane.showMessageDialog(null, "오류로 저장하지 못했습니다. \r\n 서버를 점검해 주세요!!");
+				break;
+			}		
+		}else{
+			JOptionPane.showMessageDialog(null, "변경된 정보가 없습니다.");
+		}
 	}
 	
 	
 	//상세정보 초기화
 	private void detail_Renew(){		
+		
+		temp_detail.removeAllElements();
 		
 		label_Detail_Number.setText("순번");
 		text_Detail_Barcode.setText("");
@@ -286,6 +374,9 @@ public class Goods_Manage extends JPanel {
 		combo_Detail_View.setSelectedIndex(0);
 		combox_Detail_ImageConnectUse.setSelectedIndex(0);
 		
+		cb_maincode.setSelectedIndex(0);
+		text_imagename.setText("");
+		
 		label_image_view.setIcon(null);
 		text_Detail_ImagePath.setText("");
 		text_Detail_ImagePath.setEnabled(true);
@@ -300,10 +391,10 @@ public class Goods_Manage extends JPanel {
     	JPanel p_top = new JPanel();
 		p_top.setBorder(new LineBorder(new Color(0, 0, 0)));
 		this.add(p_top, BorderLayout.NORTH);
-		p_top.setLayout(new MigLayout("", "[50px,grow][]", "[grow][fill][24px,grow]"));
+		p_top.setLayout(new MigLayout("", "[grow][50px][][grow]", "[grow][fill][24px,grow]"));
 		
 		JPanel panel = new JPanel();
-		p_top.add(panel, "cell 0 0,grow");
+		p_top.add(panel, "cell 1 0,grow");
 		panel.setLayout(new MigLayout("ins 0", "[][][][][][][][][][][][][][][][][][]", "[]"));
 		
 		JLabel lb_barcode = new JLabel("\uBC14\uCF54\uB4DC");
@@ -410,7 +501,7 @@ public class Goods_Manage extends JPanel {
 		});
 		
 		JPanel panel_1 = new JPanel();
-		p_top.add(panel_1, "cell 0 1,grow");
+		p_top.add(panel_1, "cell 1 1,grow");
 		panel_1.setLayout(new MigLayout("ins 0", "[36px][][][][][][][][]", "[21px]"));
 		
 		JLabel lb_class = new JLabel("\uBD84\uB958\uCF54\uB4DC");
@@ -465,7 +556,7 @@ public class Goods_Manage extends JPanel {
 		});
 		
 		JButton bt_renew = new JButton("\uC0C8\uB85C\uC785\uB825");
-		p_top.add(bt_renew, "cell 1 1,growx,aligny bottom");
+		p_top.add(bt_renew, "cell 2 1,growx,aligny bottom");
 		
 		bt_renew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -475,8 +566,8 @@ public class Goods_Manage extends JPanel {
 		});
 		
 		JPanel panel_2 = new JPanel();
-		p_top.add(panel_2, "cell 0 2,grow");
-		panel_2.setLayout(new MigLayout("", "[][][][][][][][][][][][][]", "[][]"));
+		p_top.add(panel_2, "cell 1 2,grow");
+		panel_2.setLayout(new MigLayout("", "[][][][][][][][][][][][][][][][][grow]", "[][]"));
 		
 		JLabel lb_goodsconnect = new JLabel("\uC0C1\uD488\uC5F0\uB3D9");
 		panel_2.add(lb_goodsconnect, "flowy,cell 0 0");
@@ -504,7 +595,7 @@ public class Goods_Manage extends JPanel {
 		cb_image_connect = new JComboBox<String>();
 		panel_2.add(cb_image_connect, "cell 7 0");
 		cb_image_connect.setToolTipText("\uACF5\uC6A9 \uD3F4\uB354\uC758 \uC774\uBBF8\uC9C0\uC640 \uC5F0\uB3D9\uC774 \uB418\uC5B4\uC788\uB294\uC9C0 \uD655\uC778 \uD569\uB2C8\uB2E4.");
-		cb_image_connect.setModel(new DefaultComboBoxModel(new String[] {"\uC804\uCCB4", "\uACF5\uC6A9\uD3F4\uB354", "\uB2E8\uB3C5\uD3F4\uB354"}));
+		cb_image_connect.setModel(new DefaultComboBoxModel<String>(new String[] {"\uC804\uCCB4", "\uACF5\uC6A9\uD3F4\uB354", "\uB2E8\uB3C5\uD3F4\uB354"}));
 		
 		JLabel lblNewLabel = new JLabel("\uC774\uBBF8\uC9C0\uC720\uBB34");
 		panel_2.add(lblNewLabel, "cell 9 0");
@@ -514,6 +605,13 @@ public class Goods_Manage extends JPanel {
 		panel_2.add(combo_image_get, "cell 10 0");
 		combo_image_get.setModel(new DefaultComboBoxModel<String>(new String[] {"\uC804\uCCB4", "\uC774\uBBF8\uC9C0\uC5C6\uC2B4", "\uC774\uBBF8\uC9C0\uC788\uC2B4"}));
 		combo_image_get.setMaximumRowCount(3);
+		
+		JLabel label_top_maincode = new JLabel("\uBA54\uC778\uCF54\uB4DC\uCD9C\uB825");
+		panel_2.add(label_top_maincode, "cell 12 0");
+		
+		cb_top_maincode = new JComboBox<String>();		
+		cb_top_maincode.setModel(new DefaultComboBoxModel<String>(new String[] {"\uCD9C\uB825\uC548\uD568"}));
+		panel_2.add(cb_top_maincode, "cell 13 0 2 1");
 		
 		JLabel lb_goodssale = new JLabel("\uD589\uC0AC");
 		panel_2.add(lb_goodssale, "cell 0 1,alignx center");
@@ -556,11 +654,11 @@ public class Goods_Manage extends JPanel {
 		combo_top_stockuse.setMaximumRowCount(3);
 		
 		chkeck_top_anstock = new JCheckBox("\uC548\uC804\uC7AC\uACE0 \uC774\uD558\uC0C1\uD488");
-		panel_2.add(chkeck_top_anstock, "cell 12 1");
+		panel_2.add(chkeck_top_anstock, "cell 12 1 2 1");
 		chkeck_top_anstock.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		bt_search = new JButton("\uC0C1\uD488\uAC80\uC0C9");
-		p_top.add(bt_search, "cell 1 2,grow");
+		p_top.add(bt_search, "cell 2 2,grow");
 		
 		bt_search.addActionListener(new ActionListener() {
 			
@@ -746,8 +844,7 @@ public class Goods_Manage extends JPanel {
 		
     }
     
-    
-    
+        
 	/*
 	 * [상품검색]
 	 * 조건을 확인 해서 상품 검색을 합니다.
@@ -832,13 +929,16 @@ public class Goods_Manage extends JPanel {
 				v.add(map.get("shop_view")); //18. 진열여부				
 				v.add(map.get("sto_use"));  //19. 재고연동유무
 				
-				if(img_path_use.equals("1")){ //20. 단독이미지
+				v.add(map.get("shop_maincode")); //20.메인출력코드
+				
+				if(img_path_use.equals("1")){ //21. 단독이미지
 					v.add("공용폴더");
 				}else{
 					v.add("단독폴더");
 				}
 				
-				v.add(map.get("img_path")); //21. 연동중 이미지 경로
+				v.add(map.get("img_path")); //22. 연동중 이미지 경로
+				v.add(map.get("img_name")); //23. 이미지명
 				
 				dtm.addRow(v);				
 			}
@@ -861,8 +961,8 @@ public class Goods_Manage extends JPanel {
 	private void search_query(){
 		//query = "Select * from goods where goods_use='1' ";
 		
-		query = " Select a.barcode, a.g_name, a.std_size, a.pur_pri, a.sell_pri, a.real_sto, a.pro_sto, a.sale_use, a.l_code, a.l_name, a.m_code, a.m_name, "
-				+ "a.s_code, a.s_name, a.bus_code, a.bus_name, a.goods_use, b.shoppingmall_use, b.upload, b. shop_view, b.sto_use, b.img_path_use, b.img_path "
+		query = " Select a.barcode, a.g_name, a.std_size, a.pur_pri, a.sell_pri, a.real_sto, b.pro_sto, a.sale_use, a.l_code, a.l_name, a.m_code, a.m_name, "
+				+ "a.s_code, a.s_name, a.bus_code, a.bus_name, a.goods_use, b.shoppingmall_use, b.upload, b. shop_view, b.sto_use, ISNULL(b.shop_maincode, '') as shop_maincode, b.img_path_use, b.img_path, ISNULL(b.img_name, '') as img_name "
 				+ "From ( Select * From Goods Where L_code <> 'AA' and goods_use='1' "+query_goods+" ) a join "
 				+ " (select * from goods_info where 1=1 "+query_info+" ) b "
 				+ " on a.barcode=b.barcode " ;
@@ -881,7 +981,7 @@ public class Goods_Manage extends JPanel {
 		celAlignRight.setHorizontalAlignment(JLabel.RIGHT);
 		
 		String[] colunm = {"순번", "바코드", "상품명", "규격", "매입가", "판매가", "현재고", "안전재고", 
-				"분류코드", "대코드", "대명", "중코드", "중명", "소코드", "소명", "행사", "상품연동", "쇼핑몰", "진열유무", "재고연동", "이미지설정", "이미지경로" };
+				"분류코드", "대코드", "대명", "중코드", "중명", "소코드", "소명", "행사", "상품연동", "쇼핑몰", "진열유무", "재고연동", "메인출력", "이미지설정", "이미지경로", "이미지명"};
 		dtm = new DefaultTableModel(null, colunm){
 			/**
 			 * [칼럼 수정 못하게 막기]
@@ -1037,30 +1137,29 @@ public class Goods_Manage extends JPanel {
 		int row = table.getSelectedRow();
 		int col = table.getColumnCount();
 		
-		Vector<Object> temp = new Vector<Object>(); 
+		//Vector<Object> temp = new Vector<Object>(); 
 		
 		for(int i =0; i < col; i++){			
-			temp.add(dtm.getValueAt(row, i));			
+			temp_detail.add(dtm.getValueAt(row, i));
 		}		
 		
-		System.out.println(temp.toString());
+		System.out.println(temp_detail.toString());
 		
 		//"0 순번", "1 바코드", "2 상품명", "3 규격", "4 매입가", "5 판매가", "6 현재고", "7 안전재고", 
 		// "8 분류코드", "9 대코드", "10 대명", "11 중코드", "12 중명", "13 소코드", "14 소명", "15 행사", "16 상품연동",
-		//"`17 쇼핑몰", "`18 진열유무", "`19 재고연동", "20 이미지설정", "21 이미지경로" };
+		//"`17 쇼핑몰", "`18 진열유무", "`19 재고연동", (20.추가 메인출력코드) "21 이미지설정", "22 이미지경로"  (23.추가 이미지명)};		
+		label_Detail_Number.setText(temp_detail.get(0).toString()); //순번
+		text_Detail_Barcode.setText(temp_detail.get(1).toString()); //바코드
+		text_Detail_Name.setText(temp_detail.get(2).toString());  //상품명
 		
-		label_Detail_Number.setText(temp.get(0).toString()); //순번
-		text_Detail_Barcode.setText(temp.get(1).toString()); //바코드
-		text_Detail_Name.setText(temp.get(2).toString());  //상품명
+		text_Detail_PurPri.setText(temp_detail.get(4).toString());  //매입가
+		text_Detail_SellPri.setText(temp_detail.get(5).toString());  //판매가
+		text_Detail_Stock.setText(temp_detail.get(6).toString());  //현재고
+		text_Detail_AnStock.setText(temp_detail.get(7).toString());  //안전재고
 		
-		text_Detail_PurPri.setText(temp.get(4).toString());  //매입가
-		text_Detail_SellPri.setText(temp.get(5).toString());  //판매가
-		text_Detail_Stock.setText(temp.get(6).toString());  //현재고
-		text_Detail_AnStock.setText(temp.get(7).toString());  //안전재고
-		
-		text_Detail_Category.setText(temp.get(8).toString());  //분류
+		text_Detail_Category.setText(temp_detail.get(8).toString());  //분류
 				
-		if(temp.get(15).equals("행사중")){ //행사진행여부			
+		if(temp_detail.get(15).equals("행사중")){ //행사진행여부			
 			btnToggle_Detail_SaleUse.setSelected(true); 
 			btnToggle_Detail_SaleUse.setText("행사중");
 		}else{
@@ -1068,53 +1167,101 @@ public class Goods_Manage extends JPanel {
 			btnToggle_Detail_SaleUse.setText("일반");
 		}		
 		
-		combo_Detail_ShopConnectUse.setSelectedItem(temp.get(16).toString());
+		combo_Detail_ShopConnectUse.setSelectedItem(temp_detail.get(16).toString());
 		
-		if(temp.get(17).equals("업로드됨")){
+		if(temp_detail.get(17).equals("업로드됨")){
 			btnToggle_Detail_ConnectState.setSelected(true);
 			btnToggle_Detail_ConnectState.setText("연동중");
+			combo_Detail_ShopConnectUse.setEnabled(false);
 		}else{
 			btnToggle_Detail_ConnectState.setSelected(false);
 			btnToggle_Detail_ConnectState.setText("연동안됨");
 		}
 		
-		if(temp.get(18).equals("1")){
+		if(temp_detail.get(18).equals("1")){
 			combo_Detail_View.setSelectedItem("진열함"); //진열여부
 		}else{
 			combo_Detail_View.setSelectedItem("진열안함"); //진열여부
 		}		
 		
-		if(temp.get(19).equals("1")){ //재고연동
+		if(temp_detail.get(19).equals("1")){ //재고연동
 			checkBox_Detail_Stock.setSelected(true);
 		}else{
 			checkBox_Detail_Stock.setSelected(false);
 		}
 		
-		if(temp.get(20).equals("단독폴더")){
+		String maincode = temp_detail.get(20).toString();
+		if(maincode.isEmpty()){
+			cb_maincode.setSelectedIndex(0);
+		}else{
+			//메인코드의 순번을 불러 옵니다.			
+			cb_maincode.setSelectedIndex(maincode_comp(maincode));
+		}
+		
+		if(temp_detail.get(21).equals("단독폴더")){
 			combox_Detail_ImageConnectUse.setSelectedItem("단독폴더"); //이미지 폴더선택
 		}else{
 			combox_Detail_ImageConnectUse.setSelectedItem("공용폴더"); //이미지 폴더선택
 		}
 		
-		if(!temp.get(21).toString().equals("")){			
+		if(!temp_detail.get(22).toString().equals("")){			
 			Image image = null;
 	        try {
-	        	System.out.println(temp.get(21));
-	            URL url = new URL(temp.get(21).toString());
-	            image = ImageIO.read(url);	            
+	        	System.out.println(temp_detail.get(22));
+	            URL url = new URL(temp_detail.get(22).toString());	            
+	            
+	            image = ImageIO.read(url);        
 	            
 	        } catch (IOException e) {
 	        	e.printStackTrace();
 	        }
 	        
-	        label_image_view.setIcon(new ImageIcon(image.getScaledInstance(150, 150, Image.SCALE_SMOOTH)));			
+	        ConnectAsSocket cas = new ConnectAsSocket("shopFTPServer");
+	        
+	        if(cas.connect_Check()){
+	        	System.out.println("소켓접속성공");
+	        	label_image_view.setIcon(new ImageIcon(image.getScaledInstance(150, 150, Image.SCALE_SMOOTH)));
+	        }else{	       
+	        	JOptionPane.showMessageDialog(this, "이미지  FTP서버의 접속이 안되고 있습니다. 네트워크를 확인해 주세요!!");
+	        }	        		        	
+	        
 		}
 		
-		text_Detail_ImagePath.setText(temp.get(21).toString()); //이미지경로
-				
-		//comboBox.setSelectedItem(temp.get(index));
+		text_Detail_ImagePath.setText(temp_detail.get(22).toString()); //이미지경로				
+		//comboBox.setSelectedItem(temp.get(index));		
 		
+		text_imagename.setText(temp_detail.get(23).toString()); //이미지명
 	}    
+	
+	
+	//메인코드 셋팅하기
+	private void maincode_setList(){
+		
+		if(main_code.size() > 0){
+			Iterator itr = main_code.iterator();
+			while(itr.hasNext()){
+				
+				JSONObject temp = (JSONObject)itr.next();			
+				cb_top_maincode.addItem(temp.get("subject").toString()+" ["+temp.get("group_code").toString()+"]");
+				cb_maincode.addItem(temp.get("subject").toString()+" ["+temp.get("group_code").toString()+"]");
+			}
+		}				
+	}
+	
+	//메인코드 비교하기
+	private int maincode_comp(String code){
+				
+		Iterator itr = main_code.iterator();
+		
+		int i = 1;
+		while(itr.hasNext()){
+			
+			JSONObject temp = (JSONObject)itr.next();
+			if(temp.get("group_code").equals(code)) return i;
+			i++;
+		}			
+		return 0;
+	}
     
 	
     //상품 상제 정보 및 수정
@@ -1215,7 +1362,7 @@ public class Goods_Manage extends JPanel {
     	JPanel panel_goods_detail = new JPanel();
     	panel_1.add(panel_goods_detail, BorderLayout.EAST);
     	panel_goods_detail.setBorder(new LineBorder(new Color(0, 0, 0)));
-    	panel_goods_detail.setLayout(new MigLayout("", "[1px][52px][5px][25px][5px][52px][5px][25px][5px][25px][5px][22px][5px][25px][5px]", "[][1px][21px][23px][21px][][25.00px][1px][30.00][30.00px][30.00px][30.00px][30.00,center][pref!][-10.00px][20.00][150px]"));
+    	panel_goods_detail.setLayout(new MigLayout("", "[1px][52px][5px][25px][5px][52px,grow][5px][25px][5px][25px][5px][22px][5px][25px][5px]", "[15][1px][21px][23px][21px][][15][1px][15][30.00px][30.00px][30.00px][30.00,center][30][30][15][-10.00px][20.00][150px]"));
     	
     	JLabel label_Detail_Barcode = new JLabel("\uBC14\uCF54\uB4DC");
     	label_Detail_Barcode.setHorizontalAlignment(SwingConstants.CENTER);
@@ -1326,29 +1473,46 @@ public class Goods_Manage extends JPanel {
     	combo_Detail_View.setMaximumRowCount(2);
     	panel_goods_detail.add(combo_Detail_View, "cell 5 10 5 1,growx,aligny center");
     	
+    	JLabel label_maincode = new JLabel("\uBA54\uC778\uCD9C\uB825\uCF54\uB4DC");
+    	label_maincode.setHorizontalAlignment(SwingConstants.CENTER);
+    	panel_goods_detail.add(label_maincode, "cell 1 11 3 1,alignx center,aligny center");
+    	
+    	cb_maincode = new JComboBox<String>();
+    	cb_maincode.setModel(new DefaultComboBoxModel(new String[] {"\uCD9C\uB825\uC548\uD568 []"}));
+    	panel_goods_detail.add(cb_maincode, "cell 5 11 5 1,growx,aligny center");
+    	    
     	JLabel label_Detail_ImageConnectUse = new JLabel("\uC774\uBBF8\uC9C0\uC5F0\uB3D9");
     	label_Detail_ImageConnectUse.setToolTipText("\uC0C1\uD488\uC758 \uC774\uBBF8\uC9C0\uB97C \uACF5\uC6A9\uC774\uBBF8\uC9C0 \uD3F4\uB354\uC5D0\uC11C \uAC00\uC838\uB2E4 \uC0AC\uC6A9\uD569\uB2C8\uB2E4.\r\n\uB2E8\uB3C5\uD3F4\uB354\uB85C \uC120\uD0DD\uC2DC \uD574\uB2F9 \uB9E4\uC7A5\uC758 \uB2E8\uB3C5 \uD3F4\uB354\uC758 \uC9C0\uC815 \uD30C\uC77C\uC744 \uC120\uD0DD\uD558\uC5EC \uC0AC\uC6A9\uD558\uC2E4\uC218 \uC788\uC2B5\uB2C8\uB2E4.");
     	label_Detail_ImageConnectUse.setHorizontalAlignment(SwingConstants.CENTER);
-    	panel_goods_detail.add(label_Detail_ImageConnectUse, "cell 1 11 3 1,growx,aligny center");
+    	panel_goods_detail.add(label_Detail_ImageConnectUse, "cell 1 12 3 1,growx,aligny center");
     	
     	combox_Detail_ImageConnectUse = new JComboBox<String>();
     	combox_Detail_ImageConnectUse.setToolTipText("\uC0C1\uD488\uC758 \uC774\uBBF8\uC9C0\uB97C \uACF5\uC6A9\uC774\uBBF8\uC9C0 \uD3F4\uB354\uC5D0\uC11C \uAC00\uC838\uB2E4 \uC0AC\uC6A9\uD569\uB2C8\uB2E4.\r\n\uB2E8\uB3C5\uD3F4\uB354\uB85C \uC120\uD0DD\uC2DC \uD574\uB2F9 \uB9E4\uC7A5\uC758 \uB2E8\uB3C5 \uD3F4\uB354\uC758 \uC9C0\uC815 \uD30C\uC77C\uC744 \uC120\uD0DD\uD558\uC5EC \uC0AC\uC6A9\uD558\uC2E4\uC218 \uC788\uC2B5\uB2C8\uB2E4.");
     	combox_Detail_ImageConnectUse.setModel(new DefaultComboBoxModel<String>(new String[] {"\uB2E8\uB3C5\uD3F4\uB354", "\uACF5\uC6A9\uD3F4\uB354"}));
     	combox_Detail_ImageConnectUse.setMaximumRowCount(2);
-    	panel_goods_detail.add(combox_Detail_ImageConnectUse, "cell 5 11 5 1,growx,aligny center");
+    	panel_goods_detail.add(combox_Detail_ImageConnectUse, "cell 5 12 5 1,growx,aligny center");
+    	
+    	JLabel label_imagename = new JLabel("\uC774\uBBF8\uC9C0\uBA85");
+    	label_imagename.setHorizontalAlignment(SwingConstants.CENTER);
+    	panel_goods_detail.add(label_imagename, "cell 1 13 3 1,alignx center,aligny center");
+    	
+    	text_imagename = new JTextField();
+    	text_imagename.setEditable(false);
+    	panel_goods_detail.add(text_imagename, "cell 5 13 7 1,growx");
+    	text_imagename.setColumns(15);
     	
     	JLabel label_Detail_ImagePath = new JLabel("\uC774\uBBF8\uC9C0\uACBD\uB85C");
     	label_Detail_ImagePath.setHorizontalAlignment(SwingConstants.CENTER);
-    	panel_goods_detail.add(label_Detail_ImagePath, "cell 1 12 3 1,growx,aligny center");
+    	panel_goods_detail.add(label_Detail_ImagePath, "cell 1 14 3 1,growx,aligny center");
     	
     	text_Detail_ImagePath = new JTextField();
-    	panel_goods_detail.add(text_Detail_ImagePath, "cell 5 12 7 1,growx,aligny center");
+    	panel_goods_detail.add(text_Detail_ImagePath, "cell 5 14 7 1,growx,aligny center");
     	text_Detail_ImagePath.setColumns(10);
     	text_Detail_ImagePath.setEditable(false);
     	
     	JButton btn_Detail_ImageSearch = new JButton("\uAC80\uC0C9");
     	btn_Detail_ImageSearch.setToolTipText("\uC9C0\uC815\uD55C \uD3F4\uB354\uC5D0\uC11C \uC774\uBBF8\uC9C0\uB97C \uAC80\uC0C9 \uD569\uB2C8\uB2E4.\r\n\uB2E8\uB3C5\uD3F4\uB354 : \uD574\uB2F9 \uB9E4\uC7A5\uC758 \uD3F4\uB354\uC5D0\uC11C \uC774\uBBF8\uC9C0\uB97C \uC120\uD0DD \uD560\uC218\uC788\uC2B5\uB2C8\uB2E4.\r\n\uACF5\uC6A9\uD3F4\uB354 : \uAC19\uC740 \uBC14\uCF54\uB4DC\uC758 \uC774\uBBF8\uC9C0\uB97C \uBD88\uB7EC\uC635\uB2C8\uB2E4.");
-    	panel_goods_detail.add(btn_Detail_ImageSearch, "cell 13 12,growx,aligny center");
+    	panel_goods_detail.add(btn_Detail_ImageSearch, "cell 13 14,growx,aligny center");
     	btn_Detail_ImageSearch.addActionListener(new ActionListener() {
     		
     		@Override
@@ -1360,15 +1524,15 @@ public class Goods_Manage extends JPanel {
     	});
     	
     	JSeparator separator_1 = new JSeparator();
-    	panel_goods_detail.add(separator_1, "cell 1 14 14 1,growx,aligny top");
+    	panel_goods_detail.add(separator_1, "cell 1 16 14 1,growx,aligny top");
     	
     	label_image_view = new JLabel();
     	label_image_view.setBackground(Color.WHITE);
     	label_image_view.setHorizontalAlignment(SwingConstants.CENTER);
     	label_image_view.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-    	panel_goods_detail.add(label_image_view, "cell 1 16 5 1,grow");
+    	panel_goods_detail.add(label_image_view, "cell 1 18 5 1,grow");
     	JButton btn_Detail_Save = new JButton("\uC800\uC7A5");
-    	panel_goods_detail.add(btn_Detail_Save, "cell 13 16,growx,aligny bottom");
+    	panel_goods_detail.add(btn_Detail_Save, "cell 13 18,growx,aligny bottom");
     	
     	
     	btn_Detail_Save.addActionListener(new ActionListener() {
@@ -1453,7 +1617,8 @@ public class Goods_Manage extends JPanel {
 		table.getColumn("규격").setCellRenderer(celAlignCenter);
 		
 		//String[] colunm = {"순번", "바코드", "상품명", "규격", "매입가", "판매가", "현재고", "안전재고", 
-		//		"분류코드", "대코드", "대명", "중코드", "중명", "소코드", "소명", "행사", "상품연동", "진열여부", "연동유무", "재고연동", "이미지설정", "이미지경로" };
+		//"분류코드", "대코드", "대명", "중코드", "중명", "소코드", "소명", "행사", "상품연동", "진열여부", "연동유무", "재고연동", 
+		//"메인출력", "이미지설정", "이미지경로" , "이미지명"};
 		
 		table.getColumn("매입가").setPreferredWidth(60);
 		table.getColumn("매입가").setCellRenderer(celAlignRight);
@@ -1515,11 +1680,16 @@ public class Goods_Manage extends JPanel {
 		table.getColumn("재고연동").setMinWidth(0);
 		table.getColumn("재고연동").setMaxWidth(0);		
 		table.getColumnModel().getColumn(18).setResizable(false); //재고연동
+				
+		table.getColumn("메인출력").setCellRenderer(celAlignCenter);
 		
 		table.getColumn("이미지설정").setCellRenderer(celAlignCenter);								
 		table.getColumn("이미지경로").setPreferredWidth(300);
 		
 		table.setRowHeight(25);
+				
+		table.getColumn("이미지명").setCellRenderer(celAlignCenter);
+		
 		
 		JScrollPane scrollPane = new JScrollPane(table);
 		panel_1.add(scrollPane, BorderLayout.CENTER);

@@ -163,7 +163,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 				
 		Main_Contents mc = new Main_Contents();
 		tabbedPane.add(Shop_Manager, mc);
-		close_button(Shop_Manager);
+		//close_button(Shop_Manager);
 		
 		jdp.add(tabbedPane);
 		
