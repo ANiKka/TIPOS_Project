@@ -7,10 +7,12 @@ import java.awt.FlowLayout;
 import java.awt.Toolkit;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -31,6 +33,8 @@ import javax.swing.UIManager;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,13 +49,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
 import java.awt.Font;
 import javax.swing.JComboBox;
+import javax.swing.JSpinner;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 
-public class AllChangeDialog extends JDialog implements ActionListener{
+public class AllChangeDialog extends JDialog implements ActionListener, ItemListener{
 
 	/**
 	 * 
@@ -67,8 +75,6 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 	private JButton btn_imagecall;
 	private JButton btn_Change;
 	
-	private JComboBox<String> cb_maincode_list;
-	
 	private Thread thread;
 	
 	public JProgressBar progressbar;
@@ -81,15 +87,21 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 	//라디오 그룹 버튼
 	private ButtonGroup[] bg_shoppingmall = {new ButtonGroup(), new ButtonGroup(), new ButtonGroup(), new ButtonGroup()};
 	
+	//체크박스 그룹
+	private List<JCheckBox> chk_boxs; 
+	private JPanel panel_maincode_title;
+	
+	
 	/**
 	 * Create the dialog.
 	 */
 	public AllChangeDialog(JTable table) {
+		setResizable(false);
 		
 		this.table = table;
 				
 		setTitle("\uC77C\uAD04\uBCC0\uACBD");
-		setBounds(0,0,399, 570);
+		setBounds(0,0,399, 590);
 		getContentPane().setLayout(new BorderLayout());	
 		
 		ImageIcon im = new ImageIcon(getClass().getClassLoader().getResource("Icon/dialog_allchange.png"));		
@@ -169,7 +181,7 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		//폴더선택 여부 그룹
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\uC774\uBBF8\uC9C0\uD3F4\uB354", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		panel_2.setBounds(12, 335, 359, 55);
+		panel_2.setBounds(12, 365, 359, 55);
 		contentPanel.add(panel_2);
 		
 		JRadioButton radio_image = new JRadioButton("\uC120\uD0DD\uC548\uD568");
@@ -231,7 +243,7 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		JPanel panel_5 = new JPanel();
 		panel_5.setBorder(new TitledBorder(null, "\uC774\uBBF8\uC9C0\uC5F0\uB3D9", TitledBorder.LEFT, TitledBorder.TOP, null, null));
 		//panel_5.setLayout(null);
-		panel_5.setBounds(12, 402, 359, 60);
+		panel_5.setBounds(12, 432, 359, 60);
 		contentPanel.add(panel_5);
 		panel_5.setLayout(null);
 				
@@ -248,31 +260,28 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		
 		btn_Change = new JButton("\uC120\uD0DD\uC635\uC158\uBCC0\uACBD");
 		btn_Change.setActionCommand("OK");
-		btn_Change.setBounds(12, 472, 108, 50);
+		btn_Change.setBounds(12, 502, 108, 50);
 		btn_Change.addActionListener(this);
 		contentPanel.add(btn_Change);
 		
 		btn_Cancel = new JButton("닫기");
 		btn_Cancel.setActionCommand("Close");
-		btn_Cancel.setBounds(132, 472, 102, 50);
+		btn_Cancel.setBounds(132, 502, 102, 50);
 		btn_Cancel.addActionListener(this);
 		contentPanel.add(btn_Cancel);
 				
 		btn_imagecall = new JButton("\uC774\uBBF8\uC9C0\uC5F0\uB3D9\uC2DC\uC791");
-		btn_imagecall.setBounds(246, 472, 125, 50);
+		btn_imagecall.setBounds(246, 502, 125, 50);
 		contentPanel.add(btn_imagecall);
 		btn_imagecall.setActionCommand("Image");
-		
-		JPanel panel_maincode_title = new JPanel();
+				
+		panel_maincode_title = new JPanel();
 		panel_maincode_title.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\uBA54\uC778\uC0C1\uD488 \uCD9C\uB825\uCF54\uB4DC", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		panel_maincode_title.setBounds(12, 270, 359, 55);
+		panel_maincode_title.setBounds(12, 270, 359, 85);
+		panel_maincode_title.setLayout(new BorderLayout());
 		contentPanel.add(panel_maincode_title);
-		
-		JLabel label_maincode = new JLabel("\uBA54\uC778\uCD9C\uB825\uCF54\uB4DC :  ");
-		panel_maincode_title.add(label_maincode);
-		
-		cb_maincode_list = new JComboBox<String>();
-		panel_maincode_title.add(cb_maincode_list);
+					
+		chk_boxs = new ArrayList<JCheckBox>();
 		
 		getMainCode();
 		
@@ -547,7 +556,7 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 			}
 			
 			//메인출력 코드(선택 되어있는 인덱스를 불러와서 결정합니다.)
-			switch(cb_maincode_list.getSelectedIndex()){
+			/*switch(cb_maincode_list.getSelectedIndex()){
 			case 0:
 				//선택 된게 없습니다. 변경을 하지 않습니다.
 				break;
@@ -563,6 +572,36 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 				goods_info_query += ", Shop_MainCode='"+select_item+"' ";
 				edit_check_info = true;
 				break;	
+			}*/
+			
+			Iterator<JCheckBox> itr = chk_boxs.iterator();
+			int i = 0;
+			String select_item = "";
+			while(itr.hasNext()){
+				JCheckBox jcb = (JCheckBox)itr.next();
+				if(jcb.isSelected()){
+					select_item += jcb.getName()+"|";
+					i++;
+				}
+			}
+			System.out.println(select_item);
+			select_item = select_item.substring(0, select_item.length()-1);
+			System.out.println(select_item);
+			if(i == 1){				
+				if(select_item.equals("none")){
+					//선택되어 있는 내용을 삭제합니다.
+					goods_info_query += ", Shop_MainCode='' ";
+					edit_check_info = true;
+				}else{
+					goods_info_query += ", Shop_MainCode='"+select_item+"' ";
+					edit_check_info = true;
+				}
+			} 
+			
+			if(i > 1){
+				//선택 옵션을 불러와서 저장합니다.				
+				goods_info_query += ", Shop_MainCode='"+select_item+"' ";
+				edit_check_info = true;				
 			}
 						
 			//마무리 Goods_Info
@@ -679,19 +718,36 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
-		
-		cb_maincode_list.addItem("선택안함");
-		cb_maincode_list.addItem("지우기");
+		}
 		
 		Iterator itr =data.iterator();
+	
+		JScrollPane scrollpane = new JScrollPane();		
+		JPanel panel = new JPanel();
+		panel.setAutoscrolls(true);
+		JCheckBox chkbox = new JCheckBox("출력안함");
+		chkbox.setName("none");
+		chkbox.addItemListener(this);
 		
-		while(itr.hasNext()){
-			
+		panel.add(chkbox);
+		//scrollpane.add(chkbox);
+		chk_boxs.add(chkbox);
+		
+		while(itr.hasNext()){			
 			JSONObject temp = (JSONObject)itr.next();
+			//정렬합니다.
 			
-			cb_maincode_list.addItem(temp.get("subject").toString()+" ["+temp.get("group_code").toString()+"]");
+			JCheckBox chk_box = new JCheckBox(temp.get("subject").toString());
+			chk_box.setName(temp.get("group_code").toString());
+			chk_box.addItemListener(this);
+			//scrollpane.add(chk_box);
+			panel.add(chk_box);
+			chk_boxs.add(chk_box);
 		}		
+		
+		scrollpane.setViewportView(panel);
+		
+		panel_maincode_title.add(scrollpane, BorderLayout.CENTER);
 	}
 	
 	@Override
@@ -723,6 +779,30 @@ public class AllChangeDialog extends JDialog implements ActionListener{
 			break;
 		}
 		
+	}
+
+	@Override
+	public void itemStateChanged(ItemEvent e) {
+		// TODO Auto-generated method stub
+		JCheckBox jcb = (JCheckBox)e.getItem();
+		System.out.println(e.getStateChange());
+		if(e.getStateChange() == 1){
+			if( jcb.getName().equals("none")){
+				for(int index = 0; index < chk_boxs.size(); index++){
+					JCheckBox jcb_list = chk_boxs.get(index);
+					if(!jcb_list.getName().equals("none")){
+						jcb_list.setSelected(false);
+					}
+				}
+			}else{
+				for(int index = 0; index < chk_boxs.size(); index++){
+					JCheckBox jcb_list = chk_boxs.get(index);
+					if(jcb_list.getName().equals("none") && jcb_list.isSelected()){
+						jcb_list.setSelected(false);
+					}
+				}
+			}
+		}
 	}
 }
 

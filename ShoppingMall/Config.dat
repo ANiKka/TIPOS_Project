@@ -1,7 +1,7 @@
 #\uD658\uACBD\uC124\uC815 \uC800\uC7A5
-#Wed Dec 02 18:18:53 KST 2015
+#Thu Dec 10 16:36:37 KST 2015
 ServerIp=localhost
-ServerPort=16000
 ServerDBpw=tips
+ServerPort=16000
 ServerDBname=tips
 ServerDBid=sa

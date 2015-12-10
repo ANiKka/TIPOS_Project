@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
@@ -119,9 +120,10 @@ public class Main_Frame extends JFrame implements ActionListener{
 		
 		//setFocusable(false);
 		System.out.println("메인서버");
-		System.out.println(Server_Config.getSERVER_IP());
+		System.out.println(Server_Config.getSERVER_IP());		
 		
 		config = new Main_Config();
+		
 	}		
 	
 	// 종료 & 화면중앙

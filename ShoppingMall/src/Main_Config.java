@@ -188,6 +188,11 @@ public class Main_Config extends JDialog implements ActionListener{
 		panel_server.add(label_ftp_dandock);
 		label_ftp_dandock.setHorizontalAlignment(SwingConstants.CENTER);
 		
+		JButton btn_serverSave = new JButton("\uC11C\uBC84\uC800\uC7A5");
+		btn_serverSave.addActionListener(this);
+		btn_serverSave.setBounds(213, 277, 97, 23);
+		panel_server.add(btn_serverSave);
+		
 		JPanel panel_ftp = new JPanel();
 		panel_ftp.setLayout(null);
 		panel_ftp.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -283,16 +288,21 @@ public class Main_Config extends JDialog implements ActionListener{
 		
 		JButton btn_Shyc_Start = new JButton("\uB3D9\uAE30\uD654 \uC2DC\uC791");
 		btn_Shyc_Start.addActionListener(this);
-		btn_Shyc_Start.setBounds(12, 186, 298, 35);
+		btn_Shyc_Start.setBounds(12, 175, 298, 35);
 		panel_2.add(btn_Shyc_Start);
 		
 		JButton btn_xls_output = new JButton("\uBD84\uB958\uC5D1\uC140\uCD9C\uB825");
-		btn_xls_output.setBounds(12, 141, 298, 35);
+		btn_xls_output.setBounds(12, 130, 298, 35);
 		panel_2.add(btn_xls_output);
 		
 		JButton btn_server_save = new JButton("\uC800\uC7A5");
-		btn_server_save.setBounds(12, 231, 298, 69);
+		btn_server_save.setBounds(12, 220, 298, 35);
 		panel_2.add(btn_server_save);
+		
+		JButton btn_close = new JButton("\uC885\uB8CC");
+		btn_close.addActionListener(this);
+		btn_close.setBounds(12, 265, 298, 35);
+		panel_2.add(btn_close);
 		
 		JPanel panel = new JPanel();
 		panel.setLayout(null);
@@ -440,6 +450,27 @@ public class Main_Config extends JDialog implements ActionListener{
 		
 	}
 
+	//서버환경설정만 변경합니다.
+	private void setServerSave(){
+		
+		config_file.setProperty("ServerIp", text_server_ip.getText());
+		config_file.setProperty("ServerPort", text_server_port.getText());
+		config_file.setProperty("ServerDBname", text_server_dbname.getText());
+		config_file.setProperty("ServerDBid", text_server_dbid.getText());		
+		char[] pass = pass_server_dbpw.getPassword();
+		config_file.setProperty("ServerDBpw", new String(pass));
+		
+		try{	
+			config_file.store(new FileOutputStream(file), "환경설정 저장");
+			System.out.println("환경설정 저장 완료");
+		}catch(IOException e){			
+			JOptionPane.showMessageDialog(this, e.getMessage());
+			return;
+		}	
+	}
+	
+	
+	
 	//강제 동기화 하기 
 	@SuppressWarnings("unchecked")
 	private void start_shyc(){
@@ -869,6 +900,13 @@ public class Main_Config extends JDialog implements ActionListener{
 			break;
 		case "분류엑셀출력":
 			creat_xls();
+			break;
+		case "종료":
+			this.dispose();
+			break;
+		case "서버저장":
+			setServerSave();
+			System.exit(1);
 			break;
 		}		
 		

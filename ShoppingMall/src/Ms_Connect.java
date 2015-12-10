@@ -11,6 +11,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.swing.JOptionPane;
+
 public class Ms_Connect {
 	
 	int errCode =0;
@@ -25,16 +27,6 @@ public class Ms_Connect {
 	private String dbpw;	
 	private String query;
 	//private JSONArray json;
-	
-	//초기 시작 진입로
-	/*public Ms_Connect(String ip, String dbname, String dbid, String dbpw){
-		this.ip = ip;
-		this.dbname = dbname;
-		this.dbid = dbid;
-		this.dbpw = dbpw;		
-	}*/
-	
-	
 	
 	/*
 	 * 서버정보를 셋팅 합니다.
@@ -213,9 +205,9 @@ public class Ms_Connect {
 	        		//System.out.println(query_multi);
 	        	}
 	        	
-	        	stmt.executeBatch();     
-	        	
+	        	stmt.executeBatch();
 				conn.close();
+				
 	   	 	} catch (SQLException e) {
 	   	 		
 	    	    System.out.println("Error connection : " + e.getMessage());
@@ -252,9 +244,7 @@ public class Ms_Connect {
 		}
 		
 		try {
-			//socket.setSoTimeout(5);           	/* InputStream에서 데이터읽을때의 timeout */
-			
-				
+			//socket.setSoTimeout(5);           	/* InputStream에서 데이터읽을때의 timeout */	
 			socket.connect(socketAddress, 5000); 	/* socket연결 자체에대한 timeout */			
 			return true;
 		} catch (SocketException e){
@@ -267,11 +257,8 @@ public class Ms_Connect {
 			try {
 				socket.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				e.printStackTrace();				
 			}
-		}
-		
+		}		
 	}
-	
-	
 }
