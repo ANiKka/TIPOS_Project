@@ -1,4 +1,5 @@
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.TextField;
 import java.awt.Toolkit;
@@ -53,6 +54,7 @@ public class OfficeSearch extends JFrame {
 	private JTextField text_code;
 	private JTextField text_call_name;
 	
+	
 	/**
 	 * Create the frame.
 	 */
@@ -65,7 +67,6 @@ public class OfficeSearch extends JFrame {
 		 */
 		this.text_code = text_code;
 		this.text_call_name = text_name;
-				
 		
 		//프로그램 시작점
 		init();
@@ -75,7 +76,6 @@ public class OfficeSearch extends JFrame {
 
 	
 	private void init(){
-				
 		
 		ms_connect = new Ms_Connect();
 		ms_connect.setMainSetting();

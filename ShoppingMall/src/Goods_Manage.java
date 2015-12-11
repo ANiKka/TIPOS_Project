@@ -10,6 +10,7 @@ import it.sauronsoftware.ftp4j.FTPListParser;*/
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -32,9 +33,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
+import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -43,6 +46,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
@@ -53,6 +57,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
@@ -76,13 +81,19 @@ import com.oroinc.net.ftp.FTPFile;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.Panel;
 import java.awt.FlowLayout;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JList;
+import java.awt.GridLayout;
+import javax.swing.ScrollPaneConstants;
 
-public class Goods_Manage extends JPanel implements ItemListener{
+public class Goods_Manage extends JPanel implements ActionListener{
 
 	private static final long serialVersionUID = 1L;
+	
+	private JPanel P = this;
+	
 	//private JPanel contentPane_Goods;
 	public JTextField tx_barcode;
 	private JCheckBox chkeck_barcode_front;
@@ -153,6 +164,14 @@ public class Goods_Manage extends JPanel implements ItemListener{
 	private boolean maincode_callUse = false;
 	
 	Vector<Object> temp_detail = new Vector<Object>();
+	private JTextField text_jtab_search;
+	private JTextField text_jtab_path;
+	private JTextField text_jtab_filename;
+	private JTextField text_jtab_filepath;
+	
+	//이미지 업로드 관련 변수
+	ArrayList<HashMap<String, String>> jtap_image_list = new ArrayList<HashMap<String, String>>();
+	JPanel panel_jtap_image;
 	
 	/**
 	 * Create the panel.
@@ -411,7 +430,7 @@ public class Goods_Manage extends JPanel implements ItemListener{
     	JPanel p_top = new JPanel();
 		p_top.setBorder(new LineBorder(new Color(0, 0, 0)));
 		this.add(p_top, BorderLayout.NORTH);
-		p_top.setLayout(new MigLayout("", "[50px][][grow]", "[grow][fill][24px,grow]"));
+		p_top.setLayout(new MigLayout("", "[50px][][][grow]", "[grow][fill][24px,grow]"));
 		
 		JPanel panel = new JPanel();
 		p_top.add(panel, "cell 0 0,grow");
@@ -487,11 +506,10 @@ public class Goods_Manage extends JPanel implements ItemListener{
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				
-				/*
-				 * [거래처 검색]
-				 * 
-				 */
-				new OfficeSearch(tx_officecode, tx_officename);
+				/* [거래처 검색]	 */
+				OfficeSearch osh = new OfficeSearch(tx_officecode, tx_officename);
+				osh.setLocationRelativeTo(P);
+				osh.setAlwaysOnTop(true);
 			}
 		});
 		tx_gname.addKeyListener(new KeyListener() {
@@ -570,13 +588,14 @@ public class Goods_Manage extends JPanel implements ItemListener{
 				Object[] ot = { tx_Lcode, tx_Lname, tx_Mcode, tx_Mname, tx_Scode, tx_Sname};
 				ClassSearch cs = new ClassSearch(ot);
 				cs.setAlwaysOnTop(true);
+				cs.setLocationRelativeTo(P);				
 				
 			}
 		
 		});
 		
 		JButton bt_renew = new JButton("\uC0C8\uB85C\uC785\uB825");
-		p_top.add(bt_renew, "cell 1 1,growx,aligny bottom");
+		p_top.add(bt_renew, "cell 2 1,growx,aligny bottom");
 		
 		bt_renew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -687,7 +706,7 @@ public class Goods_Manage extends JPanel implements ItemListener{
 		chkeck_top_anstock.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		bt_search = new JButton("\uC0C1\uD488\uAC80\uC0C9");
-		p_top.add(bt_search, "cell 1 2,grow");
+		p_top.add(bt_search, "cell 2 2,grow");
 		
 		bt_search.addActionListener(new ActionListener() {
 			
@@ -1046,6 +1065,7 @@ public class Goods_Manage extends JPanel implements ItemListener{
 		
 		String[] colunm = {"순번", "바코드", "상품명", "규격", "매입가", "판매가", "현재고", "안전재고", 
 				"분류코드", "대코드", "대명", "중코드", "중명", "소코드", "소명", "행사", "상품연동", "쇼핑몰", "진열유무", "재고연동", "메인출력", "이미지설정", "이미지경로", "이미지명"};
+		
 		dtm = new DefaultTableModel(null, colunm){
 			/**
 			 * [칼럼 수정 못하게 막기]
@@ -1372,7 +1392,7 @@ public class Goods_Manage extends JPanel implements ItemListener{
 		
 		
 		String[] options = new String[]{"확인", "취소"};
-		int option = JOptionPane.showOptionDialog(null, panel_main, " 메인출력 코드 선택 ",
+		int option = JOptionPane.showOptionDialog(P, panel_main, " 메인출력 코드 선택 ",
 		                         JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
 		                         null, options, chkboxs_top);
 		if(option == 0) // pressing OK button
@@ -1480,7 +1500,8 @@ public class Goods_Manage extends JPanel implements ItemListener{
 		}		
 		
 		String[] options = new String[]{"확인", "취소"};
-		int option = JOptionPane.showOptionDialog(null, panel_main, " 메인출력 코드 선택 ",
+			//panel_main
+		int option = JOptionPane.showOptionDialog(P, panel_main, " 메인출력 코드 선택 ",
 		                         JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
 		                         null, options, chkboxs_detail);
 		if(option == 0) // pressing OK button
@@ -1508,30 +1529,9 @@ public class Goods_Manage extends JPanel implements ItemListener{
 	
     //상품 상제 정보 및 수정
     private void goods_detail(){
-    	
-    	
-		/*combox_Detail_ImageConnectUse.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				
-				System.out.println(e.getActionCommand());
-				if(e.getActionCommand().equals("comboBoxChanged") && e.getID() == 1001){
-					
-					if(combox_Detail_ImageConnectUse.getSelectedItem().equals("단독폴더")){
-						text_Detail_ImagePath.setEnabled(true);						
-					}else{
-						text_Detail_ImagePath.setEnabled(false);
-					}
-				}
-			}
-		});*/
-		
-		/*
+    	/*
 		 * [상품 수정 후 저장 버튼]
 		 * 상품 수정 후 수정된 내용을 저장 합니다. 
-		 * 
 		 */		
 		
 		JPanel panel_1 = new JPanel();
@@ -1587,7 +1587,8 @@ public class Goods_Manage extends JPanel implements ItemListener{
 									
 									// TODO Auto-generated method stub
 									changeDialog = new AllChangeDialog(table);
-									changeDialog.setModal(true);
+									changeDialog.setModal(true);	
+									changeDialog.setLocationRelativeTo(P);
 									changeDialog.open();
 															
 								}else{
@@ -1610,9 +1611,81 @@ public class Goods_Manage extends JPanel implements ItemListener{
 				panel.add(btn_detail_renew, "cell 17 0,alignx center");
 				
     	JPanel panel_goods_detail = new JPanel();
-    	panel_1.add(panel_goods_detail, BorderLayout.EAST);
+    	//panel_1.add(panel_goods_detail, BorderLayout.EAST);
     	panel_goods_detail.setBorder(new LineBorder(new Color(0, 0, 0)));
-    	panel_goods_detail.setLayout(new MigLayout("", "[1px][52px][5px][52px][][][5px]", "[15][1px][21px][23px][21px][][15][1px][15][30.00px][30.00px][30.00px][30.00,center][30][30][15][-10.00px][20.00][150px]"));
+    	panel_goods_detail.setLayout(new MigLayout("", "[1px][52px][5px][52px][][][][5px]", "[15][1px][21px][23px][21px][][15][1px][15][30.00px][30.00px][30.00px][30.00,center][30][30][15][-10.00px][20.00][150px]"));
+    	
+    	JTabbedPane tabPane_detail = new JTabbedPane(JTabbedPane.TOP);
+    	panel_1.add(tabPane_detail, BorderLayout.EAST);
+    	tabPane_detail.addTab("상세정보", panel_goods_detail);
+    	
+    	JPanel panel_jtabgoods_image = new JPanel();
+    	tabPane_detail.addTab("이미지관리", panel_jtabgoods_image);
+    	panel_jtabgoods_image.setLayout(new MigLayout("", "[57px][12px][197.00px][19.00px][grow]", "[23px][23px][2px][23px][21px][2px][1px,grow]"));
+    	
+    	JLabel label_jtab_search = new JLabel("\uAC80\uC0C9\uC5B4");
+    	label_jtab_search.setHorizontalAlignment(SwingConstants.CENTER);
+    	panel_jtabgoods_image.add(label_jtab_search, "cell 0 0,growx,aligny center");
+    	
+    	text_jtab_search = new JTextField();
+    	panel_jtabgoods_image.add(text_jtab_search, "cell 2 0,growx,aligny center");
+    	text_jtab_search.setColumns(10);
+    	
+    	JButton btn_jtab_search = new JButton("\uAC80\uC0C9");
+    	btn_jtab_search.setToolTipText("<html>\r\n<p> FTP\uC11C\uBC84\uC5D0 \uC800\uC7A5\uB41C \uB0B4\uC6A9\uC744 \uAC80\uC0C9\uD569\uB2C8\uB2E4. </p>\r\n<p> \uBC14\uCF54\uB4DC\uB610\uB294 \uC0C1\uD488\uBA85\uC744 \uB123\uC5B4 \uC8FC\uC138\uC694</p>\r\n</html>");
+    	panel_jtabgoods_image.add(btn_jtab_search, "cell 4 0,growx,aligny top");
+    	btn_jtab_search.setActionCommand("이미지검색");
+    	btn_jtab_search.addActionListener(this);
+    	
+    	
+    	JLabel label_jtap_pcpath = new JLabel("PC\uACBD\uB85C");
+    	label_jtap_pcpath.setHorizontalAlignment(SwingConstants.CENTER);
+    	panel_jtabgoods_image.add(label_jtap_pcpath, "cell 0 1,growx,aligny center");
+    	
+    	text_jtab_path = new JTextField();
+    	text_jtab_path.setEditable(false);
+    	panel_jtabgoods_image.add(text_jtab_path, "cell 2 1,growx,aligny center");
+    	text_jtab_path.setColumns(10);
+    	
+    	JButton btn_jtab_pathsearch = new JButton("\uAC80\uC0C9");
+    	btn_jtab_pathsearch.setToolTipText("<html>\r\n<p>\uB0B4 \uCEF4\uD4E8\uD130\uC758 \uC774\uBBF8\uC9C0 \uD30C\uC77C\uC744 \uAC80\uC0C9 \uD569\uB2C8\uB2E4.</p>\r\n<p>\uD655\uC7A5\uC790\uAC00 jpg, gif, png \uD30C\uC77C\uB9CC \uAC80\uC0C9 \uB429\uB2C8\uB2E4.</p>\r\n<p>\uC774\uBBF8\uC9C0 \uC0AC\uC774\uC988\uB294 \uBE44\uC728\uC5D0 \uB9DE\uCDB0 500x500\uC73C\uB85C \uC790\uB3D9 \uC870\uC808 \uB429\uB2C8\uB2E4.</p>\r\n</html>");
+    	panel_jtabgoods_image.add(btn_jtab_pathsearch, "cell 4 1,growx,aligny top");
+    	
+    	JSeparator separator_2 = new JSeparator();
+    	panel_jtabgoods_image.add(separator_2, "cell 0 2 5 1,growx,aligny top");
+    	
+    	JLabel label_jtab_filename = new JLabel("\uD30C\uC77C\uBA85");
+    	label_jtab_filename.setHorizontalAlignment(SwingConstants.CENTER);
+    	panel_jtabgoods_image.add(label_jtab_filename, "cell 0 3,growx,aligny center");
+    	
+    	text_jtab_filename = new JTextField();
+    	text_jtab_filename.setEditable(false);
+    	panel_jtabgoods_image.add(text_jtab_filename, "cell 2 3,growx,aligny center");
+    	text_jtab_filename.setColumns(10);
+    	
+    	JButton btn_jtab_imagesave = new JButton("\uC800\uC7A5");
+    	panel_jtabgoods_image.add(btn_jtab_imagesave, "cell 4 3,growx,aligny top");
+    	
+    	JLabel label_jtap_filepath = new JLabel("\uC800\uC7A5\uACBD\uB85C");
+    	label_jtap_filepath.setHorizontalAlignment(SwingConstants.CENTER);
+    	panel_jtabgoods_image.add(label_jtap_filepath, "cell 0 4,growx,aligny center");
+    	
+    	text_jtab_filepath = new JTextField();
+    	text_jtab_filepath.setEditable(false);
+    	panel_jtabgoods_image.add(text_jtab_filepath, "cell 2 4 3 1,growx,aligny top");
+    	text_jtab_filepath.setColumns(10);
+    	
+    	JSeparator separator_3 = new JSeparator();
+    	panel_jtabgoods_image.add(separator_3, "cell 0 5 5 1,growx,aligny top");
+    	
+    	JScrollPane scroll_jtab_image = new JScrollPane();
+    	scroll_jtab_image.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    	panel_jtabgoods_image.add(scroll_jtab_image, "cell 0 6 5 1,grow");
+    	
+    	panel_jtap_image = new JPanel();    	
+    	scroll_jtab_image.setViewportView(panel_jtap_image);
+    	panel_jtap_image.setLayout(new GridLayout(0, 3, 0, 0));
+    	
     	
     	JLabel label_Detail_Barcode = new JLabel("\uBC14\uCF54\uB4DC");
     	label_Detail_Barcode.setHorizontalAlignment(SwingConstants.CENTER);
@@ -1627,19 +1700,19 @@ public class Goods_Manage extends JPanel implements ItemListener{
     	label_Detail_Number = new JLabel("\uC21C\uBC88");
     	label_Detail_Number.setToolTipText("\uC88C\uCE21 \uBAA9\uB85D\uC758 \uC21C\uBC88\uC785\uB2C8\uB2E4.");
     	label_Detail_Number.setHorizontalAlignment(SwingConstants.CENTER);
-    	panel_goods_detail.add(label_Detail_Number, "cell 5 1,growx,aligny center");
+    	panel_goods_detail.add(label_Detail_Number, "cell 6 1,growx,aligny center");
     	
     	JLabel label_Detail_Name = new JLabel("\uC0C1\uD488\uBA85");
     	label_Detail_Name.setHorizontalAlignment(SwingConstants.CENTER);
     	panel_goods_detail.add(label_Detail_Name, "cell 1 2,alignx center,aligny center");
     	
     	text_Detail_Name = new JTextField();
-    	panel_goods_detail.add(text_Detail_Name, "cell 2 2 2 1,growx,aligny center");
+    	panel_goods_detail.add(text_Detail_Name, "cell 2 2 3 1,growx,aligny center");
     	text_Detail_Name.setColumns(10);
     	
     	btnToggle_Detail_SaleUse = new JToggleButton("\uD589\uC0AC\uC5EC\uBD80");
     	btnToggle_Detail_SaleUse.setEnabled(false);
-    	panel_goods_detail.add(btnToggle_Detail_SaleUse, "cell 5 2,alignx center,aligny center");
+    	panel_goods_detail.add(btnToggle_Detail_SaleUse, "cell 6 2,growx,aligny center");
     	
     	JLabel label_Detail_Category = new JLabel("\uBD84   \uB958");
     	label_Detail_Category.setHorizontalAlignment(SwingConstants.CENTER);
@@ -1652,7 +1725,7 @@ public class Goods_Manage extends JPanel implements ItemListener{
     	text_Detail_Category.setColumns(10);
     	
     	checkBox_Detail_Stock = new JCheckBox("\uC7AC\uACE0\uC0AC\uC6A9");
-    	panel_goods_detail.add(checkBox_Detail_Stock, "cell 5 3,alignx center,aligny center");
+    	panel_goods_detail.add(checkBox_Detail_Stock, "cell 6 3,alignx center,aligny center");
     	
     	JLabel label_Detail_PurPri = new JLabel("\uB9E4\uC785\uAC00");
     	label_Detail_PurPri.setHorizontalAlignment(SwingConstants.CENTER);
@@ -1671,7 +1744,7 @@ public class Goods_Manage extends JPanel implements ItemListener{
     	text_Detail_SellPri = new JTextField();
     	text_Detail_SellPri.setHorizontalAlignment(SwingConstants.CENTER);
     	text_Detail_SellPri.setEditable(false);
-    	panel_goods_detail.add(text_Detail_SellPri, "cell 5 4,growx");
+    	panel_goods_detail.add(text_Detail_SellPri, "cell 5 4 2 1,growx");
     	text_Detail_SellPri.setColumns(10);
     	
     	JLabel label_Detail_Stock = new JLabel("\uD604\uC7AC\uACE0");
@@ -1690,11 +1763,11 @@ public class Goods_Manage extends JPanel implements ItemListener{
     	
     	text_Detail_AnStock = new JTextField();
     	text_Detail_AnStock.setHorizontalAlignment(SwingConstants.CENTER);
-    	panel_goods_detail.add(text_Detail_AnStock, "cell 5 5,growx,aligny center");
+    	panel_goods_detail.add(text_Detail_AnStock, "cell 5 5 2 1,alignx center,aligny center");
     	text_Detail_AnStock.setColumns(10);
     	
     	JSeparator separator = new JSeparator();
-    	panel_goods_detail.add(separator, "cell 1 7 6 1,growx,aligny top");
+    	panel_goods_detail.add(separator, "cell 1 7 7 1,growx,aligny top");
     	
     	JLabel label_Detail_ShopConnectUse = new JLabel("\uC1FC\uD551\uBAB0\uC5F0\uB3D9");
     	label_Detail_ShopConnectUse.setToolTipText("<html>\r\n\uD604\uC7AC \uC0C1\uD488\uC744 \uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9\uC5EC\uBD80\uB97C \uC120\uD0DD \uD569\uB2C8\uB2E4.<br>\r\n\uD604\uC7AC \uC0C1\uD488\uACFC \uC5F0\uB3D9\uC911\uC5D0 \uC774 \uC635\uC158\uC744 \uBCC0\uACBD\uD558\uBA74 \uC1FC\uD551\uBAB0 \uC0C1\uD488\uC774 \uC9C4\uC5F4\uC554\uD568\uC73C\uB85C \uBCC0\uACBD \uB429\uB2C8\uB2E4.\r\n</html>");
@@ -1710,7 +1783,7 @@ public class Goods_Manage extends JPanel implements ItemListener{
     	btnToggle_Detail_ConnectState = new JToggleButton("\uC5F0\uB3D9\uC0C1\uD0DC");
     	btnToggle_Detail_ConnectState.setEnabled(false);
     	btnToggle_Detail_ConnectState.setToolTipText("\uD604\uC7AC \uC0C1\uD488\uC774 \uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9\uC911\uC778\uC9C0 \uC544\uB2CC\uC9C0 \uC0C1\uD0DC\uB97C \uD45C\uC2DC\uD569\uB2C8\uB2E4.");
-    	panel_goods_detail.add(btnToggle_Detail_ConnectState, "cell 5 9,alignx center,aligny center");
+    	panel_goods_detail.add(btnToggle_Detail_ConnectState, "cell 6 9,growx,aligny center");
     	
     	JLabel label_Detail_View = new JLabel("\uC9C4\uC5F4\uC5EC\uBD80");
     	label_Detail_View.setToolTipText("<html>\r\n\uBA54\uC778\uD398\uC774\uC9C0 \uBC0F \uCE74\uD14C\uACE0\uB9AC\uC5D0 \uC0C1\uD488\uC744 \uD45C\uC2DC \uD560\uC9C0 \uC5EC\uBD80\uB97C \uD655\uC778\uD569\uB2C8\uB2E4.<br>\r\n\uC9C4\uC5F4\uD568 = \uC9C4\uC5F4\uB428  / \uC9C4\uC5F4\uC554\uD568 = \uC1FC\uD551\uBAB0\uC5D0 \uD45C\uC2DC\uB418\uC9C0 \uC54A\uC74C\r\n</html>");
@@ -1734,14 +1807,14 @@ public class Goods_Manage extends JPanel implements ItemListener{
     	size.setSize(170, 30);
     	label_default_maincode.setMaximumSize(size);
     	
-    	JButton btn_default_maincode = new JButton("\uC120\uD0DD\uBCC0\uACBD");
+    	JButton btn_default_maincode = new JButton("\uCF54\uB4DC\uC120\uD0DD");
     	btn_default_maincode.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
     			//메인코드 출력 리스트를 작성합니다.
     			maincode_default_setList(); 	
     		}
     	});
-    	panel_goods_detail.add(btn_default_maincode, "cell 5 11,alignx center,aligny center");
+    	panel_goods_detail.add(btn_default_maincode, "cell 6 11,growx,aligny center");
     	
     	JLabel label_Detail_ImageConnectUse = new JLabel("\uC774\uBBF8\uC9C0\uC5F0\uB3D9");
     	label_Detail_ImageConnectUse.setToolTipText("<html>\r\n\uC0C1\uD488\uC758 \uC774\uBBF8\uC9C0\uB97C \uACF5\uC6A9\uC774\uBBF8\uC9C0 \uD3F4\uB354\uC5D0\uC11C \uAC00\uC838\uB2E4 \uC0AC\uC6A9\uD569\uB2C8\uB2E4.<br>\r\n\uB2E8\uB3C5\uD3F4\uB354\uB85C \uC120\uD0DD\uC2DC \uD574\uB2F9 \uB9E4\uC7A5\uC758 \uB2E8\uB3C5 \uD3F4\uB354\uC758 \uC9C0\uC815 \uD30C\uC77C\uC744 \uC120\uD0DD\uD558\uC5EC \uC0AC\uC6A9\uD558\uC2E4\uC218 \uC788\uC2B5\uB2C8\uB2E4.\r\n</html>");
@@ -1760,21 +1833,15 @@ public class Goods_Manage extends JPanel implements ItemListener{
     	
     	text_imagename = new JTextField();
     	text_imagename.setEditable(false);
-    	panel_goods_detail.add(text_imagename, "cell 3 13 3 1,growx,aligny center");
-    	text_imagename.setColumns(15);
+    	panel_goods_detail.add(text_imagename, "cell 3 13 2 1,growx,aligny center");
+    	text_imagename.setColumns(10);
     	
-    	JLabel label_Detail_ImagePath = new JLabel("\uC774\uBBF8\uC9C0\uACBD\uB85C");
-    	label_Detail_ImagePath.setHorizontalAlignment(SwingConstants.CENTER);
-    	panel_goods_detail.add(label_Detail_ImagePath, "cell 1 14 2 1,alignx center,aligny center");
-    	
-    	text_Detail_ImagePath = new JTextField();
-    	panel_goods_detail.add(text_Detail_ImagePath, "cell 3 14 2 1,growx,aligny center");
-    	text_Detail_ImagePath.setColumns(10);
-    	text_Detail_ImagePath.setEditable(false);
+    	JCheckBox chckbxNewCheckBox = new JCheckBox("");
+    	panel_goods_detail.add(chckbxNewCheckBox, "cell 5 13");
     	
     	JButton btn_Detail_ImageSearch = new JButton("\uAC80\uC0C9");
     	btn_Detail_ImageSearch.setToolTipText("<html>\uC9C0\uC815\uD55C \uD3F4\uB354\uC5D0\uC11C \uC774\uBBF8\uC9C0\uB97C \uAC80\uC0C9 \uD569\uB2C8\uB2E4.<br>\r\n\uB2E8\uB3C5\uD3F4\uB354 : \uD574\uB2F9 \uB9E4\uC7A5\uC758 \uD3F4\uB354\uC5D0\uC11C \uC774\uBBF8\uC9C0\uB97C \uC120\uD0DD \uD560\uC218\uC788\uC2B5\uB2C8\uB2E4.<br>\r\n\uACF5\uC6A9\uD3F4\uB354 : \uAC19\uC740 \uBC14\uCF54\uB4DC\uC758 \uC774\uBBF8\uC9C0\uB97C \uBD88\uB7EC\uC635\uB2C8\uB2E4.<br>\r\n</html>");
-    	panel_goods_detail.add(btn_Detail_ImageSearch, "cell 5 14,alignx center,aligny center");
+    	panel_goods_detail.add(btn_Detail_ImageSearch, "cell 6 13,growx,aligny center");
     	btn_Detail_ImageSearch.addActionListener(new ActionListener() {
     		
     		@Override
@@ -1785,8 +1852,17 @@ public class Goods_Manage extends JPanel implements ItemListener{
     		}
     	});
     	
+    	JLabel label_Detail_ImagePath = new JLabel("\uC774\uBBF8\uC9C0\uACBD\uB85C");
+    	label_Detail_ImagePath.setHorizontalAlignment(SwingConstants.CENTER);
+    	panel_goods_detail.add(label_Detail_ImagePath, "cell 1 14 2 1,alignx center,aligny center");
+    	
+    	text_Detail_ImagePath = new JTextField();
+    	panel_goods_detail.add(text_Detail_ImagePath, "cell 3 14 4 1,growx,aligny center");
+    	text_Detail_ImagePath.setColumns(10);
+    	text_Detail_ImagePath.setEditable(false);
+    	
     	JSeparator separator_1 = new JSeparator();
-    	panel_goods_detail.add(separator_1, "cell 1 16 6 1,growx,aligny top");
+    	panel_goods_detail.add(separator_1, "cell 1 16 7 1,growx,aligny top");
     	
     	label_image_view = new JLabel();
     	label_image_view.setBackground(Color.WHITE);
@@ -1794,7 +1870,8 @@ public class Goods_Manage extends JPanel implements ItemListener{
     	label_image_view.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
     	panel_goods_detail.add(label_image_view, "cell 1 18 3 1,grow");
     	JButton btn_Detail_Save = new JButton("\uC800\uC7A5");
-    	panel_goods_detail.add(btn_Detail_Save, "cell 5 18,growx,aligny bottom");
+    	btn_Detail_Save.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
+    	panel_goods_detail.add(btn_Detail_Save, "cell 6 18,growx,aligny center");
     	
     	
     	btn_Detail_Save.addActionListener(new ActionListener() {
@@ -1811,7 +1888,7 @@ public class Goods_Manage extends JPanel implements ItemListener{
     	
     	DefaultTableCellRenderer celAlignRight = new DefaultTableCellRenderer();
     	celAlignRight.setHorizontalAlignment(JLabel.RIGHT);
-    		
+		
     	//table = new JTable(dtm);
     	table = new JTable(dtm);
     	
@@ -1869,7 +1946,7 @@ public class Goods_Manage extends JPanel implements ItemListener{
 		});
 		
 		table.setVisible(true);
-    			
+		
 		table.getColumn("순번").setPreferredWidth(40);
 		table.getColumn("순번").setCellRenderer(celAlignCenter);
 		
@@ -1942,18 +2019,18 @@ public class Goods_Manage extends JPanel implements ItemListener{
 		table.getColumn("재고연동").setMinWidth(0);
 		table.getColumn("재고연동").setMaxWidth(0);		
 		table.getColumnModel().getColumn(18).setResizable(false); //재고연동
-				
+		
 		table.getColumn("메인출력").setCellRenderer(celAlignCenter);
 		
 		table.getColumn("이미지설정").setCellRenderer(celAlignCenter);								
 		table.getColumn("이미지경로").setPreferredWidth(300);
 		
 		table.setRowHeight(25);
-				
+		
 		table.getColumn("이미지명").setCellRenderer(celAlignCenter);
 		
 		
-		JScrollPane scrollPane = new JScrollPane(table);
+		final JScrollPane scrollPane = new JScrollPane(table);
 		panel_1.add(scrollPane, BorderLayout.CENTER);
     }
     
@@ -2001,14 +2078,123 @@ public class Goods_Manage extends JPanel implements ItemListener{
 			JOptionPane.showMessageDialog(this, "검색된 이미지 파일이 없습니다.");			
 		}
 	   	
-    	
     }
-
-	@Override
-	public void itemStateChanged(ItemEvent arg0) {
-		// TODO Auto-generated method stub
+    
+    //이미지 검색어로 FTP_Server 검색
+    public void jtap_Search(){
+    
+    	//검색어를 불러옵니다.
+    	String search_str = text_jtab_search.getText().toString();
+    	
+    	ms_connect.setImageSetting();
+		String query = "Select * From Ftp_Image Where barcode like '"+search_str+"' or g_name like '"+search_str+"' ";
+		jtap_image_list = ms_connect.connection(query);
 		
-	}
+		if(jtap_image_list.size() <= 0){
+			JOptionPane.showMessageDialog(this, "검색된 이미지가 없습니다.");
+			
+			text_jtab_search.requestFocus();
+			text_jtab_search.selectAll();
+			return;
+		}    	
+		
+		//검색된 이미지를 뿌립니다.
+		jtap_setImage();
+    }
+    
+    //검색된 데이타를 목록으로 변경합니다.
+    private void jtap_setImage(){
+    	
+    	Iterator<HashMap<String, String>> itr = jtap_image_list.iterator();
+    	
+    	while(itr.hasNext()){
+    		HashMap<String, String> map = itr.next();
+    		
+    		String [] item = new String[5];
+    		//map.get("Idx");
+    		item[0] = map.get("Barcode");
+    		item[1] = map.get("Path");
+    		item[2] = map.get("G_Name");
+    		item[3] = map.get("Ext");    		
+    		
+    		String path = "http://14.38.161.45:7080/"+map.get("Path")+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim();
+    		item[4] = path;
+    		
+    		
+    		
+    		//목록리스트를 생성합니다.
+    		panel_jtap_image.add(setImageView(item));
+    		
+    		this.repaint();
+    	}    	
+    }
+    
+    public JPanel setImageView(String[] item){
+    	
+    	//이미지 조각을 실행합니다.
+    	//이미지가 보일 조각을 만듭니다.
+    	JPanel panel = new JPanel();    	
+    	panel.setLayout(new BorderLayout());
+    	    	    	
+    	Box box = Box.createVerticalBox();
+    	
+    	JLabel image_show = new JLabel();
+    	box.add(image_show);    	
+    	JLabel g_name = new JLabel("상품명");
+    	box.add(g_name);
+    	JLabel file_name = new JLabel("파일명");
+    	box.add(file_name);
+    	
+    	panel.add(image_show, BorderLayout.NORTH);
+    	panel.add(g_name,  BorderLayout.CENTER);
+    	panel.add(file_name, BorderLayout.SOUTH);
+    	
+    	panel.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// TODO Auto-generated method stub
+				//상품이 선택 되면 목상단 으로 표시합니다.
+			}
+		});
+    	   	
+    	Image image = null;
+        try {
+        	System.out.println(item[4].toString());
+            URL url = new URL(item[4].toString());
+            image = ImageIO.read(url);                 
+        } catch (IOException e) {
+        	e.printStackTrace();        	
+        }                
+       	image_show.setIcon(new ImageIcon(image.getScaledInstance(100, 100, Image.SCALE_SMOOTH)));       
+       	
+       	return panel;
+    }
+    
 	
 	class ChkboxItemListioner_Top implements ItemListener{
 
@@ -2065,5 +2251,24 @@ public class Goods_Manage extends JPanel implements ItemListener{
 			}
 		}		
 	}
+
 	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		
+		String command = e.getActionCommand();
+		//검색어로 검색 합니다.
+		switch(command){		
+		case "이미지검색":
+			if(text_jtab_search.getText().length() <= 1){
+				JOptionPane.showMessageDialog(this, "검색어를 입력해 주세요!!");
+				text_jtab_search.requestFocus();
+				break;
+			}else{
+				jtap_Search();
+			}
+			break;		
+		}
+	}
 }
