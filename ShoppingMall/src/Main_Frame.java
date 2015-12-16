@@ -38,6 +38,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.im.InputContext;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -109,6 +110,10 @@ public class Main_Frame extends JFrame implements ActionListener{
 	 */
 	public Main_Frame() {
 		
+		InputContext ctx = getInputContext();
+		Character.Subset[] subset = {Character.UnicodeBlock.HANGUL_SYLLABLES};
+		ctx.setCharacterSubsets(subset);
+		config = new Main_Config();
 		//진입점
 		initLocation();		
 		
@@ -122,14 +127,18 @@ public class Main_Frame extends JFrame implements ActionListener{
 		System.out.println("메인서버");
 		System.out.println(Server_Config.getSERVER_IP());		
 		
-		config = new Main_Config();
+		
 		
 	}		
 	
 	// 종료 & 화면중앙
     private void initLocation() {    	
     	
-    	setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9");
+    	if(Server_Config.getOFFICENAME().equals("")){    	
+    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9");
+    	}else{
+    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9 "+"[ "+Server_Config.getOFFICECODE() +" "+Server_Config.getOFFICENAME()+" ]" );
+    	}
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(1024, 768);
     	

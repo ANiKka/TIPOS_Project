@@ -1,4 +1,3 @@
-import java.util.Vector;
 
 public class Server_Config {	
 	
@@ -33,6 +32,9 @@ public class Server_Config {
 	private static String IMAGE_DBID="sa";
 	private static String IMAGE_DBPW="tips";
 		
+	//image 저장폴더
+	private static String PCIMAGE_PATH="C:\\";
+	
 	//SERVER
 	public static void setSERVER_DBID(String sERVER_DBID) {
 		SERVER_DBID = sERVER_DBID;
@@ -220,6 +222,14 @@ public class Server_Config {
 	
 	public static String getIMAGE_DBPW() {
 		return IMAGE_DBPW;
+	}
+
+	public static String getPCIMAGE_PATH() {
+		return PCIMAGE_PATH;
+	}
+
+	public static void setPCIMAGE_PATH(String iMAGE_PATH) {
+		PCIMAGE_PATH = iMAGE_PATH;
 	}
 	
 }

@@ -1,7 +1,8 @@
 #\uD658\uACBD\uC124\uC815 \uC800\uC7A5
-#Thu Dec 10 16:36:37 KST 2015
-ServerIp=localhost
-ServerDBpw=tips
+#Wed Dec 16 21:16:12 KST 2015
+PCImagePath=D\:\\1) \uC0C1\uD488\uC774\uC9C0\uC9C0\\9\uC6D4 1-1
+ServerIp=tips1311.iptime.org
 ServerPort=16000
+ServerDBpw=tips
 ServerDBname=tips
 ServerDBid=sa

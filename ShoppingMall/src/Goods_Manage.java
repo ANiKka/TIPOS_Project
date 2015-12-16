@@ -1,23 +1,13 @@
-/*import it.sauronsoftware.ftp4j.FTPAbortedException;
-import it.sauronsoftware.ftp4j.FTPClient;
-import it.sauronsoftware.ftp4j.FTPDataTransferException;
-import it.sauronsoftware.ftp4j.FTPException;
-import it.sauronsoftware.ftp4j.FTPFile;
-import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
-import it.sauronsoftware.ftp4j.FTPListParseException;
-import it.sauronsoftware.ftp4j.FTPListParser;*/
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.Frame;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.SystemColor;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -26,10 +16,17 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyVetoException;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -38,21 +35,14 @@ import java.util.Vector;
 
 import javax.imageio.ImageIO;
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.DefaultRowSorter;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -62,8 +52,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -73,26 +61,40 @@ import javax.swing.table.TableRowSorter;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 
 import javax.swing.border.BevelBorder;
 
-import com.oroinc.net.ftp.FTPClient;
-import com.oroinc.net.ftp.FTPFile;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.Panel;
-import java.awt.FlowLayout;
+//import com.oroinc.net.ftp.FTPClient;
+//import com.oroinc.net.ftp.FTPFile;
+
+import it.sauronsoftware.ftp4j.FTPAbortedException;
+import it.sauronsoftware.ftp4j.FTPClient;
+import it.sauronsoftware.ftp4j.FTPDataTransferException;
+import it.sauronsoftware.ftp4j.FTPException;
+import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
+
 import net.miginfocom.swing.MigLayout;
-import javax.swing.JList;
 import java.awt.GridLayout;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.border.TitledBorder;
+import javax.swing.UIManager;
+import java.awt.FlowLayout;
+import javax.swing.JRadioButton;
+import javax.swing.JProgressBar;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.ColumnSpec;
+import com.jgoodies.forms.layout.RowSpec;
+import javax.swing.border.SoftBevelBorder;
 
-public class Goods_Manage extends JPanel implements ActionListener{
+public class Goods_Manage extends JPanel implements ActionListener, ItemListener{
 
 	private static final long serialVersionUID = 1L;
 	
 	private JPanel P = this;
+	
+	private String GUBUN = "";
 	
 	//private JPanel contentPane_Goods;
 	public JTextField tx_barcode;
@@ -160,35 +162,65 @@ public class Goods_Manage extends JPanel implements ActionListener{
 	List<JCheckBox> chkboxs_top;
 	List<JCheckBox> chkboxs_detail;
 	
-	//메인코드를 api를 부른적이 없다면 실행합니다.
-	private boolean maincode_callUse = false;
+	//TODO: 메인코드를 api를 부른적이 없다면 실행합니다.
+	private boolean maincode_callUse = false;	
 	
 	Vector<Object> temp_detail = new Vector<Object>();
+	
+	//하단 상세보기 이미지관리
+	private JTabbedPane tabPane_detail;
 	private JTextField text_jtab_search;
 	private JTextField text_jtab_path;
-	private JTextField text_jtab_filename;
-	private JTextField text_jtab_filepath;
+	private JCheckBox cb_gname_search; 
+	private JPanel panel_jtap_image;
+	private JCheckBox chkbox_listSearchNot;
+	private JLabel label_count_up;
+	private JLabel label_count_total;
+	private JCheckBox chkbox_pcsearch_dir;	
+	
+	//이미지 총 수량
+	private int image_total_count=0;
+	//현재 페이지 번호
+	private int image_page_num=0;
+	//총페이지 수량 
+	private int image_page_count=0;
+	//한페이지당 목록 수량
+	private int image_page_listcount = 15;
 	
 	//이미지 업로드 관련 변수
 	ArrayList<HashMap<String, String>> jtap_image_list = new ArrayList<HashMap<String, String>>();
-	JPanel panel_jtap_image;
+	
+	//수정된것이 있는지 확인합니다.
+	boolean edit_goods = false;
+	boolean edit_goods_info = false;
+	
+	//TODO: 상품목록 일괄변경 
+	private JTextField text_anstock;		
+	private JLabel label_result;
+	private JButton btn_Cancel;
+	private JButton btn_imagecall;
+	private JButton btn_Change;
+	
+	private Thread thread;	
+	public JProgressBar progressbar;	
+	
+	//라디오 그룹 버튼
+	private ButtonGroup[] bg_shoppingmall = {new ButtonGroup(), new ButtonGroup(), new ButtonGroup(), new ButtonGroup()};
+	
+	//체크박스 그룹
+	private List<JCheckBox> chk_boxs; 
+	private JPanel panel_maincode_title;
 	
 	/**
 	 * Create the panel.
 	 */
 	public Goods_Manage() {
-		//super(title, resize, close);
+		
 		ms_connect = new Ms_Connect();
 		shop_api = new Trans_ShopAPI();
-        
-		//contentPane_Goods = this;	
+        			
 		setBorder(new EmptyBorder(5, 5, 5, 5));
-		
-		//this.add(contentPane_Goods, BorderLayout.CENTER);
 				
-		//setBounds(0, 0, 1024, 690);	
-		//javax.swing.plaf.InternalFrameUI ifu = this.getUI(); ((javax.swing.plaf.basic.BasicInternalFrameUI)ifu). setNorthPane(null); 
-		
 		//상단 검색조건
 		top_search();
 		
@@ -247,11 +279,7 @@ public class Goods_Manage extends JPanel implements ActionListener{
 		
 		//쿼리 Goods 기본 설정
 		String query1 = "Update Goods Set ";
-		
-		//수정된것이 있는지 확인합니다.		
-		boolean edit_goods = false;
-		boolean edit_goods_info = false;
-		
+				
 		try{
 			int number = Integer.parseInt(label_Detail_Number.getText());
 		}catch(NumberFormatException e){
@@ -279,7 +307,7 @@ public class Goods_Manage extends JPanel implements ActionListener{
 		//Goods_Info 기본설정
 		String query2 = "Update Goods_Info Set Edit_Tran='1'";
 		
-		//안전재고 변경 여부 
+		//안전재고 변경 여부
 		String an_stock = text_Detail_AnStock.getText();
 		System.out.println("안전재고 : "+temp_detail.get(7).toString() + " 저장값 : "+an_stock);
 		if(!temp_detail.get(7).equals(an_stock)){			
@@ -357,24 +385,25 @@ public class Goods_Manage extends JPanel implements ActionListener{
 		
 		int result = 0;
 		
-		if(edit_goods){
+		if(edit_goods){			
 			System.out.println(query1);
-			result = ms_connect.connect_update(query1);
+			ms_connect.setMainSetting();
+			result = ms_connect.connect_update(query1);			
 		}
 		
 		if(edit_goods_info){
 			System.out.println(query2);
-			result = ms_connect.connect_update(query2);
+			ms_connect.setMainSetting();
+			result = ms_connect.connect_update(query2);			
 		}
 		
 		if(edit_goods || edit_goods_info){
 			switch(result){
-			case 0 :
+			case 0 :				
 				detail_Renew();
 				JOptionPane.showMessageDialog(null, "저장이 완료 되었습니다.");
 				//상품검색 시작
-				search_goods(query);
-				
+				search_goods(query);	
 				break;
 			default :
 				JOptionPane.showMessageDialog(null, "오류로 저장하지 못했습니다. \r\n 서버를 점검해 주세요!!");
@@ -389,7 +418,7 @@ public class Goods_Manage extends JPanel implements ActionListener{
 	
 	
 	//상세정보 초기화
-	private void detail_Renew(){		
+	private void detail_Renew(){
 		
 		temp_detail.removeAllElements();
 		
@@ -419,7 +448,17 @@ public class Goods_Manage extends JPanel implements ActionListener{
 		label_image_view.setIcon(null);
 		text_Detail_ImagePath.setText("");
 		text_Detail_ImagePath.setEnabled(true);
+				
+		//이미지관리 리뉴얼
+		//tabPane_detail.setSelectedIndex(0);		
+		//panel_jtap_image.removeAll();
 		
+		text_jtab_search.setText("");
+		text_jtab_path.setText("");		
+		
+		//수정된것이 있는지 확인합니다.
+		edit_goods = false;
+		edit_goods_info = false;
 	}
 	    
     
@@ -430,7 +469,7 @@ public class Goods_Manage extends JPanel implements ActionListener{
     	JPanel p_top = new JPanel();
 		p_top.setBorder(new LineBorder(new Color(0, 0, 0)));
 		this.add(p_top, BorderLayout.NORTH);
-		p_top.setLayout(new MigLayout("", "[50px][][][grow]", "[grow][fill][24px,grow]"));
+		p_top.setLayout(new MigLayout("", "[50px,grow][][][grow]", "[grow][fill][24px,grow]"));
 		
 		JPanel panel = new JPanel();
 		p_top.add(panel, "cell 0 0,grow");
@@ -463,7 +502,8 @@ public class Goods_Manage extends JPanel implements ActionListener{
 				// TODO Auto-generated method stub
 				int keyCode = e.getKeyCode();
 	            switch (keyCode) {
-	            case KeyEvent.VK_ENTER:
+	            case KeyEvent.VK_ENTER:	            	
+	            	if(change_Flags()) break;
 	                search_start();
 	                break;	            
 	            }
@@ -590,8 +630,7 @@ public class Goods_Manage extends JPanel implements ActionListener{
 				cs.setAlwaysOnTop(true);
 				cs.setLocationRelativeTo(P);				
 				
-			}
-		
+			}		
 		});
 		
 		JButton bt_renew = new JButton("\uC0C8\uB85C\uC785\uB825");
@@ -599,6 +638,9 @@ public class Goods_Manage extends JPanel implements ActionListener{
 		
 		bt_renew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				//수정된 사항이 있다면 다시 돌아 갑니다.
+				if(change_Flags()) return;
+				
 				//새로고침
 				new_search();				
 			}
@@ -713,6 +755,9 @@ public class Goods_Manage extends JPanel implements ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
+				
+				//수정된 사항이 있다면 다시 돌아 갑니다.
+				if(change_Flags()) return;
 				
 				detail_Renew();
 				
@@ -1080,20 +1125,20 @@ public class Goods_Manage extends JPanel implements ActionListener{
     
     //임시생성 ftp에 연결해서 파일을 불러와 서버DB에 Insert 합니다.
     //한번 사용하기 위해서 만든 함수 입니다.
-    private void ftp_Connect(){
+    /*private void ftp_Connect(){
     	
     	FTPClient ftpclient = new FTPClient();
     	// TODO Auto-generated method stub
 		// 검색 FTP 불러오기
 		// 서버에 연결되어서 불러오기 입니다.
 		
-    /*	String serverName = "이미지 서버";
+    	String serverName = "이미지 서버";
     	String ftpIP = Server_Config.getFTPIP();
     	int ftpPort = Server_Config.getFTPPORT();
     	String ftpID = Server_Config.getFTPID();
     	String ftpPW = Server_Config.getFTPPW();
     	String ftpLocalPath = Server_Config.getFTPLOCALPATH();
-    	String ftpServerPath = Server_Config.getFTPSERVERPATH();*/
+    	String ftpServerPath = Server_Config.getFTPSERVERPATH();
     	    			
     	
     	//네가게 이미지서버에서 불러왔습니다.    	
@@ -1106,15 +1151,15 @@ public class Goods_Manage extends JPanel implements ActionListener{
     	String ftpServerPath = "main_goods";
     	
     	
-    	try {
-    		System.out.println("접속시작 합니다.");
-    		ftpclient.connect(ftpIP);    		
-    		ftpclient.login(ftpID, ftpPW);
-    		
+    	
+		System.out.println("접속시작 합니다.");
+		try {
+			ftpclient.connect(ftpIP);
+			ftpclient.login(ftpID, ftpPW);    		
     		
     		// 연결 시도후, 성공했는지 응답 코드 확인
 			if (!ftpclient.isConnected()) {
-				ftpclient.disconnect();
+				ftpclient.disconnect(true);
 				JOptionPane.showMessageDialog(this, "접속실패!!");
 				return;
 			}
@@ -1123,30 +1168,28 @@ public class Goods_Manage extends JPanel implements ActionListener{
 			
 			System.out.println("폴더변경합니다 -> 폴더명 : "+ftpServerPath);
 			//공용폴더선택
-			ftpclient.changeWorkingDirectory(ftpServerPath);			
+			ftpclient.changeDirectory(ftpServerPath);			
 			
-			System.out.println(ftpclient.printWorkingDirectory());
-			System.out.println(ftpclient.getStatus());
-									
-		} catch (IllegalStateException e) {
+			System.out.println(ftpclient.currentDirectory());
+			System.out.println(ftpclient.isConnected());
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e1.printStackTrace();
 			return;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
-		} 
+		}   
     	    	
     	System.out.println("파일불러오기 시작");
     	
     	String[] fileName=null;
+		
 		try {
-			fileName = ftpclient.listNames();			
-		} catch (IOException e) {
+			fileName = ftpclient.listNames();
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException
+				| FTPDataTransferException | FTPAbortedException | FTPListParseException e1) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			e1.printStackTrace();
+			return;
+		}			
 
 		if(fileName.length < 0){
 			JOptionPane.showMessageDialog(this, "검색된 파일이 없습니다.");
@@ -1154,7 +1197,7 @@ public class Goods_Manage extends JPanel implements ActionListener{
 		}
     	
     	//파일불러오기 입니다.
-    	/*FTPFile[] files = null;		
+    	FTPFile[] files = null;		
 		try {
 			files = ftpclient.listFiles();
 		} catch (IOException e) {
@@ -1164,7 +1207,7 @@ public class Goods_Manage extends JPanel implements ActionListener{
 			return;
 		}
 		System.out.println(files.length);
-		*/
+		
 		System.out.println("파일을 불러왔습니다.");
 		ArrayList<String> temp_image = new ArrayList<String>();
 		
@@ -1189,21 +1232,16 @@ public class Goods_Manage extends JPanel implements ActionListener{
 		
 		System.out.println("저장 완료 되었습니다.");
 		
-		if(ftpclient.isConnected()){
-			try {
-				ftpclient.disconnect();
-				JOptionPane.showMessageDialog(this, "접속종료합니다.");
-			} catch (IllegalStateException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+		if(ftpclient.isConnected()){			
+				try {
+					ftpclient.disconnect(true);
+					JOptionPane.showMessageDialog(this, "접속종료합니다.");
+				} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}	
 		}
-    	
-    	
-    }
+    }*/
     
     /*
 	 * [마우스 두번 클릭]
@@ -1224,7 +1262,7 @@ public class Goods_Manage extends JPanel implements ActionListener{
 		
 		for(int i =0; i < col; i++){			
 			temp_detail.add(dtm.getValueAt(row, i));
-		}		
+		}
 		
 		System.out.println(temp_detail.toString());
 		
@@ -1316,6 +1354,30 @@ public class Goods_Manage extends JPanel implements ActionListener{
 		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}    
 	
+	
+	/*
+	 * [마우스 클릭 시 ]
+	 * 상품명을 그대로 검색 조건에 넘겨 줍니다. 
+	 * 
+	 * */
+	
+	public void setSearchGoodsName(){		
+		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		
+		int row = table.getSelectedRow();
+		int col = table.getColumnCount();
+		
+		Vector<Object> temp = new Vector<Object>(); 
+		
+		for(int i =0; i < col; i++){			
+			temp.add(dtm.getValueAt(row, i));
+		}		
+		System.out.println(temp.toString());		
+		text_jtab_search.setText(temp.get(2).toString());		
+		jtap_FTPSearch();
+		
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));		
+	}
 	
 	//메인코드 셋팅하기
 	private void maincode_top_setList(){
@@ -1523,12 +1585,15 @@ public class Goods_Manage extends JPanel implements ActionListener{
 				item_list = item_list.substring(0, item_list.length()-1);
 				label_default_maincode.setText(item_list);
 			}
+			
+			edit_goods_info = true;
 			System.out.println(item_list);
 		}
 	}
 	
     //상품 상제 정보 및 수정
     private void goods_detail(){
+    	
     	/*
 		 * [상품 수정 후 저장 버튼]
 		 * 상품 수정 후 수정된 내용을 저장 합니다. 
@@ -1563,7 +1628,7 @@ public class Goods_Manage extends JPanel implements ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				ftp_Connect();
+				//ftp_Connect();
 			}
 		});		
 		bt_ftp_connect.setVisible(false);
@@ -1575,7 +1640,7 @@ public class Goods_Manage extends JPanel implements ActionListener{
 				lblNewLabel_4.setFont(new Font("맑은 고딕", Font.BOLD, 12));
 				lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
 				
-				JButton bt_All_Save = new JButton("\uC77C\uAD04\uBCC0\uACBD");
+				/*JButton bt_All_Save = new JButton("\uC77C\uAD04\uBCC0\uACBD");
 				panel.add(bt_All_Save, "cell 7 0,alignx left,aligny top");
 				
 						bt_All_Save.addActionListener(new ActionListener() {
@@ -1583,19 +1648,24 @@ public class Goods_Manage extends JPanel implements ActionListener{
 							@Override
 							public void actionPerformed(ActionEvent e) {
 								// TODO Auto-generated method stub
+																							
 								if(table.getSelectedRowCount() > 0 && table.getSelectedRow() > -1){
+								
+									//수정된 사항이 있다면 다시 돌아 갑니다.
+									if(change_Flags()) return;
 									
 									// TODO Auto-generated method stub
 									changeDialog = new AllChangeDialog(table);
 									changeDialog.setModal(true);	
 									changeDialog.setLocationRelativeTo(P);
 									changeDialog.open();
+									tabPane_detail.add(changeDialog, 2);
 															
 								}else{
 									JOptionPane.showMessageDialog(Goods_Manage.this, "상품을 선택해 주세요!!");
 								}				
 							}
-						});
+						});*/
 				
 				JLabel label_Detail_Title = new JLabel("\uC0C1\uD488 \uC0C1\uC138 \uC815\uBCF4");
 				panel.add(label_Detail_Title, "cell 15 0,alignx left,aligny center");
@@ -1605,6 +1675,9 @@ public class Goods_Manage extends JPanel implements ActionListener{
 				JButton btn_detail_renew = new JButton("\uC0C1\uC138\uC815\uBCF4 \uC0C8\uB85C\uC785\uB825");
 				btn_detail_renew.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
+						//수정된 사항이 있다면 다시 돌아 갑니다.
+						if(change_Flags()) return;
+						
 						detail_Renew();
 					}
 				});
@@ -1615,21 +1688,47 @@ public class Goods_Manage extends JPanel implements ActionListener{
     	panel_goods_detail.setBorder(new LineBorder(new Color(0, 0, 0)));
     	panel_goods_detail.setLayout(new MigLayout("", "[1px][52px][5px][52px][][][][5px]", "[15][1px][21px][23px][21px][][15][1px][15][30.00px][30.00px][30.00px][30.00,center][30][30][15][-10.00px][20.00][150px]"));
     	
-    	JTabbedPane tabPane_detail = new JTabbedPane(JTabbedPane.TOP);
+    	tabPane_detail = new JTabbedPane(JTabbedPane.TOP);
     	panel_1.add(tabPane_detail, BorderLayout.EAST);
     	tabPane_detail.addTab("상세정보", panel_goods_detail);
     	
     	JPanel panel_jtabgoods_image = new JPanel();
     	tabPane_detail.addTab("이미지관리", panel_jtabgoods_image);
+    	panel_jtabgoods_image.setBorder(new LineBorder(new Color(0, 0, 0)));
     	panel_jtabgoods_image.setLayout(new MigLayout("", "[57px][12px][197.00px][19.00px][grow]", "[23px][23px][2px][23px][21px][2px][1px,grow]"));
     	
-    	JLabel label_jtab_search = new JLabel("\uAC80\uC0C9\uC5B4");
+    	JLabel label_jtab_search = new JLabel("\uC11C\uBC84\uAC80\uC0C9");
     	label_jtab_search.setHorizontalAlignment(SwingConstants.CENTER);
     	panel_jtabgoods_image.add(label_jtab_search, "cell 0 0,growx,aligny center");
     	
     	text_jtab_search = new JTextField();
     	panel_jtabgoods_image.add(text_jtab_search, "cell 2 0,growx,aligny center");
     	text_jtab_search.setColumns(10);
+    	text_jtab_search.addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				int keyCode = e.getKeyCode();
+	            switch (keyCode) {
+	            case KeyEvent.VK_ENTER:	            	
+	    			jtap_FTPSearch();	    			
+	                break;	
+	            }
+			}
+		});
     	
     	JButton btn_jtab_search = new JButton("\uAC80\uC0C9");
     	btn_jtab_search.setToolTipText("<html>\r\n<p> FTP\uC11C\uBC84\uC5D0 \uC800\uC7A5\uB41C \uB0B4\uC6A9\uC744 \uAC80\uC0C9\uD569\uB2C8\uB2E4. </p>\r\n<p> \uBC14\uCF54\uB4DC\uB610\uB294 \uC0C1\uD488\uBA85\uC744 \uB123\uC5B4 \uC8FC\uC138\uC694</p>\r\n</html>");
@@ -1638,55 +1737,68 @@ public class Goods_Manage extends JPanel implements ActionListener{
     	btn_jtab_search.addActionListener(this);
     	
     	
-    	JLabel label_jtap_pcpath = new JLabel("PC\uACBD\uB85C");
-    	label_jtap_pcpath.setHorizontalAlignment(SwingConstants.CENTER);
-    	panel_jtabgoods_image.add(label_jtap_pcpath, "cell 0 1,growx,aligny center");
+    	JLabel lblPc = new JLabel("PC\uAC80\uC0C9");
+    	lblPc.setHorizontalAlignment(SwingConstants.CENTER);
+    	panel_jtabgoods_image.add(lblPc, "cell 0 1,growx,aligny center");
     	
     	text_jtab_path = new JTextField();
     	text_jtab_path.setEditable(false);
     	panel_jtabgoods_image.add(text_jtab_path, "cell 2 1,growx,aligny center");
     	text_jtab_path.setColumns(10);
     	
-    	JButton btn_jtab_pathsearch = new JButton("\uAC80\uC0C9");
+    	JButton btn_jtab_pathsearch = new JButton("\uD3F4\uB354");
     	btn_jtab_pathsearch.setToolTipText("<html>\r\n<p>\uB0B4 \uCEF4\uD4E8\uD130\uC758 \uC774\uBBF8\uC9C0 \uD30C\uC77C\uC744 \uAC80\uC0C9 \uD569\uB2C8\uB2E4.</p>\r\n<p>\uD655\uC7A5\uC790\uAC00 jpg, gif, png \uD30C\uC77C\uB9CC \uAC80\uC0C9 \uB429\uB2C8\uB2E4.</p>\r\n<p>\uC774\uBBF8\uC9C0 \uC0AC\uC774\uC988\uB294 \uBE44\uC728\uC5D0 \uB9DE\uCDB0 500x500\uC73C\uB85C \uC790\uB3D9 \uC870\uC808 \uB429\uB2C8\uB2E4.</p>\r\n</html>");
+    	btn_jtab_pathsearch.setActionCommand("폴더검색");
+    	btn_jtab_pathsearch.addActionListener(this);
+    	
+    	chkbox_pcsearch_dir = new JCheckBox("");
+    	panel_jtabgoods_image.add(chkbox_pcsearch_dir, "cell 3 1");
     	panel_jtabgoods_image.add(btn_jtab_pathsearch, "cell 4 1,growx,aligny top");
     	
     	JSeparator separator_2 = new JSeparator();
     	panel_jtabgoods_image.add(separator_2, "cell 0 2 5 1,growx,aligny top");
     	
-    	JLabel label_jtab_filename = new JLabel("\uD30C\uC77C\uBA85");
-    	label_jtab_filename.setHorizontalAlignment(SwingConstants.CENTER);
-    	panel_jtabgoods_image.add(label_jtab_filename, "cell 0 3,growx,aligny center");
+    	chkbox_listSearchNot = new JCheckBox("\uC0C1\uD488\uBAA9\uB85D \uC120\uD0DD \uAC80\uC0C9 \uC548\uD568");
+    	panel_jtabgoods_image.add(chkbox_listSearchNot, "cell 2 3,alignx center");
     	
-    	text_jtab_filename = new JTextField();
-    	text_jtab_filename.setEditable(false);
-    	panel_jtabgoods_image.add(text_jtab_filename, "cell 2 3,growx,aligny center");
-    	text_jtab_filename.setColumns(10);
+    	JButton btn_downCount = new JButton("<");
+    	btn_downCount.setActionCommand("다운");
+    	panel_jtabgoods_image.add(btn_downCount, "cell 0 4,alignx center");
+    	btn_downCount.addActionListener(this);
     	
-    	JButton btn_jtab_imagesave = new JButton("\uC800\uC7A5");
-    	panel_jtabgoods_image.add(btn_jtab_imagesave, "cell 4 3,growx,aligny top");
+    	label_count_up = new JLabel("0");
+    	label_count_up.setHorizontalAlignment(SwingConstants.CENTER);
+    	panel_jtabgoods_image.add(label_count_up, "flowx,cell 2 4,alignx center");
     	
-    	JLabel label_jtap_filepath = new JLabel("\uC800\uC7A5\uACBD\uB85C");
-    	label_jtap_filepath.setHorizontalAlignment(SwingConstants.CENTER);
-    	panel_jtabgoods_image.add(label_jtap_filepath, "cell 0 4,growx,aligny center");
     	
-    	text_jtab_filepath = new JTextField();
-    	text_jtab_filepath.setEditable(false);
-    	panel_jtabgoods_image.add(text_jtab_filepath, "cell 2 4 3 1,growx,aligny top");
-    	text_jtab_filepath.setColumns(10);
+    	JButton btn_upCount = new JButton(">");
+    	btn_upCount.setActionCommand("업");
+    	panel_jtabgoods_image.add(btn_upCount, "cell 4 4,alignx center");
+    	btn_upCount.addActionListener(this);
     	
     	JSeparator separator_3 = new JSeparator();
     	panel_jtabgoods_image.add(separator_3, "cell 0 5 5 1,growx,aligny top");
     	
     	JScrollPane scroll_jtab_image = new JScrollPane();
+    	scroll_jtab_image.setViewportBorder(new LineBorder(new Color(0, 0, 0)));
+    	scroll_jtab_image.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
     	scroll_jtab_image.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     	panel_jtabgoods_image.add(scroll_jtab_image, "cell 0 6 5 1,grow");
     	
-    	panel_jtap_image = new JPanel();    	
+    	scroll_jtab_image.getVerticalScrollBar().setUnitIncrement(20);
+    	
+    	panel_jtap_image = new JPanel();
     	scroll_jtab_image.setViewportView(panel_jtap_image);
     	panel_jtap_image.setLayout(new GridLayout(0, 3, 0, 0));
     	
+    	JLabel label_count = new JLabel("/");
+    	label_count.setHorizontalAlignment(SwingConstants.CENTER);
+    	panel_jtabgoods_image.add(label_count, "cell 2 4");
     	
+    	label_count_total = new JLabel("0");
+    	label_count_total.setHorizontalAlignment(SwingConstants.CENTER);
+    	panel_jtabgoods_image.add(label_count_total, "cell 2 4");
+    	    	
     	JLabel label_Detail_Barcode = new JLabel("\uBC14\uCF54\uB4DC");
     	label_Detail_Barcode.setHorizontalAlignment(SwingConstants.CENTER);
     	panel_goods_detail.add(label_Detail_Barcode, "cell 1 1,alignx center,aligny center");
@@ -1832,12 +1944,12 @@ public class Goods_Manage extends JPanel implements ActionListener{
     	panel_goods_detail.add(label_imagename, "cell 1 13 2 1,alignx center,aligny center");
     	
     	text_imagename = new JTextField();
-    	text_imagename.setEditable(false);
     	panel_goods_detail.add(text_imagename, "cell 3 13 2 1,growx,aligny center");
     	text_imagename.setColumns(10);
     	
-    	JCheckBox chckbxNewCheckBox = new JCheckBox("");
-    	panel_goods_detail.add(chckbxNewCheckBox, "cell 5 13");
+    	cb_gname_search = new JCheckBox("");
+    	cb_gname_search.setToolTipText("<html>\r\n\uCCB4\uD06C \uC2DC \uC0C1\uD488\uBA85\uC73C\uB85C \uC774\uBBF8\uC9C0\uB97C \uAC80\uC0C9 \uD569\uB2C8\uB2E4.\r\n</html>");
+    	panel_goods_detail.add(cb_gname_search, "cell 5 13");
     	
     	JButton btn_Detail_ImageSearch = new JButton("\uAC80\uC0C9");
     	btn_Detail_ImageSearch.setToolTipText("<html>\uC9C0\uC815\uD55C \uD3F4\uB354\uC5D0\uC11C \uC774\uBBF8\uC9C0\uB97C \uAC80\uC0C9 \uD569\uB2C8\uB2E4.<br>\r\n\uB2E8\uB3C5\uD3F4\uB354 : \uD574\uB2F9 \uB9E4\uC7A5\uC758 \uD3F4\uB354\uC5D0\uC11C \uC774\uBBF8\uC9C0\uB97C \uC120\uD0DD \uD560\uC218\uC788\uC2B5\uB2C8\uB2E4.<br>\r\n\uACF5\uC6A9\uD3F4\uB354 : \uAC19\uC740 \uBC14\uCF54\uB4DC\uC758 \uC774\uBBF8\uC9C0\uB97C \uBD88\uB7EC\uC635\uB2C8\uB2E4.<br>\r\n</html>");
@@ -1873,6 +1985,177 @@ public class Goods_Manage extends JPanel implements ActionListener{
     	btn_Detail_Save.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
     	panel_goods_detail.add(btn_Detail_Save, "cell 6 18,growx,aligny center");
     	
+    	JPanel panel_jtaballchange = new JPanel();    	
+    	tabPane_detail.addTab("일괄변경", panel_jtaballchange);
+    	panel_jtaballchange.setBorder(new LineBorder(new Color(0, 0, 0)));
+    	panel_jtaballchange.setLayout(new MigLayout("", "[grow]", "[][grow][][grow][][grow][][grow][][85px,grow][60px][50px][grow]"));
+    	
+    	//TODO: 쇼핑몰 연동그룹
+    	JPanel panel_5 = new JPanel();
+    	FlowLayout flowLayout = (FlowLayout) panel_5.getLayout();
+    	flowLayout.setVgap(0);
+    	flowLayout.setHgap(0);
+    	panel_5.setBorder(new TitledBorder(null, "\uC1FC\uD551\uBAB0\uC5F0\uB3D9", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+    	panel_jtaballchange.add(panel_5, "cell 0 1,grow");
+    	
+    	JRadioButton radio_shopmall = new JRadioButton("\uC120\uD0DD\uC548\uD568");
+    	panel_5.add(radio_shopmall);
+    	radio_shopmall.setSelected(true);
+    	radio_shopmall.setActionCommand("\uC120\uD0DD\uC548\uD568");
+    	    	
+    	JRadioButton radio_shoppingmall_on = new JRadioButton("\uC5F0\uB3D9\uD568");
+    	panel_5.add(radio_shoppingmall_on);
+    	radio_shoppingmall_on.setActionCommand("\uC5F0\uB3D9\uD568");
+    	
+    	JRadioButton radio_shoppingmall_off = new JRadioButton("\uC5F0\uB3D9\uC548\uD568");
+    	panel_5.add(radio_shoppingmall_off);
+    	radio_shoppingmall_off.setActionCommand("\uC5F0\uB3D9\uC548\uD568");
+    	
+    	radio_shopmall.setActionCommand("선택안함");
+    	radio_shoppingmall_on.setActionCommand("연동함");
+    	radio_shoppingmall_off.setActionCommand("연동안함");
+    	
+    	bg_shoppingmall[0].add(radio_shopmall);
+		bg_shoppingmall[0].add(radio_shoppingmall_off);
+		bg_shoppingmall[0].add(radio_shoppingmall_on);
+    			
+		//TODO: 진열여부 그룹
+    	JPanel panel_6 = new JPanel();
+    	FlowLayout flowLayout_1 = (FlowLayout) panel_6.getLayout();
+    	flowLayout_1.setVgap(0);
+    	flowLayout_1.setHgap(0);
+    	panel_6.setBorder(new TitledBorder(null, "\uC1FC\uD551\uBAB0\uD310\uB9E4\uC5EC\uBD80", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+    	panel_jtaballchange.add(panel_6, "cell 0 3,grow");
+    	
+    	JRadioButton radio_view = new JRadioButton("\uC120\uD0DD\uC548\uD568");
+    	panel_6.add(radio_view);
+    	radio_view.setSelected(true);
+    	radio_view.setActionCommand("\uC120\uD0DD\uC548\uD568");
+    	
+    	JRadioButton radio_view_on = new JRadioButton("\uC9C4\uC5F4\uD568");
+    	panel_6.add(radio_view_on);
+    	radio_view_on.setActionCommand("\uC9C4\uC5F4\uD568");
+    	
+    	JRadioButton radio_view_off = new JRadioButton("\uC9C4\uC5F4\uC548\uD568");
+    	panel_6.add(radio_view_off);
+    	radio_view_off.setActionCommand("\uC9C4\uC5F4\uC548\uD568");
+    	
+    	radio_view.setActionCommand("선택안함");
+		radio_view_on.setActionCommand("진열함");
+		radio_view_off.setActionCommand("진열안함");
+		
+		bg_shoppingmall[1].add(radio_view);
+		bg_shoppingmall[1].add(radio_view_on);
+		bg_shoppingmall[1].add(radio_view_off);
+    	
+		//TODO: 재고사용 여부 그룹
+    	JPanel panel_7 = new JPanel();
+    	FlowLayout flowLayout_2 = (FlowLayout) panel_7.getLayout();
+    	flowLayout_2.setVgap(0);
+    	flowLayout_2.setHgap(0);
+    	panel_7.setBorder(new TitledBorder(null, "\uC7AC\uACE0\uC0AC\uC6A9\uC5EC\uBD80", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+    	panel_jtaballchange.add(panel_7, "cell 0 5,grow");
+    	
+    	JRadioButton radio_stock = new JRadioButton("\uC120\uD0DD\uC548\uD568");
+    	panel_7.add(radio_stock);
+    	radio_stock.setSelected(true);
+    	radio_stock.setActionCommand("\uC120\uD0DD\uC548\uD568");
+    	
+    	JRadioButton radio_stock_on = new JRadioButton("\uC0AC\uC6A9\uD568");
+    	panel_7.add(radio_stock_on);
+    	radio_stock_on.setActionCommand("\uC0AC\uC6A9\uD568");
+    	
+    	JRadioButton radio_stock_off = new JRadioButton("\uC0AC\uC6A9\uC548\uD568");
+    	panel_7.add(radio_stock_off);
+    	radio_stock_off.setActionCommand("\uC0AC\uC6A9\uC548\uD568");
+    	
+    	radio_stock.setActionCommand("선택안함");
+		radio_stock_on.setActionCommand("사용함");
+		radio_stock_off.setActionCommand("사용안함");
+		
+		bg_shoppingmall[3].add(radio_stock);
+		bg_shoppingmall[3].add(radio_stock_off);
+		bg_shoppingmall[3].add(radio_stock_on);
+    	
+    	JPanel panel_8 = new JPanel();
+    	FlowLayout flowLayout_3 = (FlowLayout) panel_8.getLayout();
+    	flowLayout_3.setVgap(0);
+    	flowLayout_3.setHgap(0);
+    	panel_8.setBorder(new TitledBorder(null, "\uC548\uC804\uC7AC\uACE0\uB4F1\uB85D", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+    	panel_jtaballchange.add(panel_8, "cell 0 7,grow");
+    	
+    	JLabel label = new JLabel("\uC218\uB7C9\uB4F1\uB85D  :  ");
+    	panel_8.add(label);
+    	
+    	text_anstock = new JTextField();
+    	panel_8.add(text_anstock);
+    	text_anstock.setHorizontalAlignment(SwingConstants.CENTER);
+    	text_anstock.setColumns(5);
+    	
+    	panel_maincode_title = new JPanel();
+    	panel_maincode_title.setBorder(new TitledBorder(null, "\uBA54\uC778\uC0C1\uD488 \uCD9C\uB825\uCF54\uB4DC", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+    	panel_jtaballchange.add(panel_maincode_title, "cell 0 9,grow");
+    	    	
+    	chk_boxs = new ArrayList<JCheckBox>();
+    	
+    	getMainCode();
+    	
+    	//폴더선택 여부 그룹
+    	JPanel panel_3 = new JPanel();
+    	panel_3.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\uC774\uBBF8\uC9C0\uC5F0\uB3D9 \uBC0F \uC800\uC7A5 \uD3F4\uB354 \uC120\uD0DD", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
+    	panel_jtaballchange.add(panel_3, "cell 0 10,grow");
+    	panel_3.setLayout(new MigLayout("", "[grow][]", "[][][15px][16px]"));
+    	
+    	JPanel panel_9 = new JPanel();
+    	FlowLayout flowLayout_4 = (FlowLayout) panel_9.getLayout();
+    	flowLayout_4.setVgap(0);
+    	flowLayout_4.setHgap(0);
+    	panel_3.add(panel_9, "cell 0 1 2 1,growx");
+    	panel_9.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+    	
+    	JLabel lblNewLabel_6 = new JLabel("\uC800\uC7A5 \uD3F4\uB354 \uC635\uC158");
+    	panel_9.add(lblNewLabel_6);
+    	
+    	JRadioButton radio_image = new JRadioButton("\uC120\uD0DD\uC548\uD568");
+    	panel_9.add(radio_image);
+    	radio_image.setSelected(true);
+    	radio_image.setActionCommand("\uC120\uD0DD\uC548\uD568");
+    	
+    	JRadioButton radio_dandock = new JRadioButton("\uB2E8\uB3C5\uD3F4\uB354");
+    	panel_9.add(radio_dandock);
+    	radio_dandock.setActionCommand("\uB2E8\uB3C5\uD3F4\uB354");
+    	
+    	JRadioButton radio_gong = new JRadioButton("\uACF5\uC6A9\uD3F4\uB354");
+    	panel_9.add(radio_gong);
+    	radio_gong.setActionCommand("\uACF5\uC6A9\uD3F4\uB354");
+    	
+    	radio_image.setActionCommand("선택안함");
+		radio_dandock.setActionCommand("단독폴더");
+		radio_gong.setActionCommand("공용폴더");
+				
+		bg_shoppingmall[2].add(radio_image);
+		bg_shoppingmall[2].add(radio_dandock);
+		bg_shoppingmall[2].add(radio_gong);
+    	
+    	
+    	btn_imagecall = new JButton("\uC5F0\uB3D9\uC2DC\uC791");
+    	panel_3.add(btn_imagecall, "cell 1 2 1 2,alignx center,growy");
+    	btn_imagecall.addActionListener(this);
+    	btn_imagecall.setActionCommand("Image");
+    	
+    	progressbar = new JProgressBar(0, 1000);
+    	progressbar.setStringPainted(true);
+    	panel_3.add(progressbar, "cell 0 3,growx,aligny top");
+    	
+    	label_result = new JLabel("\uCD1D   \uAC74");
+    	label_result.setHorizontalAlignment(SwingConstants.RIGHT);
+    	label_result.setFont(new Font("맑은 고딕", Font.PLAIN, 11));
+    	panel_3.add(label_result, "cell 0 2,growx,aligny top");
+    	
+    	btn_Change = new JButton("\uC120\uD0DD \uC635\uC158 \uBCC0\uACBD");
+    	panel_jtaballchange.add(btn_Change, "cell 0 11,growy");
+    	btn_Change.setActionCommand("OK");
+    	btn_Change.addActionListener(this);
     	
     	btn_Detail_Save.addActionListener(new ActionListener() {
     		
@@ -1931,18 +2214,46 @@ public class Goods_Manage extends JPanel implements ActionListener{
 			
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub				
-				if (e.getClickCount() == 2) {
+				// TODO Auto-generated method stub
+				if(e.getButton() == 1){
+					if(change_Flags()) return;
+					//상품을 우측으로 보냅니다.
+					switch(tabPane_detail.getSelectedIndex()){
+					case 0: //상품상세정보
+						setGoodsDetail();
+						break;
+					case 1: //이미지 관리	
+						if(!chkbox_listSearchNot.isSelected()){
+							setSearchGoodsName();
+						}
+						break;
+					case 2: //일괄변경
+						
+						break;
+					case 3: //판매메세지
+						break;
+					case 4: //
+						break;
+					case 5:
+						break;
+					default:
+						JOptionPane.showMessageDialog(Goods_Manage.this, "탭을 선택해 주세요!!");
+						break;
+					}		
+				}
+				
+				/*if (e.getClickCount() == 2) {
 					System.out.println("마우스 두번 클릭 됐습니다.");
-					
+					//수정된 사항이 있다면 다시 돌아 갑니다.
+					if(change_Flags()) return;
 					//상품을 우측으로 보냅니다.
 					setGoodsDetail();
 				} // 더블클릭
 				if (e.getButton() == 3) { 
 					System.out.println("오른쪽 마우스 클릭 됐습니다.");
 					
-				} // 오른쪽 클릭
-			}
+				} // 오른쪽 클릭	 */
+				}
 		});
 		
 		table.setVisible(true);
@@ -2029,173 +2340,1087 @@ public class Goods_Manage extends JPanel implements ActionListener{
 		
 		table.getColumn("이미지명").setCellRenderer(celAlignCenter);
 		
-		
 		final JScrollPane scrollPane = new JScrollPane(table);
 		panel_1.add(scrollPane, BorderLayout.CENTER);
     }
     
+    //버튼 체인지 이미지 연동 시작 시 버튼 체인지
+	private void btnChange(boolean change){			
+		if(change){			
+			btn_imagecall.setActionCommand("Cancel");
+			btn_imagecall.setText("중지");
+			
+			btn_Change.setEnabled(false);
+			//btn_imagecall.setEnabled(false);
+			
+		}else{
+			btn_imagecall.setActionCommand("Image");
+			btn_imagecall.setText("연동시작");
+			
+			btn_Change.setEnabled(true);
+			//btn_imagecall.setEnabled(true);
+			
+		}			
+	}
     
+	//이미지 연동 매칭 
+	private void setFtp_Image_select(){
+				
+		//버튼을 바꿉니다.
+		btnChange(true);
+		
+		thread = new Thread(){
+						
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				
+				// 테이블의 선택된 행의 인덱스 번호 취득
+				int[] row = table.getSelectedRows();
+				
+				//int col = table.getColumnCount();
+				
+				//선택된 상품들의 바코드를 불러온다 
+				//선택된 상품들의 공용폴더 사용여부를 확인하고 사용한다면 
+				//이미지 서버에서 이미지를 불러온다.		
+				String temp_image = "";
+				String query = "Select * From Ftp_Image where ";
+				String result_text = "총 "+row.length+" 건중 ";
+				String result_text_com = "건 매칭 됨";
+				String gubun = bg_shoppingmall[2].getSelection().getActionCommand();
+								
+				if(gubun.equals("공용폴더")){
+					query += "path_gubun='1' ";					
+				}else{
+					query += "path_gubun='0' ";					
+				}
+				
+				progressbar.setValue(0);
+				progressbar.setMaximum(row.length);				
+				label_result.setText(result_text);
+								
+				ArrayList<HashMap<String, String>> query_list = new ArrayList<HashMap<String, String>>();
+				int count=0;			
+				int total_count = 0;
+				int result_count = 0;
+				//선택된 상품 바코드 불러오기
+				for(int j = 0; j < row.length; j++){
+					
+					Vector<Object> temp_one = new Vector<Object>();		
+					
+					temp_one.add(table.getModel().getValueAt(row[j], 1));			
+					temp_one.add(table.getModel().getValueAt(row[j], 20));
+					temp_one.add(table.getModel().getValueAt(row[j], 21));
+					
+					if(temp_one.get(1).equals(gubun.toString().trim()) && temp_one.get(2).equals(" ") || temp_one.get(2).equals("")){
+						temp_image += "'"+temp_one.get(0)+"', ";	
+						count++;
+						total_count++;	
+					}
+					
+					label_result.setText(result_text+total_count+"건 매칭시도 "+result_count+"건 매칭완료");
+					
+					//1000개씩 끊어서 매칭 합니다.
+					if(count == 1000){
+					
+						temp_image = temp_image.substring(0, temp_image.length()-2);		
+						query += "and barcode in ("+temp_image+")";
+						
+						ms_connect.setImageSetting();
+						query_list = ms_connect.connection(query);
+						System.out.println("총 매칭 수량 : "+query_list.size());
+						result_text_com = String.valueOf(query_list.size());
+					
+						temp_image = "";
+					
+						Iterator<HashMap<String, String>> iter = query_list.iterator();
+						ArrayList<String> query_result = new ArrayList<String>();
+					
+						while(iter.hasNext()){					
+							HashMap<String, String> map = iter.next();
+							String temp = "Update Goods_Info Set Img_Path='http://14.38.161.45:7080/main_goods/"+map.get("Barcode")+".jpg', Edit_Tran='1' Where Barcode='"+map.get("Barcode")+"' ";
+							query_result.add(temp);
+							result_count++;
+							label_result.setText(result_text+total_count+"건 매칭시도 "+result_count+"건 매칭중");							
+						}
+												
+						ms_connect.setMainSetting();
+						int a = ms_connect.connect_update(query_result);
+						
+						//완료후 초기화
+						switch(a){
+						case 0:
+						
+							//초기화
+							query = "Select * From Ftp_Image where path_gubun='1' ";				
+							label_result.setText(result_text+total_count+"건 매칭시도 "+result_count+"건 매칭완료");
+							
+							break;
+						default:
+							JOptionPane.showMessageDialog(Goods_Manage.this, "등록하지 못했습니다.");
+							this.stop();
+							btnChange(false);
+							break;
+						}				
+						
+						count = 0;
+					}
+										
+					progressbar.setValue(j+1);
+					
+					try{
+						Thread.sleep(5);
+					}catch(InterruptedException eff){
+						eff.printStackTrace();
+					}
+					
+				}				
+				
+				if(!temp_image.isEmpty()){
+					
+					temp_image = temp_image.substring(0, temp_image.length()-2);		
+					query += "and barcode in ("+temp_image+")";
+					
+					ms_connect.setImageSetting();
+					query_list = ms_connect.connection(query);
+					result_text_com = String.valueOf(query_list.size());
+					System.out.println("총 매칭 수량 : "+query_list.size());
+					
+					Iterator<HashMap<String, String>> iter = query_list.iterator();
+					ArrayList<String> query_result = new ArrayList<String>();
+							
+					while(iter.hasNext()){						
+						HashMap<String, String> map = iter.next();
+						String temp = "Update Goods_Info Set Img_Path='http://14.38.161.45:7080/"+map.get("Path").trim()+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim()+"', Edit_Tran='1' Where Barcode='"+map.get("Barcode").trim()+"' ";
+						query_result.add(temp);	
+						result_count++;
+						label_result.setText(result_text+total_count+"건 매칭시도 "+result_count+"건 매칭중");						
+					}
+										
+					ms_connect.setMainSetting();
+					int a = ms_connect.connect_update(query_result);					
+					
+					//완료후 초기화
+					switch(a){
+					case 0:
+						//초기화											
+						label_result.setText(result_text+total_count+"건 매칭시도 "+result_count+"건 매칭완료");						
+						break;
+					default:
+						JOptionPane.showMessageDialog(Goods_Manage.this, "등록하지 못했습니다.");
+						this.stop();
+						btnChange(false);
+						break;
+					}			
+				}
+				
+				//버튼을 원상복구 합니다.
+				btnChange(false);
+								
+			}
+		};
+		
+		thread.start();
+		
+	}
+			
+	private void setAllSave(){
+			
+		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				
+		System.out.println("변경을 시작합니다.");
+		
+		// 테이블의 선택된 행의 인덱스 번호 취득
+		int[] row = table.getSelectedRows();
+		//int col = table.getColumnCount();
+		
+		ArrayList<String> query_list = new ArrayList<String>();
+		
+		//수정여루를 확인 합니다.
+		boolean edit_check_info = false;
+		
+		//선택 수량만큼 변경된 내용을 저장합니다.
+		for(int j = 0; j < row.length; j++){
+			
+			Vector<Object> temp = new Vector<Object>();
+			String goods_info_query = "Update Goods_Info Set Edit_Tran='1' ";						
+												
+			temp.add(table.getModel().getValueAt(row[j], 1));
+			temp.add(table.getModel().getValueAt(row[j], 17));
+						
+			String barcode = temp.get(0).toString(); //바코드
+			String goods_connect = temp.get(1).toString(); //연동여부
+			
+			//옵션 불러오기
+			//0. 쇼핑몰연동여부/1.진열여부/2.재고사용여부/3.이미지폴더/
+			switch(bg_shoppingmall[0].getSelection().getActionCommand()){			
+			case "연동함":
+				goods_info_query += ", ShoppingMall_Use='1' ";
+				edit_check_info = true;
+				break;				
+				
+			case "연동안함":
+				if(goods_connect.equals("업로드안됨")){
+					goods_info_query += ", ShoppingMall_Use='0' ";				
+					edit_check_info = true;
+				}
+				break;
+			}
+			
+			switch(bg_shoppingmall[1].getSelection().getActionCommand()){				
+			case "진열함":
+				goods_info_query += ", shop_view='1' ";					
+				edit_check_info = true;
+				break;
+				
+			case "진열안함":
+				goods_info_query += ", shop_view='0' ";					
+				edit_check_info = true;
+				break;
+			}
+			
+			switch(bg_shoppingmall[3].getSelection().getActionCommand()){
+			case "사용함":
+				goods_info_query += ", sto_use='1' ";					
+				edit_check_info = true;
+				break;
+				
+			case "사용안함":
+				goods_info_query += ", sto_use='0' ";					
+				edit_check_info = true;
+				break;
+			}
+			
+			switch(bg_shoppingmall[2].getSelection().getActionCommand()){			
+			case "단독폴더":
+				goods_info_query += ", img_path_use='0' ";					
+				edit_check_info = true;
+				break;
+				
+			case "공용폴더":
+				goods_info_query += ", img_path_use='1' ";					
+				edit_check_info = true;
+				break;
+			}
+						
+			//안전재고 설정
+			if(text_anstock.getText().length() > 0){
+				goods_info_query += ", pro_sto='"+text_anstock.getText()+"' ";
+				edit_check_info = true;
+			}
+			
+			//메인출력 코드(선택 되어있는 인덱스를 불러와서 결정합니다.)
+			/*switch(cb_maincode_list.getSelectedIndex()){
+			case 0:
+				//선택 된게 없습니다. 변경을 하지 않습니다.
+				break;
+			case 1:
+				//선택되어 있는 내용을 삭제합니다.
+				goods_info_query += ", Shop_MainCode='' ";
+				edit_check_info = true;
+				break;
+			default:
+				//선택 옵션을 불러와서 저장합니다.
+				String select_item = cb_maincode_list.getSelectedItem().toString();				
+				select_item = select_item.substring(select_item.indexOf("[")+1, select_item.lastIndexOf("]"));
+				goods_info_query += ", Shop_MainCode='"+select_item+"' ";
+				edit_check_info = true;
+				break;	
+			}*/
+			
+			Iterator<JCheckBox> itr = chk_boxs.iterator();
+			int i = 0;
+			String select_item = "";
+			while(itr.hasNext()){
+				JCheckBox jcb = (JCheckBox)itr.next();
+				if(jcb.isSelected()){
+					select_item += jcb.getName()+"|";
+					i++;
+				}
+			}
+			
+			if(i > 0){
+			System.out.println(select_item);
+			select_item = select_item.substring(0, select_item.length()-1);
+			System.out.println(select_item);
+						
+				if(i == 1){
+					if(select_item.equals("none")){
+						//선택되어 있는 내용을 삭제합니다.
+						goods_info_query += ", Shop_MainCode='' ";
+						edit_check_info = true;
+					}else{
+						goods_info_query += ", Shop_MainCode='"+select_item+"' ";
+						edit_check_info = true;
+					}
+				} 
+				
+				if(i > 1){
+					//선택 옵션을 불러와서 저장합니다.				
+					goods_info_query += ", Shop_MainCode='"+select_item+"' ";
+					edit_check_info = true;				
+				}
+			}
+			
+			//마무리 Goods_Info
+			if(edit_check_info){
+				goods_info_query += " where barcode='"+barcode+"' ";
+				query_list.add(goods_info_query);	
+				System.out.println(goods_info_query);
+				
+			}
+		}
+		
+		//쿼리 실행
+		if(edit_check_info){
+			ms_connect.setMainSetting();
+			int result = ms_connect.connect_update(query_list);
+			switch(result){		
+			case 0:
+				JOptionPane.showMessageDialog(this, "변경 완료 했습니다.");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				break;
+			default:
+				JOptionPane.showMessageDialog(this, "DB 연결에 실패 했습니다.");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				break;
+			}		
+		}else{
+			JOptionPane.showMessageDialog(this, "변경할 옵션 상품이 없습니다.");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		}
+	}
+	
+	
+	//쇼핑몰 메인코드를 불러 옵니다.
+	public void getMainCode(){
+		
+		//환경설정
+		String shop_key = Server_Config.getSHOPKEY();
+		
+		//접속 쇼핑몰정보 정의하기
+		String shop_address = "https://ssl.anybuild.co.kr/API/goods/main_code.php";	
+		System.out.println(" 동기화를 시작합니다. 접속 주소 --> " + shop_address);
+		
+		shop_address += "?api_key="+shop_key.toString();
+		System.out.println(shop_address);
+		//기록을 남길 파일을 생성합니다.
+		
+		File file = new File("result.log");
+				
+		if(!file.isFile()){
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		JSONArray data = new JSONArray();
+		
+		//결과를 전송 합니다.
+		//전송폼을 생성합니다.
+		try {
+			
+			URL url = new URL(shop_address);
+			HttpURLConnection shop_url = (HttpURLConnection)url.openConnection();
+			
+			shop_url.setDoInput(true);
+			
+			System.out.println("전송상태 출력");			
+			System.out.println(" URL : "+shop_url.getURL());			
+
+			//전송 결과 수신
+			InputStreamReader isr = new InputStreamReader(shop_url.getInputStream(), "UTF-8");	
+			JSONObject object = (JSONObject)JSONValue.parseWithException(isr);							
+						
+			isr.close();
+			
+			data = (JSONArray)object.get("result_data");
+			System.out.println(data.toJSONString());
+			//결과출력
+			System.out.println(object.toString());
+			
+			SimpleDateFormat formatter = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss", Locale.KOREA );
+			Date currentTime = new Date ( );
+			String dTime = formatter.format ( currentTime );
+			
+			String sb = "전송 시간 : " + dTime + "메인코드조회 결과 \r\n" ;
+					sb += "result_msg : "+object.get("result_msg")+","+" result_cnt : "+object.get("result_cnt");					
+			
+			char[] paser = sb.toCharArray();
+			
+			//로그파일을 작성합니다.
+			OutputStreamWriter bos = new OutputStreamWriter(new FileOutputStream(file, true), "euc-kr");					
+			StringBuffer result_str = new StringBuffer();
+			for(char str : paser){				
+				bos.write(str);
+				result_str.append(str);
+			}			
+			System.out.println(result_str);
+			
+			bos.write('\r');
+			bos.write('\n');	
+			
+			bos.close();
+			System.out.println("조회가 완료 되었습니다.");
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();		
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		Iterator<JSONObject> itr =data.iterator();
+	
+		final JScrollPane scrollpane_change = new JScrollPane();		
+		scrollpane_change.setBounds(6, 17, 357, 45);
+		scrollpane_change.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+		scrollpane_change.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		JPanel panel = new JPanel();
+		panel.setAutoscrolls(true);
+		JCheckBox chkbox = new JCheckBox("출력안함");
+		chkbox.setName("none");
+		chkbox.addItemListener(this);
+		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		
+		panel.add(chkbox);
+		
+		chk_boxs.add(chkbox);
+		
+		while(itr.hasNext()){			
+			JSONObject temp = (JSONObject)itr.next();
+			//정렬합니다.
+			
+			JCheckBox chk_box = new JCheckBox(temp.get("subject").toString());
+			chk_box.setName(temp.get("group_code").toString());
+			chk_box.addItemListener(this);
+			//scrollpane.add(chk_box);
+			panel.add(chk_box);
+			chk_boxs.add(chk_box);
+		}		
+		panel_maincode_title.setLayout(null);
+		
+		scrollpane_change.setViewportView(panel);
+		
+		panel_maincode_title.add(scrollpane_change);
+	}
+	
+	
     private void getImageData(){
     	
+    	try{
+			int number = Integer.parseInt(label_Detail_Number.getText());
+		}catch(NumberFormatException e){
+			JOptionPane.showMessageDialog(this, "상품을 선택해 주세요!!");
+			detail_Renew();
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			return;
+		}
     	
     	//폴더선택 구분에 따라서 쿼리를 각 서버로 보냅니다.
 		//폴더 선택값 불러오기
-    	String gubun = ""; 
-    	if(combox_Detail_ImageConnectUse.getSelectedItem().equals("단독폴더")){
-			//ms_connect.setMainSetting();
-			gubun = "0";
-		}else{
-			//ms_connect.setImageSetting();
-			gubun = "1";
-		}
-		
-		//상품정보 불러오기
-		String barcode = text_Detail_Barcode.getText();		
-		
-		//선택 서버에 접속해서 상품 불러오기
-		String query = "Select * From FTP_Image Where Barcode='"+barcode+"' and Path_Gubun='"+gubun+"' ";
-		
-		ms_connect.setImageSetting();
-		ArrayList<HashMap<String, String>> temp = ms_connect.connection(query);		
-		if(temp.size() > 0){
-			
-			HashMap<String, String> map = temp.get(0);			
-			query = "Update Goods_Info Set Img_Path='http://14.38.161.45:7080/"+map.get("Path")+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim()+"', Edit_Tran='1' Where Barcode='"+map.get("Barcode").trim()+"' ";
-			
-			ms_connect.setMainSetting();
-			int result = ms_connect.connect_update(query);
-			
-			switch(result){
-			case 0:
-				JOptionPane.showMessageDialog(this, "저장이 완료 되었습니다.");
-				break;				
-			default :
-				JOptionPane.showMessageDialog(this, "검색된 파일을 저장하지 못했습니다.");
-			break;		
-			}
-			
+    	String gubun = "";    	
+    	String gname = "";
+    	//상품정보 불러오기
+    	String barcode = text_Detail_Barcode.getText();	
+    	String goodsName = text_Detail_Name.getText();
+    	if(!text_imagename.getText().equals("")){
+    		goodsName = text_imagename.getText();
+    	}
+    	
+    	//선택 서버에 접속해서 상품 불러오기
+    	String query = "Select * From FTP_Image Where 1=1 ";
+    	    	
+    	//폴더선택에 따라서
+    	if(combox_Detail_ImageConnectUse.getSelectedItem().equals("단독폴더")){			
+			gubun = "and path = '"+Server_Config.getFTPMARTPATH()+"' ";
 		}else{			
-			JOptionPane.showMessageDialog(this, "검색된 이미지 파일이 없습니다.");			
+			gubun = "and Path_Gubun='1' ";
 		}
-	   	
+    	
+    	if(cb_gname_search.isSelected()){
+    		gname = "and G_Name='"+goodsName+"' ";
+    	}else{
+    		gname = "and Barcode='"+barcode+"' ";    		
+    	}
+		
+    	//쿼리 합치기
+    	query += gubun + gname;
+    	
+		ms_connect.setImageSetting();
+		ArrayList<HashMap<String, String>> temp = ms_connect.connection(query);
+		
+		switch(temp.size()){
+		case 0: //검색된 결과가 없습니다.
+			JOptionPane.showMessageDialog(this, "검색된 이미지 파일이 없습니다.");		
+			break;
+		case 1: //검색된 결과를 저장합니다.
+			HashMap<String, String> map = temp.get(0);			
+			//query = "Update Goods_Info Set Img_Path='http://14.38.161.45:7080/"+map.get("Path")+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim()+"', Edit_Tran='1' Where Barcode='"+map.get("Barcode").trim()+"' ";
+			String imagepath = "http://14.38.161.45:7080/"+map.get("Path")+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim();
+			edit_goods_info = true;
+			text_imagename.setText(map.get("G_Name"));
+			text_Detail_ImagePath.setText(imagepath);
+			break;
+		default: //검색된 결과가 여러개입니다.
+			JOptionPane.showMessageDialog(this, "검색된 파일이 1개 이상입니다. 이미지관리 탭에서 검색해 주세요!!");	
+			break;	
+		}
     }
     
     //이미지 검색어로 FTP_Server 검색
-    public void jtap_Search(){
+    public void jtap_FTPSearch(){
     
+    	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));    	
+    	
+    	if(text_jtab_search.getText().length() < 1){
+			JOptionPane.showMessageDialog(this, "검색어를 입력해 주세요!!");
+			text_jtab_search.requestFocus();
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));  
+			return;
+		}
+    	
+    	GUBUN = "FTP";
+    	
+    	//판넬 삭제하기
+    	panel_jtap_image.removeAll();
+    	
     	//검색어를 불러옵니다.
     	String search_str = text_jtab_search.getText().toString();
     	
     	ms_connect.setImageSetting();
-		String query = "Select * From Ftp_Image Where barcode like '"+search_str+"' or g_name like '"+search_str+"' ";
+		String query = "Select * From Ftp_Image Where barcode like '%"+search_str+"%' or g_name like '%"+search_str+"%' ";
 		jtap_image_list = ms_connect.connection(query);
 		
 		if(jtap_image_list.size() <= 0){
-			JOptionPane.showMessageDialog(this, "검색된 이미지가 없습니다.");
+			//JOptionPane.showMessageDialog(this, "검색된 이미지가 없습니다.");
 			
+			//상단 목록 버튼 셋팅
+			label_count_up.setText("0");
+			label_count_total.setText("0");
+			image_total_count = 1;
+			image_page_num = 1;
+			image_page_count = 1;
+			
+			panel_jtap_image.setLayout(new BorderLayout());
+			JLabel label = new JLabel("검색된 이미지가 없습니다.", JLabel.CENTER);
+			panel_jtap_image.add(label, BorderLayout.CENTER);
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			text_jtab_search.requestFocus();
 			text_jtab_search.selectAll();
+			this.repaint();
 			return;
-		}    	
+		}
 		
-		//검색된 이미지를 뿌립니다.
+		//검색된 이미지를 뿌립니다. 어디서 검색 됐는지 확인 합니다.
 		jtap_setImage();
+		
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
+    
+    //피씨 에서 검색 합니다.
+    public void jtap_PCSearch(){
+    	
+    	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));   
+    	
+		JFileChooser jfiledialog = new JFileChooser();		
+		jfiledialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);		
+			 
+		//파일선택 창을 띄웁니다.		
+		jfiledialog.setCurrentDirectory(new File(text_jtab_path.getText().toString()));		
+		int ret = jfiledialog.showOpenDialog(this);
+		System.out.println("결과 보기 : "+ret);		
+		//폴더를 선택 했다면 선택 폴더의 모든 이미지를 불러옵니다.
+		if(ret == 0){
+			//검색 경로를 지정합니다.
+			GUBUN = "폴더";
+			
+			text_jtab_path.setText(jfiledialog.getSelectedFile().toString());			
+			
+			//파일 목록 불러와서 리스트에 뿌려주기
+			File dirFile=new File(text_jtab_path.getText());
+			File []fileList=dirFile.listFiles();
+			final String[] FILE_EXTENSION = {"jpg","gif","png","bmp"};
+			
+			//이미지 목록을 클리어합니다.
+			jtap_image_list.clear();
+			
+			for(File tempFile : fileList) {
+				if(tempFile.isFile()) {					
+					HashMap<String, String> map = new HashMap<String, String>();
+					
+					//파일을 불러옵니다.
+					String fileName = tempFile.getName().toString();			
+					//파일명을 "." 을 기점으로 뒷자리를 잘라 냅니다.
+					String perfix = fileName.substring(0, fileName.lastIndexOf("."));
+					String ext = fileName.substring(fileName.lastIndexOf(".")+1, fileName.length()).toString();
+					
+					//String tempPath=tempFile.getParent();
+					//확장자를 검사해서 그림 파일만 불러 옵니다.				
+					for(int i =0; i < FILE_EXTENSION.length; i++){					
+						if(ext.equals(FILE_EXTENSION[i])){
+							//파일을 불러옵니다.				
+							map.put("Barcode", perfix); //이미지명
+							map.put("G_Name", perfix); //파일명
+							map.put("Path", tempFile.getPath()); //폴더 경로
+							map.put("Path_Gubun", "0"); //폴더 구분					
+							map.put("Ext", ext); //확장자
+							map.put("Pop_Tran", "");
+							jtap_image_list.add(map);
+						}
+					}
+				}
+			}	
+			
+			if(jtap_image_list.size() <= 0){
+				//JOptionPane.showMessageDialog(this, "검색된 이미지가 없습니다.");
+				
+				//상단 목록 버튼 셋팅
+				label_count_up.setText("0");
+				label_count_total.setText("0");
+				image_total_count = 1;
+				image_page_num = 1;
+				image_page_count = 1;
+				
+				panel_jtap_image.setLayout(new BorderLayout());
+				JLabel label = new JLabel("검색된 이미지가 없습니다.", JLabel.CENTER);
+				panel_jtap_image.add(label, BorderLayout.CENTER);
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				text_jtab_search.requestFocus();
+				text_jtab_search.selectAll();
+				this.repaint();
+				return;
+			}
+			
+			//검색된 이미지를 뿌립니다. 어디서 검색 됐는지 확인 합니다.
+			jtap_setImage();
+    	}
+		
+    	this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
+    
     
     //검색된 데이타를 목록으로 변경합니다.
     private void jtap_setImage(){
     	
-    	Iterator<HashMap<String, String>> itr = jtap_image_list.iterator();
+    	panel_jtap_image.setLayout(new GridLayout(0, 3));
     	
-    	while(itr.hasNext()){
-    		HashMap<String, String> map = itr.next();
-    		
-    		String [] item = new String[5];
-    		//map.get("Idx");
-    		item[0] = map.get("Barcode");
-    		item[1] = map.get("Path");
-    		item[2] = map.get("G_Name");
-    		item[3] = map.get("Ext");    		
-    		
-    		String path = "http://14.38.161.45:7080/"+map.get("Path")+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim();
-    		item[4] = path;
-    		
-    		
-    		
-    		//목록리스트를 생성합니다.
-    		panel_jtap_image.add(setImageView(item));
-    		
-    		this.repaint();
-    	}    	
+    	int totalCount =  jtap_image_list.size();
+    	System.out.println("총 수량 : "+totalCount);
+    	//총 검색 상품 수량
+    	image_total_count = totalCount;
+    	//총 페이지 수량
+    	image_page_count = totalCount/image_page_listcount;
+    	
+    	//한 페이지 30개씩 끊고 나머지 이미지가 있다면 한페이지 더 보이기
+    	if(totalCount%image_page_listcount > 0){
+    		image_page_count++;
+    	}
+    	
+    	//현재페이지 번호
+    	image_page_num = 1;
+    	
+    	//현재 페이지 및 총페이지 표시
+    	label_count_up.setText(String.valueOf(1));
+    	label_count_total.setText(String.valueOf(image_page_count));
+    	System.out.println("총 페이지 수량 : "+image_page_count);
+    
+    	setImageList();
     }
     
+    //이미지를 구분합니다.
+    public void setImageList(){
+    	    	
+    	int last_number = 0;    	
+    	
+    	//판넬 초기화
+    	panel_jtap_image.removeAll();
+    	
+    	//현재 페이지가 1일때
+    	//현재 페이지가 마지막 페이지 일때 나머지가 있으면 나머지까지만
+    	if(image_page_num == Integer.parseInt(label_count_total.getText())){
+    		//최종 수량을 등록 합니다.
+    		last_number = image_total_count;
+    	}else{
+    		//최종 수량 입니다.
+    		last_number = image_page_num * image_page_listcount;  		
+    	}
+    	
+    	for(int count = (image_page_num * image_page_listcount)-image_page_listcount; count < last_number; count++){
+    		HashMap<String, String> map = jtap_image_list.get(count);    		
+    		String [] item = new String[7];
+    		
+    		item[0] = map.get("Barcode"); //이미지 바코드
+    		item[1] = map.get("Path");  //이미지 폴더
+    		item[2] = map.get("G_Name"); //이미지 상품명
+    		item[3] = map.get("Ext"); //이미지 확장자
+    		
+    		String path = "";
+    		if(GUBUN.equals("FTP")){
+    			path = "http://14.38.161.45:7080/"+map.get("Path")+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim(); //이미지의 경로
+    		}else{
+    			path = map.get("Path"); //이미지의 경로
+    		}
+    		
+    		System.out.println(path);
+    		item[4] = path; //현재 파일의 경로
+    		item[5] = String.valueOf(count+1); //이미지 순서
+    		item[6] = GUBUN; //어디서 검색 되었는지 FTP인지 폴더 인지 구분
+    		
+    		//목록리스트를 생성합니다.
+    		panel_jtap_image.add(setImageView(item));    		
+    		this.repaint();
+    	}
+    }    
+        
     public JPanel setImageView(String[] item){
+    	
+    	//파일명 Barcode 0번, Ext 3번
+    	String fileName = item[0]+"."+item[3];    	
+    	//상품명    	
+    	String goodsName = item[2];    	
+    	//패스
+    	String filePath = "";
+    	if(GUBUN.equals("FTP")){
+    		filePath = item[1];
+    	}else{
+    		filePath = "PC폴더";
+    	}    		
     	
     	//이미지 조각을 실행합니다.
     	//이미지가 보일 조각을 만듭니다.
     	JPanel panel = new JPanel();    	
-    	panel.setLayout(new BorderLayout());
-    	    	    	
+    	//panel.setLayout(new BorderLayout());    	    	    	
+    	
     	Box box = Box.createVerticalBox();
     	
     	JLabel image_show = new JLabel();
-    	box.add(image_show);    	
-    	JLabel g_name = new JLabel("상품명");
+    	box.add(image_show);   
+    	JLabel g_name = new JLabel(setSubString(goodsName));
     	box.add(g_name);
-    	JLabel file_name = new JLabel("파일명");
+    	JLabel image_path = new JLabel(setSubString(filePath));
+    	box.add(image_path);    	
+    	JLabel file_name = new JLabel(setSubString(fileName));
     	box.add(file_name);
+    	JButton file_choose = new JButton(item[5]+"번 선택");    	
     	
-    	panel.add(image_show, BorderLayout.NORTH);
-    	panel.add(g_name,  BorderLayout.CENTER);
-    	panel.add(file_name, BorderLayout.SOUTH);
+    	box.add(file_choose, Box.CENTER_ALIGNMENT);
     	
-    	panel.addMouseListener(new MouseListener() {
-			
+    	file_choose.addActionListener(new ActionListener() {
+    		
 			@Override
-			public void mouseReleased(MouseEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub
-				//상품이 선택 되면 목상단 으로 표시합니다.
+				//이미지 선택 버튼 바로 써져야 합니다.								
+				saveImageChoose(item);
 			}
 		});
+    	
+    	panel.add(box);
     	   	
     	Image image = null;
         try {
         	System.out.println(item[4].toString());
-            URL url = new URL(item[4].toString());
-            image = ImageIO.read(url);                 
+        	if(GUBUN.equals("FTP")){
+        		URL url = new URL(item[4].toString());
+                image = ImageIO.read(url);
+        	}else{
+        		File file = new File(item[4].toString());
+        		image = ImageIO.read(file);
+        	}         
         } catch (IOException e) {
         	e.printStackTrace();        	
+        	this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }                
-       	image_show.setIcon(new ImageIcon(image.getScaledInstance(100, 100, Image.SCALE_SMOOTH)));       
+       	image_show.setIcon(new ImageIcon(image.getScaledInstance(100, 100, Image.SCALE_SMOOTH)));
        	
        	return panel;
+    }    
+    
+    //바이트 단위로 한글을 잘라 냅니다.
+    private String setSubString(String str){
+    	int cutByte = 18;
+    	byte [] strByte = str.getBytes();
+        if( strByte.length < cutByte )
+          return str;
+        int cnt = 0;
+        for( int i = 0; i < cutByte; i++ )
+        {
+           if( strByte[i] < 0 )
+           cnt++;
+        }
+
+       String r_str;
+       if(cnt%2==0) r_str = new String(strByte, 0, cutByte );
+       else r_str = new String(strByte, 0, cutByte + 1 );
+
+       return r_str;    	
     }
     
+    //선택된 이미지를 저장합니다.
+    public void saveImageChoose(String[] item)	{
+    	
+    	if(dtm.getRowCount() == 0 || dtm.getRowCount() > 1){
+    		JOptionPane.showMessageDialog(this, "입력할 상품을 하나만 선택해 주세요~!!");    		
+    		return;
+    	}
+    	
+    	//목록을 수정합니다.
+    	int row = table.getSelectedRow();
+    	//item 0:바코드/1:폴더명/2:상품명/3:확장자/4:패스/5:순번
+    	
+    	String barcode = ""; //현재 선택된 상품 바코드    	
+    	barcode = (String)dtm.getValueAt(row, 1);
+    	
+    	String gname = ""; //현재 선택된 상품 상품명    	
+    	gname = (String)dtm.getValueAt(row, 2);
+    	
+    	String filepath = item[4].toString(); //현재 선택된 상품파일패스
+    	
+    	//파일이 공용폴더 및 같은 FTP이미지 공용 폴더가 아니라면 파일을 자기 폴더로 옮기고 서버에 저장을 합니다.
+    	if(item[1].equals(Server_Config.getFTPMARTPATH()) || item[1].equals(Server_Config.getFTPSERVERPATH()) ){    
+    		System.out.println("단독폴더 또는 공용폴더입니다.");
+    		//마트폴더와 같고 공용폴더와 같을때 
+    		//굳이 변경할 내용이 없습니다.
+    		String query_goodsInfo = "Update Goods_info set Edit_Tran='1', Img_Name='"+gname+"', Img_path_use='0', img_path='"+filepath+"', Shop_view='1', ShoppingMall_use='1' where Barcode='"+barcode+"' ";
+    		ms_connect.setMainSetting();
+			int res = ms_connect.connect_update(query_goodsInfo);
+			switch(res){
+			case 0:
+				JOptionPane.showMessageDialog(this, "이미지가 정상 등록 되었습니다.");
+				break;
+			default:
+				JOptionPane.showMessageDialog(this, "이미지 등록에 실패하였 습니다.");
+				break;
+			}			
+    	}else{
+    		//그렇지 않다면 파일을 불러옵니다.
+    		System.out.println("타매장폴더 또는 PC폴더 입니다.");    		
+    		filepath = "http://14.38.161.45:7080/"+Server_Config.getFTPMARTPATH()+"/"+barcode+"."+item[3].toString(); //현재 상품 이미지 번호    		
+    		
+    		//어디서 검색된 파일인지 확인해서 저장합니다. "FTP" / "폴더"
+    		//이미지를 FTP경로에 저장 합니다. 폴더검색된 이미지 이면 크랍해서 저장을 하고 
+        	//FTP이미지 다른 폴더에 있던 거면자기 폴더로 복사해서 저장합니다.
+    		if(uploadImage(item, filepath, barcode, gname)) return;
+    	}
+    	
+    	//이미지 경로
+    	dtm.setValueAt(filepath, row, 22);
+    	//이미지명
+    	dtm.setValueAt(gname, row, 23);
+    }    
+    
+    //파일을 FTP서버로 업로드 합니다.
+	private boolean uploadImage(String[] item, String filepath, String barcode, String gname){
+		
+		boolean state = false;
+		//item 0:바코드/1:폴더명/2:상품명/3:확장자/4:패스/5:순번
+		//FTP로 이미지를 업로드 합니다.
+		//FTP 서버에 접속 합니다.
+		String barcode_org = item[0]; //선택 이미지
+		String path_org = item[1]; //선택 이미지
+		String gname_org = item[2];		 //선택 이미지
+		String ext_org = item[3]; //선택 이미지
+		String longPath_org = item[4]; //선택 이미지
+		String gubun = item[6];
+		String barcode_cho = barcode;  //현재 선택된상품
+		String gname_cho = gname;  //현재 선택된 상품
+		
+		//파일을 업로드 합니다.
+		String query = "";
+		String query_goodsInfo = "";
+		
+		//실패 파일을 저장합니다.
+		String uploadFail = "";
+		
+		FTPClient ftpConn = new FTPClient();
+		
+		//FTP 폴더에 있는 파일이면 우선 특정 폴더로 다운로드 합니다.
+		System.out.println(GUBUN);
+		if(gubun.equals("FTP")){
+			//FTP 폴더 변경
+			try {				
+				ftpConn.connect(Server_Config.getFTPIP(), Server_Config.getFTPPORT());
+				ftpConn.login(Server_Config.getFTPID(), Server_Config.getFTPPW());				
+				
+				System.out.println(ftpConn.currentDirectory());
+				ftpConn.download(path_org+"/"+barcode_org.trim()+"."+ext_org.trim(), new File(barcode.trim()+"."+ext_org.trim()));
+				ftpConn.changeDirectory(Server_Config.getFTPMARTPATH());
+				ftpConn.upload(new File(barcode.trim()+"."+ext_org.trim())); //현재 선택된 상품의 바코드변경 됩니다.	
+				
+				new File(barcode.trim()+"."+ext_org.trim()).delete();
+				
+				//이미지디비에 저장하기 위해 쿼리를 모아 둡니다.
+				query = "Insert into FTP_Image (barcode, path, path_gubun, g_name, ext, pop_tran)"
+						+ "values('"+barcode+"', '"+Server_Config.getFTPMARTPATH()+"', '0', '"+gname+"', '"+ext_org+"', 0); ";
+				
+				query_goodsInfo = "Update Goods_info set Edit_Tran='1', Img_Name='"+gname+"', Img_path_use='0', img_path='"+filepath+"', Shop_view='1', ShoppingMall_use='1' where Barcode='"+barcode+"' ";
+				System.out.println(query);
+				System.out.println(query_goodsInfo);
+				
+				ftpConn.disconnect(true);
+				System.out.println("다운로드 성공");
+			} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException | FTPDataTransferException | FTPAbortedException e) {
+				// TODO Auto-generated catch block
+				//if(temp_file.exists()) temp_file.delete();
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(this, "FTP 이미지를 저장하지 못했습니다. . \r\n 오류내용 : "+e.getMessage());
+				return state=true;
+			}
+		}else{
+			//FTP 폴더 변경
+			try {				
+				ftpConn.connect(Server_Config.getFTPIP(), Server_Config.getFTPPORT());
+				ftpConn.login(Server_Config.getFTPID(), Server_Config.getFTPPW());				
+				
+				System.out.println(ftpConn.currentDirectory());
+				//ftpConn.download(path_org+"/"+barcode_org.trim()+"."+ext_org.trim(), new File(barcode.trim()+"."+ext_org.trim()));
+				ftpConn.changeDirectory(Server_Config.getFTPMARTPATH());
+				
+				if(!fileSizeCheck(new File(longPath_org))){
+					return state=true;
+				}				
+				
+				ftpConn.upload(new File(longPath_org)); //현재 선택된 상품의 바코드변경 됩니다
+				System.out.println(longPath_org);
+				System.out.println(gname_org.toString()+"."+ext_org.toString() +"->"+ barcode.toString()+"."+ext_org.toString());
+				ftpConn.rename(gname_org.toString()+"."+ext_org.toString(), barcode.toString()+"."+ext_org.toString());
+				System.out.println("파일업로드 완료");
+								
+				//이미지디비에 저장하기 위해 쿼리를 모아 둡니다.
+				query = "Insert into FTP_Image (barcode, path, path_gubun, g_name, ext, pop_tran)"
+						+ "values('"+barcode+"', '"+Server_Config.getFTPMARTPATH()+"', '0', '"+gname+"', '"+ext_org+"', 0); ";
+				
+				query_goodsInfo = "Update Goods_info set Edit_Tran='1', Img_Name='"+gname+"', Img_path_use='0', img_path='"+filepath+"', Shop_view='1', ShoppingMall_use='1' where Barcode='"+barcode+"' ";
+				System.out.println(query);
+				System.out.println(query_goodsInfo);
+				
+				ftpConn.disconnect(true);
+				System.out.println("다운로드 성공");
+			} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException | FTPDataTransferException | FTPAbortedException e) {
+				// TODO Auto-generated catch block
+				//if(temp_file.exists()) temp_file.delete();
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(this, "FTP 이미지를 저장하지 못했습니다. . \r\n 오류내용 : "+e.getMessage());
+				return state=true;
+			}			
+		}
+				
+		//저장할 상품이 있을때만 합니다.
+		if(query.length() > 0){
+			ms_connect.setImageSetting();
+			int result = ms_connect.connect_update(query);
+			switch(result){
+			case 0:	
+				String queryOver = "Delete From Ftp_Image Where idx in( select a.idx as idx "
+								+"From Ftp_Image A INNER JOIN ( Select Min(idx) as idx, barcode, count(*) as overlapCount "
+								+ "From Ftp_Image Where path_gubun='0' and path='"+Server_Config.getFTPMARTPATH()+"' Group by barcode Having count(*) > 1 ) B "
+								+ "on a.barcode = b.barcode and A.idx <> B.idx and a.path_gubun='0' and path='"+Server_Config.getFTPMARTPATH()+"')";				
+				ms_connect.connect_update(queryOver);
+				break;
+			default:
+				break;
+			}
+			
+			ms_connect.setMainSetting();
+			ms_connect.connect_update(query_goodsInfo);	
+		}
+		
+		System.out.println("저장완료");	
+		return state;
+	}
 	
+	//파일 사이즈 및 크기를 체크합니다.
+	private boolean fileSizeCheck(File file){
+				
+		  try{
+			  
+			 String name = file.getName();
+			 name = name.substring(name.lastIndexOf('.')+1, name.length());
+			 System.out.println(name);			 
+			 
+		   BufferedImage bi = ImageIO.read(file);
+		   
+		   //일반적인 이미지 객체의 경우 getWidth메소드와 getHeight메소드가 틀립니다. 
+		   //파라미터가 있어 쓰기 곤란하므로 BufferedImage 로 쓰시는게 맞는것 같습니다.
+		   int width=bi.getWidth();
+		   int height=bi.getHeight();		   
+		   
+		   if(width > 500 || height > 500) {			   
+			 BufferedImage outputImage = new BufferedImage(500, 500, BufferedImage.TYPE_INT_RGB);
+			 Graphics2D g = outputImage.createGraphics();
+			 g.drawImage(bi, 0, 0, 500, 500, null);			   
+			   			   
+			 File out = new File(file.getAbsolutePath());
+			 FileOutputStream fos = new FileOutputStream(out);
+			 ImageIO.write(outputImage, name, fos);	 
+			 
+			 fos.close();
+			 
+		   }
+		  }catch(Exception e){			  
+			  e.printStackTrace();
+			  return false;
+		  }		  
+		  return true;
+	}   
+    
+	//다이얼 로그 띄워서 선택 합니다. (예 0 아니오 1 취소 2)변경된 내용 있을때 변경 안되게 막습니다.
+    public boolean change_Flags(){
+    	
+    	//edit_goods_info = true;
+    	boolean flags = false;
+    	if(edit_goods_info || edit_goods){    		
+    		int result = JOptionPane.showConfirmDialog(this, "변경된 내용이 있습니다. 저장하시겠습니까?");
+    		System.out.println(result);
+    		switch(result){
+    		case 0:
+    			//저장합니다.
+    			saveGoodsInfo();
+    			flags = true;
+    			break;
+    		case 1:   
+    			//저장안합니다. 
+    			edit_goods = false;
+    			edit_goods_info = false;
+    			break;
+    		case 2:
+    			//다시 돌아갑니다.
+    			flags = true;
+    			break;
+    		}    		
+    	}
+    	return flags;
+    }
+    
+    //페이지 업
+    public void setImageUpCount(){
+    	//이미지 페이지 업
+    	System.out.println("페이지업");
+    	if( image_page_num < image_page_count ){    		
+    		image_page_num++;
+    		label_count_up.setText(String.valueOf(image_page_num));
+    		setImageList();
+    	}    	
+    	System.out.println(image_page_num);
+    }
+    
+    //페이지 다운
+    public void setImageDownCount(){
+    	//이미지 페이지 다운
+    	System.out.println("페이지다운");
+    	if(image_page_num > 1){
+    		image_page_num--;
+    		label_count_up.setText(String.valueOf(image_page_num));
+    		setImageList();
+    	}
+    	System.out.println(image_page_num);
+    }    
+    
 	class ChkboxItemListioner_Top implements ItemListener{
 
 		@Override
@@ -2261,14 +3486,68 @@ public class Goods_Manage extends JPanel implements ActionListener{
 		//검색어로 검색 합니다.
 		switch(command){		
 		case "이미지검색":
-			if(text_jtab_search.getText().length() <= 1){
-				JOptionPane.showMessageDialog(this, "검색어를 입력해 주세요!!");
-				text_jtab_search.requestFocus();
-				break;
+			//setSearchGoodsName();	
+			jtap_FTPSearch();
+			break;		
+		case "폴더검색":			
+			jtap_PCSearch();
+			break;
+		case "업":
+			setImageUpCount();
+			break;
+		case "다운":
+			setImageDownCount();
+			break;
+		case "OK":
+			
+			if(table.getRowCount() > 0){
+				setAllSave();
 			}else{
-				jtap_Search();
+				JOptionPane.showMessageDialog(this, "목록에서 상품을 선택해 주세요!");
 			}
 			break;		
+		case "Cancel":
+			if(thread.isAlive()){
+				thread.stop();
+			}			
+			btnChange(false);
+			break;
+		case "Image":
+			if(table.getRowCount() == 0){				
+				JOptionPane.showMessageDialog(this, "목록에서 상품을 선택해 주세요!");
+			}
+			
+			if(bg_shoppingmall[2].getSelection().getActionCommand().equals("선택안함")){
+				JOptionPane.showMessageDialog(this, "이미지 폴더를 선택해 주세요");
+				return;
+			}
+			
+			setFtp_Image_select();
+			break;
+		}
+	}
+
+	@Override
+	public void itemStateChanged(ItemEvent e) {
+		// TODO Auto-generated method stub
+		JCheckBox jcb = (JCheckBox)e.getItem();
+		System.out.println(e.getStateChange());
+		if(e.getStateChange() == 1){
+			if( jcb.getName().equals("none")){
+				for(int index = 0; index < chk_boxs.size(); index++){
+					JCheckBox jcb_list = chk_boxs.get(index);
+					if(!jcb_list.getName().equals("none")){
+						jcb_list.setSelected(false);
+					}
+				}
+			}else{
+				for(int index = 0; index < chk_boxs.size(); index++){
+					JCheckBox jcb_list = chk_boxs.get(index);
+					if(jcb_list.getName().equals("none") && jcb_list.isSelected()){
+						jcb_list.setSelected(false);
+					}
+				}
+			}
 		}
 	}
 }

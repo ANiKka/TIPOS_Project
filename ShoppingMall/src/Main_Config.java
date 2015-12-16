@@ -11,6 +11,7 @@ import java.awt.Font;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 
@@ -74,12 +75,20 @@ public class Main_Config extends JDialog implements ActionListener{
 	private Ms_Connect ms_connect;
 	
 	HashMap<String, String> temp_config;
+	private JTextField text_pcimage_path;
 	
 	/**
 	 * Create the panel.
 	 */
 	public Main_Config() {
+		
 		setResizable(false);
+		
+		try {
+		    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) { 
+		    System.err.println("Cannot set look and feel:" + e.getMessage()); 
+		}
 		
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Main_Config.class.getResource("/Icon/btn_config.png")));
 				
@@ -268,6 +277,22 @@ public class Main_Config extends JDialog implements ActionListener{
 		pass_shop_key.setText((String) null);
 		pass_shop_key.setColumns(10);
 		
+		JLabel label_pciamge_path = new JLabel("PC\uD3F4\uB354");
+		label_pciamge_path.setHorizontalAlignment(SwingConstants.CENTER);
+		label_pciamge_path.setBounds(12, 260, 76, 15);
+		panel_ftp.add(label_pciamge_path);
+		
+		text_pcimage_path = new JTextField();
+		text_pcimage_path.setBounds(100, 257, 210, 21);
+		panel_ftp.add(text_pcimage_path);
+		text_pcimage_path.setColumns(10);
+		
+		JLabel label_pcimage_title = new JLabel("\uB9E4\uC7A5 \uC0AC\uC9C4 \uD3F4\uB354 \uC124\uC815");
+		label_pcimage_title.setFont(new Font("맑은 고딕", Font.BOLD, 13));
+		label_pcimage_title.setHorizontalAlignment(SwingConstants.CENTER);
+		label_pcimage_title.setBounds(12, 232, 298, 15);
+		panel_ftp.add(label_pcimage_title);
+		
 		JPanel panel_office = new JPanel();
 		panel_office.setLayout(null);
 		panel_office.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -329,6 +354,8 @@ public class Main_Config extends JDialog implements ActionListener{
 			text_server_dbid.setText(config_file.getProperty("ServerDBid"));
 			pass_server_dbpw.setText(config_file.getProperty("ServerDBpw"));
 			
+			//pc이미지 폴더 설정
+			text_pcimage_path.setText(config_file.getProperty("PCImagePath", "C:\\"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();	
@@ -356,6 +383,7 @@ public class Main_Config extends JDialog implements ActionListener{
 				config_file.setProperty("ServerDBid", "sa");
 				config_file.setProperty("ServerDBpw", "tips");
 				
+				config_file.setProperty("PCImagePath", "C:\\");
 				/*config_file.setProperty("FTPdan", "");
 				
 				config_file.setProperty("OfficeCode", "");				
@@ -388,7 +416,9 @@ public class Main_Config extends JDialog implements ActionListener{
 		Server_Config.setSERVER_PORT(config_file.getProperty("ServerPort"));		
 		Server_Config.setSERVER_DBNAME(config_file.getProperty("ServerDBname"));
 		Server_Config.setSERVER_DBID(config_file.getProperty("ServerDBid"));
-		Server_Config.setSERVER_DBPW(config_file.getProperty("ServerDBpw"));						
+		Server_Config.setSERVER_DBPW(config_file.getProperty("ServerDBpw"));		
+		
+		Server_Config.setPCIMAGE_PATH(config_file.getProperty("PCImagePath"));
 	}
 	
 	private void setOnlineValues(){
@@ -403,13 +433,14 @@ public class Main_Config extends JDialog implements ActionListener{
 				
 			text_ftp_dandock.setText(temp_config.get("Sto_CD"));
 			
-			//매장 환경설정 불러오기			
+			//매장 환경설정 불러오기
 			text_office_code.setText(temp_config.get("Sto_CD"));				
 			text_office_name.setText(temp_config.get("Office_Name"));
 			text_office_http.setText(temp_config.get("Online_Address"));			
 			text_office_id.setText(temp_config.get("Online_ID"));
 			text_office_pw.setText(temp_config.get("Online_PW"));
 			pass_shop_key.setText(temp_config.get("Online_Key"));	
+			
 	}
 	
 	private void setSave(){
@@ -420,6 +451,8 @@ public class Main_Config extends JDialog implements ActionListener{
 		config_file.setProperty("ServerDBid", text_server_dbid.getText());		
 		char[] pass = pass_server_dbpw.getPassword();
 		config_file.setProperty("ServerDBpw", new String(pass));
+		
+		config_file.setProperty("PCImagePath", text_pcimage_path.getText());
 		
 		try{	
 			config_file.store(new FileOutputStream(file), "환경설정 저장");
