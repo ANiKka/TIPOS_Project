@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,6 +35,8 @@ import java.util.Locale;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
+import javax.naming.CommunicationException;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
@@ -56,9 +59,15 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.xml.bind.JAXBElement.GlobalScope;
+import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -66,6 +75,8 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
 import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 
 //import com.oroinc.net.ftp.FTPClient;
 //import com.oroinc.net.ftp.FTPFile;
@@ -80,6 +91,9 @@ import net.miginfocom.swing.MigLayout;
 import java.awt.GridLayout;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.plaf.basic.BasicTextUI.BasicHighlighter;
 import javax.swing.plaf.synth.SynthSeparatorUI;
 import javax.swing.UIManager;
 import java.awt.FlowLayout;
@@ -216,10 +230,17 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 	private JTextField text_jtab_hotkey;
 	private JTable table_hotkey;
 	private DefaultTableModel dtm_hotkey; 
+	private TableColumnModel columnModel_hotkey;
+    private TableCellRenderer renderer_hotkey;
+	
 	private JComboBox<String> cb_jtab_hotkey_map;
 	private JComboBox<String> cb_jtab_hotkey_gubun;
 	private DefaultComboBoxModel<String> dcbm_hotkey_group;
 	private JLabel label_jtab_hotkey_result;
+	private JButton btn_jtab_hotkey_listdown;
+	private JButton btn_jtab_hotkey_listup;
+	private JButton btn_jtab_hotkey_listcall;
+	
 	/**
 	 * Create the panel.
 	 */
@@ -489,6 +510,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		cb_jtab_hotkey_map.setSelectedIndex(0);
 		cb_jtab_hotkey_gubun.setSelectedIndex(0);
 		label_jtab_hotkey_result.setText("0");
+		
 	}
 	
     
@@ -1095,7 +1117,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 				
 				v.add(map.get("img_path")); //22. 연동중 이미지 경로
 				v.add(map.get("img_name")); //23. 이미지명
-				
+				v.add(map.get("scale_use")); //24. 저울상품
 				dtm.addRow(v);				
 			}
 		}else{
@@ -1121,7 +1143,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		//query = "Select * from goods where goods_use='1' ";
 		
 		query = " Select a.barcode, a.g_name, a.std_size, a.pur_pri, a.sell_pri, a.real_sto, b.pro_sto, a.sale_use, a.l_code, a.l_name, a.m_code, a.m_name, "
-				+ "a.s_code, a.s_name, a.bus_code, a.bus_name, a.goods_use, b.shoppingmall_use, b.upload, b. shop_view, b.sto_use, ISNULL(b.shop_maincode, '') as shop_maincode, b.img_path_use, b.img_path, ISNULL(b.img_name, '') as img_name "
+				+ "a.s_code, a.s_name, a.bus_code, a.bus_name, a.goods_use, a.scale_use, b.shoppingmall_use, b.upload, b. shop_view, b.sto_use, ISNULL(b.shop_maincode, '') as shop_maincode, b.img_path_use, b.img_path, ISNULL(b.img_name, '') as img_name "
 				+ "From ( Select * From Goods Where L_code <> 'AA' and goods_use='1' "+query_goods+" ) a join "
 				+ " (select * from goods_info where 1=1 "+query_info+" ) b "
 				+ " on a.barcode=b.barcode " ;
@@ -1134,13 +1156,14 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     	/**
 		 * 셀 간격 조정
 		 */
-		DefaultTableCellRenderer celAlignCenter = new DefaultTableCellRenderer();
+		/*DefaultTableCellRenderer celAlignCenter = new DefaultTableCellRenderer();
 		celAlignCenter.setHorizontalAlignment(JLabel.CENTER);
 		DefaultTableCellRenderer celAlignRight = new DefaultTableCellRenderer();
 		celAlignRight.setHorizontalAlignment(JLabel.RIGHT);
-		
+		*/
+    	
 		String[] colunm = {"순번", "바코드", "상품명", "규격", "매입가", "판매가", "현재고", "안전재고", 
-				"분류코드", "대코드", "대명", "중코드", "중명", "소코드", "소명", "행사", "상품연동", "쇼핑몰", "진열유무", "재고연동", "메인출력", "이미지설정", "이미지경로", "이미지명"};
+				"분류코드", "대코드", "대명", "중코드", "중명", "소코드", "소명", "행사", "상품연동", "쇼핑몰", "진열유무", "재고연동", "메인출력", "이미지설정", "이미지경로", "이미지명", "저울상품"};
 		
 		dtm = new DefaultTableModel(null, colunm){
 			/**
@@ -2275,6 +2298,11 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 						
 						break;
 					case 3: //판매메세지
+						if(btn_jtab_hotkey_listcall.isEnabled()){
+							//목록의 바코드를 찾아서 지정한 곳으로 상품을 저장합니다.
+							//상품 저장 함수
+							setHotKeyListSave();
+						}
 						break;
 					case 4: //
 						break;
@@ -2312,7 +2340,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		
 		//String[] colunm = {"순번", "바코드", "상품명", "규격", "매입가", "판매가", "현재고", "안전재고", 
 		//"분류코드", "대코드", "대명", "중코드", "중명", "소코드", "소명", "행사", "상품연동", "진열여부", "연동유무", "재고연동", 
-		//"메인출력", "이미지설정", "이미지경로" , "이미지명"};
+		//"메인출력", "이미지설정", "이미지경로" , "이미지명", "저울상품"};
 		
 		table.getColumn("매입가").setPreferredWidth(60);
 		table.getColumn("매입가").setCellRenderer(celAlignRight);
@@ -2384,6 +2412,11 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		
 		table.getColumn("이미지명").setCellRenderer(celAlignCenter);
 		
+		table.getColumn("저울상품").setWidth(0);
+		table.getColumn("저울상품").setMinWidth(0);
+		table.getColumn("저울상품").setMaxWidth(0);		
+		
+		
 		final JScrollPane scrollPane = new JScrollPane(table);
 		panel_1.add(scrollPane, BorderLayout.CENTER);
 		
@@ -2397,17 +2430,17 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		jtab_hotkey_sell.setBorder(new LineBorder(Color.GRAY));
 		
 		tabPane_detail.add("1차 식품 판매금액", jtab_hotkey_sell);
-		jtab_hotkey_sell.setLayout(new MigLayout("", "[grow][][][][][][][grow][][grow]", "[][][][][][25px][][][][grow][]"));
+		jtab_hotkey_sell.setLayout(new MigLayout("", "[grow][][][][grow][grow]", "[][][][][25px][][][grow][]"));
 		
 		JLabel label_jtap_hotkey_search = new JLabel("\uAC80\uC0C9\uC5B4");
 		jtab_hotkey_sell.add(label_jtap_hotkey_search, "cell 0 1,alignx center,aligny center");
 		
 		text_jtab_hotkey = new JTextField();
-		jtab_hotkey_sell.add(text_jtab_hotkey, "cell 1 1 7 1,grow");
+		jtab_hotkey_sell.add(text_jtab_hotkey, "cell 1 1 4 1,grow");
 		text_jtab_hotkey.setColumns(10);
 		
 		JButton btn_jtab_hotkey_search = new JButton("\uAC80\uC0C9");
-		jtab_hotkey_sell.add(btn_jtab_hotkey_search, "cell 9 1,growx,aligny center");
+		jtab_hotkey_sell.add(btn_jtab_hotkey_search, "cell 5 1,growx,aligny center");
 		btn_jtab_hotkey_search.setActionCommand("HotKey_Search");
 		btn_jtab_hotkey_search.addActionListener(this);
 		
@@ -2420,29 +2453,39 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		btn_jtab_hotkey_mapdown.addActionListener(this);
 		
 		cb_jtab_hotkey_map = new JComboBox<String>();
-		jtab_hotkey_sell.add(cb_jtab_hotkey_map, "cell 3 3,growx");		
+		jtab_hotkey_sell.add(cb_jtab_hotkey_map, "cell 2 3,growx");		
 		cb_jtab_hotkey_map.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub				
+				// TODO Auto-generated method stub
+				
+				if(cb_jtab_hotkey_map.getSelectedIndex() == 0){
+					btn_jtab_hotkey_listcall.setEnabled(false);
+					btn_jtab_hotkey_listdown.setEnabled(false);
+					btn_jtab_hotkey_listup.setEnabled(false);					
+				}else{
+					btn_jtab_hotkey_listcall.setEnabled(true);
+					btn_jtab_hotkey_listdown.setEnabled(true);
+					btn_jtab_hotkey_listup.setEnabled(true);
+				}
 				getHotKeyGoodsList();
 			}
 		});
 		
 		JButton btn_jtab_hotkey_mapup = new JButton(">");
-		jtab_hotkey_sell.add(btn_jtab_hotkey_mapup, "cell 5 3");
+		jtab_hotkey_sell.add(btn_jtab_hotkey_mapup, "cell 3 3");
 		btn_jtab_hotkey_mapup.setActionCommand("HotKey_Up");
 		btn_jtab_hotkey_mapup.addActionListener(this);
 		
 		JButton btn_jtab_hotkey_group = new JButton("\uAD00\uB9AC");
-		jtab_hotkey_sell.add(btn_jtab_hotkey_group, "cell 6 3 2 1,alignx center");
+		jtab_hotkey_sell.add(btn_jtab_hotkey_group, "cell 4 3,alignx center");
 		btn_jtab_hotkey_group.setActionCommand("HotKey_Group");
 		btn_jtab_hotkey_group.addActionListener(this);
 		
 		cb_jtab_hotkey_gubun = new JComboBox<String>();
 		cb_jtab_hotkey_gubun.setModel(new DefaultComboBoxModel<String>(new String[] {"\uC804\uCCB4", "\uC800\uC6B8\uC0C1\uD488", "\uBD80\uBD84\uC0C1\uD488"}));
-		jtab_hotkey_sell.add(cb_jtab_hotkey_gubun, "cell 9 3,growx");
+		jtab_hotkey_sell.add(cb_jtab_hotkey_gubun, "cell 5 3,growx");
 		
 		cb_jtab_hotkey_gubun.addItemListener(new ItemListener() {
 			
@@ -2455,28 +2498,38 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		
 		JSeparator separator_4 = new JSeparator();
 		separator_4.setForeground(Color.GRAY);
-		jtab_hotkey_sell.add(separator_4, "cell 0 5 10 1,growx,aligny center");
+		jtab_hotkey_sell.add(separator_4, "cell 0 4 6 1,growx,aligny center");
 		
-		JButton btn_jtab_hotkey_listcall = new JButton("\uBD88\uB7EC\uC624\uAE30");
-		jtab_hotkey_sell.add(btn_jtab_hotkey_listcall, "cell 0 7 2 1");
+		btn_jtab_hotkey_listcall = new JButton("\uCD94\uAC00");
+		jtab_hotkey_sell.add(btn_jtab_hotkey_listcall, "cell 0 5,alignx center");
 		btn_jtab_hotkey_listcall.setActionCommand("HotKey_ListCall");
 		btn_jtab_hotkey_listcall.addActionListener(this);
 		
+		btn_jtab_hotkey_listdown = new JButton("↑");
+		jtab_hotkey_sell.add(btn_jtab_hotkey_listdown, "cell 1 5");
+		btn_jtab_hotkey_listdown.setActionCommand("HotKey_ListDown");
+		btn_jtab_hotkey_listdown.addActionListener(this);
+		
 		label_jtab_hotkey_result = new JLabel("0");
-		jtab_hotkey_sell.add(label_jtab_hotkey_result, "cell 3 7,alignx center,aligny center");
+		jtab_hotkey_sell.add(label_jtab_hotkey_result, "cell 2 5,alignx center,aligny center");
+		
+		btn_jtab_hotkey_listup = new JButton("↓");
+		jtab_hotkey_sell.add(btn_jtab_hotkey_listup, "cell 3 5");
+		btn_jtab_hotkey_listup.setActionCommand("HotKey_ListUp");
+		btn_jtab_hotkey_listup.addActionListener(this);
 		
 		JButton btn_jtab_hotkey_del = new JButton("\uC0AD\uC81C");
-		jtab_hotkey_sell.add(btn_jtab_hotkey_del, "cell 6 7 2 1,alignx center");
+		jtab_hotkey_sell.add(btn_jtab_hotkey_del, "cell 4 5,alignx center");
 		btn_jtab_hotkey_del.setActionCommand("HotKey_Del");
 		btn_jtab_hotkey_del.addActionListener(this);
 		
 		JButton btn_jtab_hotkey_save = new JButton("\uC800\uC7A5");
-		jtab_hotkey_sell.add(btn_jtab_hotkey_save, "cell 9 7,growx");
+		jtab_hotkey_sell.add(btn_jtab_hotkey_save, "cell 5 5,growx");
 		btn_jtab_hotkey_save.setActionCommand("HotKey_Save");
 		btn_jtab_hotkey_save.addActionListener(this);
 		
 		JPanel panel_hotkey = new JPanel();
-		jtab_hotkey_sell.add(panel_hotkey, "cell 0 9 10 1,grow");
+		jtab_hotkey_sell.add(panel_hotkey, "cell 0 7 6 1,grow");
 		panel_hotkey.setLayout(new BorderLayout(0, 0));
 		
 		final JScrollPane scrollPane_hotkey = new JScrollPane();
@@ -2493,20 +2546,72 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		 * 셀 간격 조정
 		 */
 		DefaultTableCellRenderer celAlignCenter = new DefaultTableCellRenderer();
-		celAlignCenter.setHorizontalAlignment(JLabel.CENTER);
-		DefaultTableCellRenderer celAlignRight = new DefaultTableCellRenderer();
-		celAlignRight.setHorizontalAlignment(JLabel.RIGHT);
+		celAlignCenter.setHorizontalAlignment(JLabel.CENTER);		
 		
-		String[] colunm = {"순번", "바코드", "상품명", "저장위치", "판매가"};
+		String[] colunm = {"순번", "바코드", "상품명", "저장위치", "판매가", "코드"};
 		
-		dtm_hotkey = new DefaultTableModel(null, colunm);
-		
-		//table_hotkey.setVisible(true);
+		dtm_hotkey = new DefaultTableModel(null, colunm){
+			@Override
+			public boolean isCellEditable(int roe, int column){
+				if(column == 4){
+					return true;
+				}else{
+					return false;
+				}
+			}
+		};
 		
 		table_hotkey = new JTable(dtm_hotkey);
 		
+		table_hotkey.setRowHeight(25);		
+		table_hotkey.getModel().addTableModelListener(new TableModelListener() {
+			
+			@Override
+			public void tableChanged(TableModelEvent e) {
+				// TODO Auto-generated method stub
+				// -1 초기화 , 0 수정됨, 1 리스트
+				switch(e.getType()){				
+				case 0:
+					System.out.println("수정됨");
+					break;				
+				}
+			}
+		});
+		
+		table_hotkey.addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub				
+				System.out.println(KeyEvent.VK_ENTER);
+				if(e.getKeyCode() == 10){
+					table_hotkey.changeSelection(table_hotkey.getSelectedRow(), 4, true, true);
+				}
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+				if (e.getKeyCode() >= 48  &&	e.getKeyCode() <= 57){
+					//System.out.println("숫자 : "+e.getKeyCode());
+					table_hotkey.changeSelection(table_hotkey.getSelectedRow(), 4, true, true);
+				}
+				
+				if(e.getKeyCode() >= 96 && e.getKeyCode() <= 105){
+					//System.out.println("숫자 : "+e.getKeyCode());	
+					table_hotkey.changeSelection(table_hotkey.getSelectedRow(), 4, true, true);
+				}				
+			}
+		});
+		
 		table_hotkey.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		table_hotkey.setCellSelectionEnabled(true);
 		
 		//table_hotkey.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);  //가로 스크롤
 		
@@ -2516,23 +2621,31 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		TableRowSorter<TableModel> tsorter = new TableRowSorter<TableModel>(table_hotkey.getModel());
 		table_hotkey.setRowSorter(tsorter);
 				
-		table_hotkey.getColumn("순번").setPreferredWidth(40);
+		table_hotkey.getColumn("순번").setPreferredWidth(30);
 		table_hotkey.getColumn("순번").setCellRenderer(celAlignCenter);
 		
-		table_hotkey.getColumn("바코드").setPreferredWidth(110);
-		table_hotkey.getColumn("상품명").setPreferredWidth(180);
+		table_hotkey.getColumn("바코드").setPreferredWidth(50);
+		table_hotkey.getColumn("상품명").setPreferredWidth(120);
 		table_hotkey.getColumn("저장위치").setPreferredWidth(40);
 		table_hotkey.getColumn("저장위치").setCellRenderer(celAlignCenter);
 		
 		table_hotkey.getColumn("판매가").setPreferredWidth(60);
-		table_hotkey.getColumn("판매가").setCellRenderer(celAlignRight);
-				
-		dcbm_hotkey_group = new DefaultComboBoxModel<String>();		
+		//table_hotkey.getColumn("판매가").setCellRenderer(new HotkeyTableCellRenderer());
+		table_hotkey.getColumn("판매가").setCellRenderer(new HotkeyTableCellRenderer());
+		
+		table_hotkey.getColumn("코드").setWidth(0);
+		table_hotkey.getColumn("코드").setMinWidth(0);
+		table_hotkey.getColumn("코드").setMaxWidth(0);	
+		
+		
+		dcbm_hotkey_group = new DefaultComboBoxModel<String>();
+		
 		//단축키 번호 입니다. 기본이 전체 입니다.
 		cb_jtab_hotkey_map.setModel(dcbm_hotkey_group);
 		
 		//핫키를 생성합니다.
 		setHotKeyMakeMap();
+		
 		
     }
     
@@ -2573,11 +2686,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 			
 			dcbm_hotkey_group.insertElementAt(name, Integer.parseInt(map.get("H_CODE"))+1);
 		}
-    	
-    	
     }
-    
-    
     
     //버튼 체인지 이미지 연동 시작 시 버튼 체인지
 	private void btnChange(boolean change){			
@@ -3665,7 +3774,12 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     	
     	if(!(tabPane_detail.getSelectedIndex() == 3)) return;
     	
-    	String query = "Select * From Hot_Key A join Goods B On A.H_Barcode=B.Barcode ";
+    	//String query = "Select * From Hot_Key A join Goods B On A.H_Barcode=B.Barcode ";
+    	
+    	String query = "Select * From ( "
+    					  +"Select a.H_Code, ISNull(H_Name, H_Index) as H_Index, a.H_Number, a.H_Barcode, a.H_Order, a.H_SellPri "
+    					  +"From Hot_Key a Left Join Hot_Key_DefName b On a.H_Code=b.H_Code "
+    					  +") c Join Goods d On c.H_Barcode=d.Barcode ";
     	
     	//검색어를 가져 옵니다.
     	String search_text = text_jtab_hotkey.getText();
@@ -3675,26 +3789,28 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     	
     	//상품 검색어
     	if(search_text.length() > 0){    		
-    		query += "And ( B.G_Name Like '%"+search_text+"%' Or B.Barcode Like '%"+search_text+"%' ) ";
+    		query += "And ( d.G_Name Like '%"+search_text+"%' Or d.Barcode Like '%"+search_text+"%' ) ";
     	}
     	
     	//상품 맵
     	if(hotkey_map >= 0){
-    		query += "And A.H_Code = '"+hotkey_map+"' ";
+    		query += "And c.H_Code = '"+hotkey_map+"' ";
     	}
     	
     	//상품 구분
     	switch(hotkey_gubun){
     	case 0:
-    		query += "And ( B.Scale_Use='1' Or Len(B.Barcode)=4) ";
+    		query += "And ( d.Scale_Use='1' Or Len(d.Barcode)=4) ";
     		break;
     	case 1:
-    		query += "And B.Scale_Use='1' ";
+    		query += "And d.Scale_Use='1' ";
     		break;
     	case 2:
-    		query += "And Len(B.Barcode)=4 ";
+    		query += "And Len(d.Barcode)=4 ";
     		break;    	
     	}
+    	    	
+    	query += "Order By c.H_Order ASC";
     	
     	ms_connect.setMainSetting();
     	ArrayList<HashMap<String, String>> hotkey_list = ms_connect.connection(query);    	    	
@@ -3717,18 +3833,23 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     	for(HashMap<String, String> map : hotkey_list){
     		
     		Vector<String> hotkey = new Vector<String>();
-    		
-    		hotkey.add("");
+    		    		
     		String code = map.get("H_Code");
     		String index = map.get("H_Index");
+    		if(index.length() > 4){
+    			index = index.substring(0, 4);
+    		}    		
     		String barcode = map.get("H_Barcode");
     		String sell_pri = map.get("H_SellPri");
     		String g_name = map.get("G_Name");
+    		String order = map.get("H_Order");
     		
+    		hotkey.add(order);
     		hotkey.add(barcode);
     		hotkey.add(g_name);
     		hotkey.add(index);
     		hotkey.add(sell_pri);
+    		hotkey.add(code);
     		
     		dtm_hotkey.addRow(hotkey);
     		
@@ -3742,8 +3863,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     	if( select_hotkey < 52){
     		select_hotkey++;
     		cb_jtab_hotkey_map.setSelectedIndex(select_hotkey);
-    	}
-    	
+    	}    	
     }
     
     public void setHotKeyMapDown(){
@@ -3753,11 +3873,247 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     	if( select_hotkey > 0){
     		select_hotkey--;
     		cb_jtab_hotkey_map.setSelectedIndex(select_hotkey);
+    	}    	
+    }
+    
+    //리스트에서 불러오거나 금액을 수정하였다면 삭제 합니다.
+    public void setHotKeyListSave(){
+    	
+    	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    	
+    	int row = table.getSelectedRowCount();
+    	
+    	if(row <= 0){
+    		JOptionPane.showMessageDialog(this, "목록에서 이동할 상품을 선택해 주세요~!");
+    		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    		return;
     	}
     	
+    	//컬럼 갯수를 불러옵니다.
+    	int[] row_item = table.getSelectedRows();
+		int col = table.getColumnCount();
+		
+		ArrayList<Vector<Object>> temp_list = new ArrayList<Vector<Object>>();
+		for(int j = 0; j < row; j++){
+			Vector<Object> temp = new Vector<Object>();
+			for(int i =0; i < col; i++){				
+				temp.add(dtm.getValueAt(row_item[j], i));
+			}
+			temp_list.add(temp);
+		}
+				
+		//핫키에 저장하기
+		//필요필드
+		//저울상품 또는 부분상품이 아니라면 걸러 버립니다.
+		//cb_jtab_hotkey_map
+				
+		//H_Code 0-51 까지
+		int getHCode = cb_jtab_hotkey_map.getSelectedIndex()-1;
+		
+		//H_Index A-z 까지
+		char[] atoz = setAtoZ();
+		String getHIndex = String.valueOf(atoz[getHCode]);
+		
+		//날자 계산
+		SimpleDateFormat formatter = new SimpleDateFormat ( "yyyy-MM-dd", Locale.KOREA );
+		Date currentTime = new Date ( );
+		String dTime = formatter.format ( currentTime );
+		System.out.println ( dTime );
+				
+		//바코드
+		String barcode = "";
+		String scale_use = ""; //저울상품
+		int length_4; //부분상품
+		
+		for(int i = 0; i < temp_list.size(); i++){		
+			
+			Vector<Object> temp = new Vector<Object>();
+			temp = temp_list.get(i);			
+			barcode = temp.get(1).toString();//바코드	
+			scale_use = temp.get(24).toString();//저울상품
+			length_4 = barcode.length();
+			
+			System.out.println(scale_use);
+			//부분상품이 아니라면 부분상품은 아니지만 저울 상품이라면 
+			if(length_4 != 4){
+				if(!scale_use.equals("1")) continue;	
+			}
+				
+			String[] query_won = new String[2];
+			String query = "SELECT COUNT(*) as Count FROM HOT_KEY  WHERE H_BARCODE='"+barcode+"' ";
+			
+			//저울상품인지 또는 부분상품인지 체크
+			ms_connect.setMainSetting();
+			HashMap<String, String> temp_count = ms_connect.selectQueryOne(query);
+			int setCount = Integer.parseInt(temp_count.get("Count"));	
+			if( setCount > 0 ){
+				int result = JOptionPane.showConfirmDialog(this, "이미 저장되어 있습니다. \r\n 이동 저장 하시겠 습니까?", "상품 중복 저장", JOptionPane.OK_CANCEL_OPTION);
+				
+				//System.out.println(result);
+				//0 이동저장 // 그외 이동저장안함 종료
+				query = "Update Hot_Key Set H_Code='"+getHCode+"', H_Index='"+getHIndex+"' Where H_Barcode='"+barcode+"' ";
+								
+				if(result != 0) continue;		
+				
+				//서버저장
+				ms_connect.connect_update(query);
+				continue;
+			}
+			
+			query_won[0] = "INSERT INTO HOT_KEY(H_Code,H_INDEX,H_BARCODE,H_WRITEDAY) VALUES('"+getHCode+"','"+getHIndex+"', '"+barcode+"','"+dTime+"')";
+			query_won[1] = "Update Goods_Info Set ShoppingMall_Use='1', Shop_View='1', Edit_Tran='1' Where Barcode='"+barcode+"' ";
+			ms_connect.connect_update(query_won);
+			
+		}		
+		
+		//맞다면 등록되어 있는지 체크
+		//SELECT COUNT(*) FROM HOT_KEY  WHERE H_BARCODE='8801046867174'
+		
+		//안되있다면 바코드/ 입력코드/ 상품명
+		//INSERT INTO HOT_KEY(H_Code,H_INDEX,H_BARCODE,H_WRITEDAY) VALUES('49','x', '8801046867174','2015-12-17')
+		
+		getHotKeyGoodsList();
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
     
     
+    private char[] setAtoZ(){
+    	
+    	char[] atoz = new char[52];
+    	
+    	int j = 65;
+		for(int i = 0; i < 26; i++){
+			atoz[i] = (char)j;
+			j++;
+		}
+		j=97;
+		for(int i = 26; i < 52; i++){
+			atoz[i] = (char)j;
+			j++;
+		}
+		for(char at : atoz){
+			System.out.println(at);
+		}
+    	
+    	return atoz;    	
+    }
+    
+    
+    //상품 한갬나 저장하기
+    public void deleteHotkyeList(){
+    	    	
+    	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    	
+    	int row = table_hotkey.getSelectedRowCount();
+    	
+    	if(row <= 0){
+    		JOptionPane.showMessageDialog(this, "삭제할 상품을 선택해 주세요!!");
+    		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    		return;
+    	}
+    	
+    	//컬럼 갯수를 불러옵니다.
+    	row = table_hotkey.getSelectedRow();
+		int col = table_hotkey.getColumnCount();
+				
+		Vector<Object> temp = new Vector<Object>();
+		for(int i =0; i < col; i++){				
+			temp.add(dtm_hotkey.getValueAt(row, i));
+		}
+			
+		String barcode = temp.get(1).toString();
+	
+		String[] query_won = new String[2];
+		query_won[0] = "DELETE FROM HOT_KEY WHERE H_BARCODE='"+barcode+"' ";
+		query_won[1] = "Update Goods_Info Set Shop_View='0', Edit_Tran = '1' Where Barcode='"+barcode+"' ";
+		ms_connect.setMainSetting();
+		int result = ms_connect.connect_update(query_won);
+		    	
+		switch(result){
+		case 0:
+			JOptionPane.showMessageDialog(this, "상품이 삭제 되었습니다.");
+			break;
+		default:
+			JOptionPane.showMessageDialog(this, "삭제 하지 못했습니다. ");			
+			break;
+		}
+		
+		getHotKeyGoodsList();
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
+    
+    //리스트 업
+    private void setHotkeyListUpDown(String updown){
+    	
+    	int start_item = table_hotkey.getSelectedRow();
+    	System.out.println(start_item);
+    	    	
+    	int end_item = 0;    	
+    	switch(updown){
+    	case "UP":
+    		if(start_item >= table_hotkey.getRowCount() -1) return;
+    		end_item = start_item + 1;
+    		break;
+    	case "DOWN":
+    		if(start_item <= 0)	return;
+    		end_item = start_item - 1; 
+    		break;
+    	}
+    	
+    	System.out.println(end_item);
+    	dtm_hotkey.moveRow(start_item, start_item, end_item);
+    	//dtm_hotkey.moveRow(0, 1, 2);
+    	table_hotkey.changeSelection(end_item, 4, false, false);
+    	
+    }
+        
+    
+    
+    public class HotkeyTableCellRenderer extends JLabel implements TableCellRenderer {
+	
+    	/**
+		 * 
+		 */
+		private static final long serialVersionUID = 842451231545L;
+
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, final int row, int column) { 
+   		
+    		setHorizontalAlignment(JLabel.RIGHT);    		
+    		JLabel cellSpacingLabel= (JLabel) (this); 
+    		
+    		if (hasFocus) {
+    			setBorder(UIManager.getBorder("Table.focusCellHighlightBorder")); 
+    			cellSpacingLabel=null;
+    		}else{
+    			setBackground(table.getBackground());              
+    			setBorder(null);
+    		}
+    		
+    		if (isSelected) {
+    			//setBackground(table.getSelectionBackground());
+    			setBackground(table.getSelectionBackground());
+    			setBorder(null);    			
+    		}else{      		
+    			setBackground(Color.PINK);
+    			setBorder(null);
+    			//if(row % 2 == 0){
+        		//cell.setBackground(Color.pink);
+        		//System.out.println("필드값 : "+value);        			 
+        		//}else{
+        		//cell.setBackground(Color.white);
+        		//}
+    		}
+    		
+    		if (cellSpacingLabel != null) {
+    			cellSpacingLabel .setBorder(new CompoundBorder(new EmptyBorder(new Insets(0, 10, 0, 10)), cellSpacingLabel.getBorder()));
+    		}
+    		
+    		this.setOpaque(true);
+    		setText((String) value);
+    		//System.out.println("("+row+","+column+") "+isSelected+" "+hasFocus); 
+    		return this;
+    	}
+    }
     
     
 	class ChkboxItemListioner_Top implements ItemListener{
@@ -3872,10 +4228,19 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		case "HotKey_Group":
 			break;
 		case "HotKey_ListCall":
+			setHotKeyListSave();
 			break;
 		case "HotKey_Del":
+			//목록의 상품을 삭제 합니다.
+			deleteHotkyeList();
 			break;
 		case "HotKey_Save":
+			break;
+		case "HotKey_ListUp":
+			setHotkeyListUpDown("UP");
+			break;
+		case "HotKey_ListDown":
+			setHotkeyListUpDown("DOWN");
 			break;
 		}
 	}
@@ -3907,3 +4272,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 	
 //끝
 }
+
+
+	
+

@@ -20,6 +20,7 @@ public class Ms_Connect {
     
     ResultSet rs = null;
     private ArrayList<HashMap<String, String>> json;
+    private HashMap<String, String> json_one;
     private String ip;
     private String port;
 	private String dbname;
@@ -33,24 +34,21 @@ public class Ms_Connect {
 	 * 
 	 */
 	public void setImageSetting(){
-
 		ip = Server_Config.getIMAGE_IP();		
 		port = Server_Config.getIMAGE_PORT();
 		dbname = Server_Config.getIMAGE_DBNAME();
 		dbid = Server_Config.getIMAGE_DBID();
-		dbpw = Server_Config.getIMAGE_DBPW();
-		
+		dbpw = Server_Config.getIMAGE_DBPW();		
 	}
 	
 		
-	public void setMainSetting(){		
+	public void setMainSetting(){
 		
 		ip = Server_Config.getSERVER_IP();		
 		port = Server_Config.getSERVER_PORT();
 		dbname = Server_Config.getSERVER_DBNAME();
 		dbid = Server_Config.getSERVER_DBID();
 		dbpw = Server_Config.getSERVER_DBPW();
-		
 	}
 	
 	public ArrayList<HashMap<String, String>> connection(String query) {
@@ -61,7 +59,6 @@ public class Ms_Connect {
     	    	
     	//통신체크
     	if(connect_errorCheck()){    	
-    	
     	try {
     	    Class.forName("net.sourceforge.jtds.jdbc.Driver").newInstance();
     	    System.out.println("MSSQL  MSSQL driver load");
@@ -85,13 +82,48 @@ public class Ms_Connect {
     	    errCode = 2;
     	    errMsg = e.getMessage();
     	}
-    	
     	return json;
     	}else{
-    		
     		return null;
     	}
     }	
+	
+	
+	public HashMap<String, String> selectQueryOne(String query) {			
+			this.query = query;
+			errCode = 0;
+	    	Connection conn = null;
+	    	    	
+	    	//통신체크
+	    	if(connect_errorCheck()){    	
+	    	
+	    	try {
+	    	    Class.forName("net.sourceforge.jtds.jdbc.Driver").newInstance();
+	    	    System.out.println("MSSQL  MSSQL driver load");
+	
+	    	    String url = "jdbc:jtds:sqlserver://" +ip+":"+port+"/"+ dbname;
+	    	    conn = DriverManager.getConnection(url, dbid, dbpw);
+	    	    System.out.println("MSSQL  MSSQL open: " + url);
+	    	    
+	    	    Statement stmt = conn.createStatement();
+	        	System.out.println("MSSQL  query: " + this.query );
+	            rs = stmt.executeQuery(this.query);
+	        	json_one = ResultSetConverter.convertOne(rs);	
+				conn.close();
+	   	 	} catch (SQLException e) {
+	    	    System.out.println("Error connection : " + e.getMessage());
+	    	    errCode = 1;
+	    	    errMsg = e.getMessage();
+	    	} catch (Exception e) {
+	    	    System.out.println("Error connection : " + e.getMessage());	
+	    	    errCode = 2;
+	    	    errMsg = e.getMessage();
+	    	}
+	    	return json_one;
+	    	}else{
+	    		return null;
+	    	}
+	    }	
 	
 	
 	public int connect_update(String query) {
@@ -151,8 +183,9 @@ public class Ms_Connect {
 	    	    System.out.println("MSSQL  MSSQL open: " + url);
 	    	    
 	    	    Statement stmt = conn.createStatement();
-	    	    System.out.println("MSSQL  query: " + query_won.toString() );
-	            
+	    	    for(String query: query_won){
+	    	    	System.out.println("MSSQL  query: " + query );
+	    	    }
 	        	for(String query_multi : query_won){
 	        		stmt.addBatch(query_multi);
 	        		//System.out.println(query_multi);
