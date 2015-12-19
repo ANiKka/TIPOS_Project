@@ -21,9 +21,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,11 +32,8 @@ import java.util.Locale;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
-import javax.naming.CommunicationException;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -59,27 +53,16 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import javax.xml.bind.JAXBElement.GlobalScope;
-import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
 
 import javax.swing.border.BevelBorder;
-import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
-
-//import com.oroinc.net.ftp.FTPClient;
-//import com.oroinc.net.ftp.FTPFile;
 
 import it.sauronsoftware.ftp4j.FTPAbortedException;
 import it.sauronsoftware.ftp4j.FTPClient;
@@ -93,21 +76,16 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.plaf.basic.BasicTextUI.BasicHighlighter;
-import javax.swing.plaf.synth.SynthSeparatorUI;
 import javax.swing.UIManager;
 import java.awt.FlowLayout;
 import javax.swing.JRadioButton;
 import javax.swing.JProgressBar;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.RowSpec;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.ListSelectionModel;
 
-public class Goods_Manage extends JPanel implements ActionListener, ItemListener{
+public class Goods_Manage extends JPanel implements ActionListener {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1542846856561L;
 	
 	private JPanel P = this;
 	
@@ -230,8 +208,6 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 	private JTextField text_jtab_hotkey;
 	private JTable table_hotkey;
 	private DefaultTableModel dtm_hotkey; 
-	private TableColumnModel columnModel_hotkey;
-    private TableCellRenderer renderer_hotkey;
 	
 	private JComboBox<String> cb_jtab_hotkey_map;
 	private JComboBox<String> cb_jtab_hotkey_gubun;
@@ -240,6 +216,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 	private JButton btn_jtab_hotkey_listdown;
 	private JButton btn_jtab_hotkey_listup;
 	private JButton btn_jtab_hotkey_listcall;
+	private JButton btn_jtab_hotkey_save;
 	
 	/**
 	 * Create the panel.
@@ -490,10 +467,24 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		
 		//이미지관리 리뉴얼
 		//tabPane_detail.setSelectedIndex(0);		
-		panel_jtap_image.removeAll();
+		panel_jtap_image.removeAll();		
+		text_jtab_search.setText("");	
 		
-		text_jtab_search.setText("");
-		text_jtab_path.setText("");
+		//상단 목록 버튼 셋팅
+		label_count_up.setText("0");
+		label_count_total.setText("0");
+		image_total_count = 1;
+		image_page_num = 1;
+		image_page_count = 1;
+		
+		panel_jtap_image.setLayout(new BorderLayout());
+		JLabel label = new JLabel("검색된 이미지가 없습니다.", JLabel.CENTER);
+		panel_jtap_image.add(label, BorderLayout.CENTER);
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		
+		text_jtab_search.requestFocus();
+		text_jtab_search.selectAll();
+		this.repaint();
 		
 	}
 		
@@ -1035,6 +1026,13 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		
 		ms_connect.setMainSetting();
 		ArrayList<HashMap<String, String>> al = ms_connect.connection(query);	
+		switch(ms_connect.errCode){
+		case 0:
+			break;
+		default:
+			JOptionPane.showMessageDialog(this, ms_connect.errMsg);		
+			return false;
+		}
 		
 		try{
 		if(al.size() > 0){
@@ -1813,12 +1811,15 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     	panel_jtabgoods_image.add(text_jtab_path, "cell 2 1,growx,aligny center");
     	text_jtab_path.setColumns(10);
     	
+    	text_jtab_path.setText(Server_Config.getPCIMAGE_PATH());
+    	
     	JButton btn_jtab_pathsearch = new JButton("\uD3F4\uB354");
     	btn_jtab_pathsearch.setToolTipText("<html>\r\n<p>\uB0B4 \uCEF4\uD4E8\uD130\uC758 \uC774\uBBF8\uC9C0 \uD30C\uC77C\uC744 \uAC80\uC0C9 \uD569\uB2C8\uB2E4.</p>\r\n<p>\uD655\uC7A5\uC790\uAC00 jpg, gif, png \uD30C\uC77C\uB9CC \uAC80\uC0C9 \uB429\uB2C8\uB2E4.</p>\r\n<p>\uC774\uBBF8\uC9C0 \uC0AC\uC774\uC988\uB294 \uBE44\uC728\uC5D0 \uB9DE\uCDB0 500x500\uC73C\uB85C \uC790\uB3D9 \uC870\uC808 \uB429\uB2C8\uB2E4.</p>\r\n</html>");
     	btn_jtab_pathsearch.setActionCommand("폴더검색");
     	btn_jtab_pathsearch.addActionListener(this);
     	
     	chkbox_pcsearch_dir = new JCheckBox("");
+    	chkbox_pcsearch_dir.setToolTipText("<Html>\r\n<center>\uCCB4\uD06C \uC2DC \uD3F4\uB354 \uAC80\uC0C9\uCC3D\uC744 \uB744\uC6B0\uC9C0 \uC54A\uACE0 \uBC14\uB85C \uAC80\uC0C9 \uD569\uB2C8\uB2E4.</center>\r\n</Html>");
     	panel_jtabgoods_image.add(chkbox_pcsearch_dir, "cell 3 1");
     	panel_jtabgoods_image.add(btn_jtab_pathsearch, "cell 4 1,growx,aligny top");
     	
@@ -2429,7 +2430,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		};
 		jtab_hotkey_sell.setBorder(new LineBorder(Color.GRAY));
 		
-		tabPane_detail.add("1차 식품 판매금액", jtab_hotkey_sell);
+		tabPane_detail.addTab("판매금액", jtab_hotkey_sell);
 		jtab_hotkey_sell.setLayout(new MigLayout("", "[grow][][][][grow][grow]", "[][][][][25px][][][grow][]"));
 		
 		JLabel label_jtap_hotkey_search = new JLabel("\uAC80\uC0C9\uC5B4");
@@ -2463,11 +2464,13 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 				if(cb_jtab_hotkey_map.getSelectedIndex() == 0){
 					btn_jtab_hotkey_listcall.setEnabled(false);
 					btn_jtab_hotkey_listdown.setEnabled(false);
-					btn_jtab_hotkey_listup.setEnabled(false);					
+					btn_jtab_hotkey_listup.setEnabled(false);	
+					btn_jtab_hotkey_save.setEnabled(false);
 				}else{
 					btn_jtab_hotkey_listcall.setEnabled(true);
 					btn_jtab_hotkey_listdown.setEnabled(true);
 					btn_jtab_hotkey_listup.setEnabled(true);
+					btn_jtab_hotkey_save.setEnabled(true);
 				}
 				getHotKeyGoodsList();
 			}
@@ -2523,7 +2526,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		btn_jtab_hotkey_del.setActionCommand("HotKey_Del");
 		btn_jtab_hotkey_del.addActionListener(this);
 		
-		JButton btn_jtab_hotkey_save = new JButton("\uC800\uC7A5");
+		btn_jtab_hotkey_save = new JButton("\uC800\uC7A5");
 		jtab_hotkey_sell.add(btn_jtab_hotkey_save, "cell 5 5,growx");
 		btn_jtab_hotkey_save.setActionCommand("HotKey_Save");
 		btn_jtab_hotkey_save.addActionListener(this);
@@ -2570,9 +2573,10 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 			public void tableChanged(TableModelEvent e) {
 				// TODO Auto-generated method stub
 				// -1 초기화 , 0 수정됨, 1 리스트
-				switch(e.getType()){				
-				case 0:
-					System.out.println("수정됨");
+				switch(e.getColumn()){				
+				case 4:
+					System.out.println("컬럼 수정됨");
+					setHotkeySellPriceSave();										
 					break;				
 				}
 			}
@@ -2629,15 +2633,14 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		table_hotkey.getColumn("저장위치").setPreferredWidth(40);
 		table_hotkey.getColumn("저장위치").setCellRenderer(celAlignCenter);
 		
-		table_hotkey.getColumn("판매가").setPreferredWidth(60);
+		table_hotkey.getColumn("판매가").setPreferredWidth(40);
 		//table_hotkey.getColumn("판매가").setCellRenderer(new HotkeyTableCellRenderer());
 		table_hotkey.getColumn("판매가").setCellRenderer(new HotkeyTableCellRenderer());
 		
 		table_hotkey.getColumn("코드").setWidth(0);
 		table_hotkey.getColumn("코드").setMinWidth(0);
 		table_hotkey.getColumn("코드").setMaxWidth(0);	
-		
-		
+				
 		dcbm_hotkey_group = new DefaultComboBoxModel<String>();
 		
 		//단축키 번호 입니다. 기본이 전체 입니다.
@@ -2751,9 +2754,9 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 					
 					Vector<Object> temp_one = new Vector<Object>();		
 					
-					temp_one.add(table.getModel().getValueAt(row[j], 1));			
-					temp_one.add(table.getModel().getValueAt(row[j], 20));
-					temp_one.add(table.getModel().getValueAt(row[j], 21));
+					temp_one.add(table.getModel().getValueAt(row[j], 1));			//바코드
+					temp_one.add(table.getModel().getValueAt(row[j], 22));       //이미지설정
+					temp_one.add(table.getModel().getValueAt(row[j], 23));		//이미지경로
 					
 					if(temp_one.get(1).equals(gubun.toString().trim()) && temp_one.get(2).equals(" ") || temp_one.get(2).equals("")){
 						temp_image += "'"+temp_one.get(0)+"', ";	
@@ -3037,8 +3040,23 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 	
 	//쇼핑몰 메인코드를 불러 옵니다.
 	public void getMainCode(){
+				
+		if(!maincode_callUse){		
+			try{
+				main_code = shop_api.getMainCode("상품관리");
+				maincode_callUse = true;
+			}catch(NullPointerException e){
+				JOptionPane.showMessageDialog(this, "홈페이지에 접속 할 수 없습니다. 환경설정 및 인터넷을 확인해 주세요!!");
+				return;
+			}		
+		}
+				
+		/*if(main_code.size() <= 0){
+			JOptionPane.showMessageDialog(this, "메인출력 코드를 생성하지 않았습니다. 쇼핑몰 관리자에게 문의 하세요!!");
+			return;
+		}*/
 		
-		//환경설정
+		/*//환경설정
 		String shop_key = Server_Config.getSHOPKEY();
 		
 		//접속 쇼핑몰정보 정의하기
@@ -3115,9 +3133,9 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		
-		Iterator<JSONObject> itr =data.iterator();
+		Iterator<JSONObject> itr = main_code.iterator();
 	
 		final JScrollPane scrollpane_change = new JScrollPane();		
 		scrollpane_change.setBounds(6, 17, 357, 45);
@@ -3127,7 +3145,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 		panel.setAutoscrolls(true);
 		JCheckBox chkbox = new JCheckBox("출력안함");
 		chkbox.setName("none");
-		chkbox.addItemListener(this);
+		chkbox.addItemListener(new ChkboxItemListioner_AllChange());
 		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		panel.add(chkbox);
@@ -3140,7 +3158,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 			
 			JCheckBox chk_box = new JCheckBox(temp.get("subject").toString());
 			chk_box.setName(temp.get("group_code").toString());
-			chk_box.addItemListener(this);
+			chk_box.addItemListener(new ChkboxItemListioner_AllChange());
 			//scrollpane.add(chk_box);
 			panel.add(chk_box);
 			chk_boxs.add(chk_box);
@@ -3272,19 +3290,31 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     	
     	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));   
     	
-		JFileChooser jfiledialog = new JFileChooser();		
-		jfiledialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);		
-			 
-		//파일선택 창을 띄웁니다.		
-		jfiledialog.setCurrentDirectory(new File(text_jtab_path.getText().toString()));		
-		int ret = jfiledialog.showOpenDialog(this);
-		System.out.println("결과 보기 : "+ret);		
+    	JFileChooser jfiledialog = new JFileChooser();		
+		int ret = 0;
+		
+    	if(!chkbox_pcsearch_dir.isSelected()){
+    		jfiledialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    		//파일선택 창을 띄웁니다.		
+    		jfiledialog.setCurrentDirectory(new File(text_jtab_path.getText().toString()));
+			ret = jfiledialog.showOpenDialog(this);			
+			System.out.println("결과 보기 : "+ret);
+    	}else{
+    		if(text_jtab_path.getText().equals("")){
+    			ret = -1;
+    		}
+    	}
+    	
+    	
+    	
 		//폴더를 선택 했다면 선택 폴더의 모든 이미지를 불러옵니다.
 		if(ret == 0){
 			//검색 경로를 지정합니다.
 			GUBUN = "폴더";
 			
-			text_jtab_path.setText(jfiledialog.getSelectedFile().toString());			
+			if(!chkbox_pcsearch_dir.isSelected()){			
+				text_jtab_path.setText(jfiledialog.getSelectedFile().toString());
+			}
 			
 			//파일 목록 불러와서 리스트에 뿌려주기
 			File dirFile=new File(text_jtab_path.getText());
@@ -3295,28 +3325,35 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 			jtap_image_list.clear();
 			
 			for(File tempFile : fileList) {
-				if(tempFile.isFile()) {					
+				if(tempFile.isFile()) {
 					HashMap<String, String> map = new HashMap<String, String>();
 					
-					//파일을 불러옵니다.
-					String fileName = tempFile.getName().toString();			
-					//파일명을 "." 을 기점으로 뒷자리를 잘라 냅니다.
-					String perfix = fileName.substring(0, fileName.lastIndexOf("."));
-					String ext = fileName.substring(fileName.lastIndexOf(".")+1, fileName.length()).toString();
-					
-					//String tempPath=tempFile.getParent();
-					//확장자를 검사해서 그림 파일만 불러 옵니다.				
-					for(int i =0; i < FILE_EXTENSION.length; i++){					
-						if(ext.equals(FILE_EXTENSION[i])){
-							//파일을 불러옵니다.				
-							map.put("Barcode", perfix); //이미지명
-							map.put("G_Name", perfix); //파일명
-							map.put("Path", tempFile.getPath()); //폴더 경로
-							map.put("Path_Gubun", "0"); //폴더 구분					
-							map.put("Ext", ext); //확장자
-							map.put("Pop_Tran", "");
-							jtap_image_list.add(map);
+					if(tempFile.isFile()){  //파일만 체크합니다.
+						
+						//파일을 불러옵니다.
+						String fileName = tempFile.getName().toString();		
+						
+						if(!fileName.contains(".")) continue; 
+						//파일명을 "." 을 기점으로 뒷자리를 잘라 냅니다.						
+						//System.out.println(fileName);
+						String perfix = fileName.substring(0, fileName.lastIndexOf("."));
+						String ext = fileName.substring(fileName.lastIndexOf(".")+1, fileName.length()).toString();
+						
+						//String tempPath=tempFile.getParent();
+						//확장자를 검사해서 그림 파일만 불러 옵니다.				
+						for(int i =0; i < FILE_EXTENSION.length; i++){					
+							if(ext.equals(FILE_EXTENSION[i])){
+								//파일을 불러옵니다.				
+								map.put("Barcode", perfix); //이미지명
+								map.put("G_Name", perfix); //파일명
+								map.put("Path", tempFile.getPath()); //폴더 경로
+								map.put("Path_Gubun", "0"); //폴더 구분					
+								map.put("Ext", ext); //확장자
+								map.put("Pop_Tran", "");
+								jtap_image_list.add(map);
+							}
 						}
+						
 					}
 				}
 			}	
@@ -3411,7 +3448,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     			path = map.get("Path"); //이미지의 경로
     		}
     		
-    		System.out.println(path);
+    		//System.out.println(path);
     		item[4] = path; //현재 파일의 경로
     		item[5] = String.valueOf(count+1); //이미지 순서
     		item[6] = GUBUN; //어디서 검색 되었는지 FTP인지 폴더 인지 구분
@@ -3474,7 +3511,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     	   	
     	Image image = null;
         try {
-        	System.out.println(item[4].toString());
+        	//System.out.println(item[4].toString());
         	if(GUBUN.equals("FTP")){
         		URL url = new URL(item[4].toString());
                 image = ImageIO.read(url);
@@ -4046,7 +4083,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     private void setHotkeyListUpDown(String updown){
     	
     	int start_item = table_hotkey.getSelectedRow();
-    	System.out.println(start_item);
+    	//System.out.println(start_item);
     	    	
     	int end_item = 0;    	
     	switch(updown){
@@ -4060,13 +4097,90 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
     		break;
     	}
     	
-    	System.out.println(end_item);
+    	//System.out.println(end_item);
     	dtm_hotkey.moveRow(start_item, start_item, end_item);
     	//dtm_hotkey.moveRow(0, 1, 2);
     	table_hotkey.changeSelection(end_item, 4, false, false);
     	
     }
+    
+    //판매금액을 수정합니다.
+    public void setHotkeySellPriceSave(){
+    	
+    	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    	//선택된 행을 불러 옵니다.
+    	int row = table_hotkey.getSelectedRow();
+    	//int col = table_hotkey.getColumnCount();
+    	
+    	//행을 이용해서 행의 값들을 불러 옵니다. 필요한 컬럼 1 바코드 // 4 판매가
+    	Vector<String> temp = new Vector<String>();
+    	//for(int i = 0; i < col; i++){
+    	//선택한 행의 필요한 값을 불러 옵니다.
+    	String barcode = dtm_hotkey.getValueAt(row, 1).toString();
+    	String sellpri = dtm_hotkey.getValueAt(row, 4).toString();
+    	
+    	if(sellpri.equals("")){
+    		sellpri = "0";
+    	}
+    	
+    	System.out.println(barcode+" / "+sellpri);
+    	//}    	
+    	   	
+    	//쿼리를 작성합니다.
+    	String query = "Update Hot_Key Set H_SellPri='"+sellpri+"' Where H_Barcode='"+barcode+"' ";
+    	    	
+    	//서버로 전송합니다.
+    	ms_connect.setMainSetting();
+    	int result = ms_connect.connect_update(query);
+    	
+    	switch(result){
+    	case 0:
+    		break;
+    	case 1:
+    		JOptionPane.showMessageDialog(this, ms_connect.errMsg);
+    		break;
+    	default:
+    		
+    		break;
+    	}
+    	
+    	this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
+    
         
+    //핫키 순서를 저장합니다.
+    public void setHotKeyOrderSave(){
+    
+    	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    	
+    	//핫키리스트의 순서를 저장합니다.
+    	//리스트의 총갯수를 불러옵니다.
+    	int row_total = table_hotkey.getRowCount();
+    	
+    	System.out.println(row_total);    	
+    	//각 리스트의 정보를 불러 오면 순번을 정합니다.
+    	ArrayList<String> query_list = new ArrayList<String>();    	
+    	
+    	for(int i = 1; i <= row_total; i++){
+    		//쿼리를 작성합니다.
+    		String query = "Update Hot_Key Set H_Order='"+i+"' Where H_Barcode='"+dtm_hotkey.getValueAt(i-1, 1).toString()+"' ";    		
+    		query_list.add(query);
+    	}    	
+    	//서버에 저장합니다.
+    	int result = ms_connect.connect_update(query_list);
+    	
+    	//예외처리를 합니다.
+    	switch(result){
+    	case 0:
+    		JOptionPane.showMessageDialog(this, "목록의 순서가 저장 되었습니다.");
+    		break;
+    	default:
+    		JOptionPane.showMessageDialog(this, ms_connect.errMsg);
+    		break;
+    	}
+    	
+    	this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
     
     
     public class HotkeyTableCellRenderer extends JLabel implements TableCellRenderer {
@@ -4173,6 +4287,37 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 	}
 
 	
+	class ChkboxItemListioner_AllChange implements ItemListener{
+
+		@Override
+		public void itemStateChanged(ItemEvent e) {
+			// TODO Auto-generated method stub
+			System.out.println("AllChange 입니다.");
+			
+			JCheckBox jcb = (JCheckBox)e.getItem();		
+			//System.out.println(e.getStateChange());
+			if(e.getStateChange() == 1){
+				if( jcb.getName().equals("none")){
+					for(int index = 0; index < chk_boxs.size(); index++){
+						JCheckBox jcb_list = chk_boxs.get(index);
+						if(!jcb_list.getName().equals("none")){
+							jcb_list.setSelected(false);
+						}
+					}
+				}else{
+					for(int index = 0; index < chk_boxs.size(); index++){
+						JCheckBox jcb_list = chk_boxs.get(index);
+						if(jcb_list.getName().equals("none") && jcb_list.isSelected()){
+							jcb_list.setSelected(false);
+						}
+					}
+				}
+			}
+			
+		}		
+	}
+	
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
@@ -4207,9 +4352,9 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 			btnChange(false);
 			break;
 		case "Image":
-			if(table.getRowCount() == 0){				
+			if(table.getRowCount() <= 0){				
 				JOptionPane.showMessageDialog(this, "목록에서 상품을 선택해 주세요!");
-			}			
+			}
 			if(bg_shoppingmall[2].getSelection().getActionCommand().equals("선택안함")){
 				JOptionPane.showMessageDialog(this, "이미지 폴더를 선택해 주세요");
 				return;
@@ -4235,6 +4380,7 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 			deleteHotkyeList();
 			break;
 		case "HotKey_Save":
+			setHotKeyOrderSave();
 			break;
 		case "HotKey_ListUp":
 			setHotkeyListUpDown("UP");
@@ -4244,31 +4390,6 @@ public class Goods_Manage extends JPanel implements ActionListener, ItemListener
 			break;
 		}
 	}
-
-	@Override
-	public void itemStateChanged(ItemEvent e) {
-		// TODO Auto-generated method stub		
-		JCheckBox jcb = (JCheckBox)e.getItem();		
-		//System.out.println(e.getStateChange());
-		if(e.getStateChange() == 1){
-			if( jcb.getName().equals("none")){
-				for(int index = 0; index < chk_boxs.size(); index++){
-					JCheckBox jcb_list = chk_boxs.get(index);
-					if(!jcb_list.getName().equals("none")){
-						jcb_list.setSelected(false);
-					}
-				}
-			}else{
-				for(int index = 0; index < chk_boxs.size(); index++){
-					JCheckBox jcb_list = chk_boxs.get(index);
-					if(jcb_list.getName().equals("none") && jcb_list.isSelected()){
-						jcb_list.setSelected(false);
-					}
-				}
-			}
-		}
-	}
-	
 	
 //끝
 }

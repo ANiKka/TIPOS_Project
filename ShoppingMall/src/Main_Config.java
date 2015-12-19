@@ -40,6 +40,7 @@ import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -56,6 +57,10 @@ import javax.swing.JList;
 
 
 public class Main_Config extends JDialog implements ActionListener{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 157448436L;
 	private JTextField text_server_ip;
 	private JTextField text_server_port;
 	private JTextField text_server_dbname;
@@ -76,6 +81,9 @@ public class Main_Config extends JDialog implements ActionListener{
 	
 	HashMap<String, String> temp_config;
 	private JTextField text_pcimage_path;
+	
+	//환경설정 설명서
+	private JLabel label_info;
 	
 	/**
 	 * Create the panel.
@@ -144,6 +152,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		panel_server.add(label_server_ip);
 		
 		text_server_ip = new JTextField();
+		text_server_ip.setToolTipText("<Html>\r\n\uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9\uD560 \uC11C\uBC84\uC758 IP\uC8FC\uC18C\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694!\r\n</Html>");
 		text_server_ip.setBounds(94, 47, 216, 21);
 		panel_server.add(text_server_ip);
 		text_server_ip.setColumns(10);
@@ -154,6 +163,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		panel_server.add(label_server_port);
 		
 		text_server_port = new JTextField();
+		text_server_port.setToolTipText("<Html>\r\n\uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9\uD560 \uC11C\uBC84\uC758 PORT\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694!\r\n</Html>");
 		text_server_port.setColumns(10);
 		text_server_port.setBounds(94, 75, 216, 21);
 		panel_server.add(text_server_port);
@@ -164,6 +174,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		panel_server.add(label_server_dbname);
 		
 		text_server_dbname = new JTextField();
+		text_server_dbname.setToolTipText("<Html>\r\n\uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9\uD560 \uC11C\uBC84\uC758 DB\uBA85\uC744 \uC785\uB825\uD574 \uC8FC\uC138\uC694!\r\n</Html>");
 		text_server_dbname.setColumns(10);
 		text_server_dbname.setBounds(94, 103, 216, 21);
 		panel_server.add(text_server_dbname);
@@ -174,6 +185,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		panel_server.add(label_server_dbid);
 		
 		text_server_dbid = new JTextField();
+		text_server_dbid.setToolTipText("<Html>\r\n\uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9\uD560 \uC11C\uBC84\uC758 DB ID\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694!\r\n</Html>");
 		text_server_dbid.setColumns(10);
 		text_server_dbid.setBounds(94, 131, 216, 21);
 		panel_server.add(text_server_dbid);
@@ -184,10 +196,12 @@ public class Main_Config extends JDialog implements ActionListener{
 		panel_server.add(lblDbPw);
 		
 		pass_server_dbpw = new JPasswordField();
+		pass_server_dbpw.setToolTipText("<Html>\r\n\uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9\uD560 \uC11C\uBC84\uC758 DB PW\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694!\r\n</Html>");
 		pass_server_dbpw.setBounds(94, 159, 216, 21);
 		panel_server.add(pass_server_dbpw);
 		
 		text_ftp_dandock = new JTextField();
+		text_ftp_dandock.setToolTipText("<Html>\r\n\uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9\uD560 FTP \uAC1C\uC778 \uC774\uBBF8\uC9C0 \uD3F4\uB354\uBA85\uC785\uB2C8\uB2E4. <br>\r\n\uD504\uB85D\uADF8\uB7A8\uC774 \uB9E4\uC7A5\uCF54\uB4DC\uB85C \uC790\uB3D9\uC0DD\uC131 \uD569\uB2C8\uB2E4.\r\n</Html>");
 		text_ftp_dandock.setBounds(94, 187, 216, 21);
 		panel_server.add(text_ftp_dandock);
 		text_ftp_dandock.setEnabled(false);
@@ -198,6 +212,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		label_ftp_dandock.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		JButton btn_serverSave = new JButton("\uC11C\uBC84\uC800\uC7A5");
+		btn_serverSave.setToolTipText("<Html>\r\n\uC11C\uBC84\uD658\uACBD\uC124\uC815 \uB0B4\uC6A9\uB9CC \uC800\uC7A5 \uD569\uB2C8\uB2E4.<br>\r\n\uC6B0\uCE21\uC758 \uB9E4\uC7A5\uD658\uACBD \uC124\uC815\uC758 \uBCC0\uACBD \uB0B4\uC6A9\uC740 \uC800\uC7A5\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.<br>\r\n\uC800\uC7A5 \uD6C4 \uD504\uB85C\uADF8\uB7A8\uC744 \uC7AC\uC2E4\uD589\uD574 \uC8FC\uC138\uC694!!\r\n</Html>");
 		btn_serverSave.addActionListener(this);
 		btn_serverSave.setBounds(213, 277, 97, 23);
 		panel_server.add(btn_serverSave);
@@ -221,6 +236,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		label_office_code.setBackground(SystemColor.activeCaption);
 		
 		text_office_code = new JTextField();
+		text_office_code.setToolTipText("<Html>\r\n\uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9\uD560 \uB9E4\uC7A5\uCF54\uB4DC\uC785\uB2C8\uB2E4. <br>\r\n\uC11C\uBC84\uC124\uC815\uC744 \uC644\uB8CC \uD558\uBA74 \uD504\uB85C\uADF8\uB7A8\uC5D0 \uB4F1\uB85D \uB418\uC5B4\uC788\uB294<br>\r\n\uB9E4\uC7A5\uCF54\uB4DC\uB97C \uC790\uB3D9\uC73C\uB85C \uD638\uCD9C \uD569\uB2C8\uB2E4.\r\n</Html>");
 		text_office_code.setBounds(100, 47, 210, 21);
 		panel_ftp.add(text_office_code);
 		text_office_code.setColumns(10);
@@ -232,6 +248,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		label_office_name.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		text_office_name = new JTextField();
+		text_office_name.setToolTipText("<Html>\r\n\uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9\uD560 \uB9E4\uC7A5\uBA85\uC785\uB2C8\uB2E4. <br>\r\n\uC11C\uBC84\uC124\uC815\uC744 \uC644\uB8CC \uD558\uBA74 \uD504\uB85C\uADF8\uB7A8\uC5D0 \uB4F1\uB85D \uB418\uC5B4\uC788\uB294<br>\r\n\uB9E4\uC7A5\uBA85\uC744 \uC790\uB3D9\uC73C\uB85C \uD638\uCD9C \uD569\uB2C8\uB2E4.\r\n</Html>");
 		text_office_name.setBounds(100, 75, 210, 21);
 		panel_ftp.add(text_office_name);
 		text_office_name.setColumns(10);
@@ -243,6 +260,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		label_office_shopname.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		text_office_http = new JTextField();
+		text_office_http.setToolTipText("<Html>\r\n\uB9E4\uC7A5\uACFC \uC5F0\uB3D9\uD560 \uC1FC\uD551\uBAB0\uC8FC\uC18C \uC785\uB2C8\uB2E4. <br>\r\n\uC608) http://tipos.or.kr \uD615\uC2DD\uC73C\uB85C \uB4F1\uB85D\uD574 \uC8FC\uC138\uC694!!\r\n</Html>");
 		text_office_http.setBounds(100, 103, 210, 21);
 		panel_ftp.add(text_office_http);
 		text_office_http.setColumns(10);
@@ -253,6 +271,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		label_office_id.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		text_office_id = new JTextField();
+		text_office_id.setToolTipText("<Html>\r\n\uC1FC\uD551\uBAB0 \uAD00\uB9AC\uC790 \uD398\uC774\uC9C0 ID \uC785\uB2C8\uB2E4. <br>\r\n</Html>");
 		text_office_id.setBounds(100, 131, 210, 21);
 		panel_ftp.add(text_office_id);
 		text_office_id.setColumns(10);
@@ -263,6 +282,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		label_office_pw.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		text_office_pw = new JPasswordField();
+		text_office_pw.setToolTipText("<Html>\r\n\uC1FC\uD551\uBAB0 \uAD00\uB9AC\uC790 \uD398\uC774\uC9C0 PW \uC785\uB2C8\uB2E4. <br>\r\n</Html>");
 		text_office_pw.setBounds(100, 159, 210, 21);
 		panel_ftp.add(text_office_pw);
 		
@@ -272,6 +292,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		lblKey.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		pass_shop_key = new JPasswordField();
+		pass_shop_key.setToolTipText("<Html>\r\n\uB9E4\uC7A5\uACFC \uC1FC\uD551\uBAB0\uC744 \uC5F0\uB3D9\uD558\uB294 API\uD0A4 \uC0AC\uC6A9\uC744 \uC704\uD574<br>\r\n\uC1FC\uD551\uBAB0\uC5D0\uC11C \uC81C\uACF5\uD558\uB294 API_KEY\uB97C \uC785\uB825\uD569\uB2C8\uB2E4.<br>\r\n\uC704\uCE58)\uC1FC\uD551\uBAB0\uAD00\uB9AC\uC790 \uD398\uC774\uC9C0<br>\r\n\uC88C\uCE21 \uBA54\uB274 \uD504\uB85C\uADF8\uB7A8\uC0F5>\uD504\uB85D\uADF8\uB7A8\uD658\uACBD\uC124\uC815>API \uAC1C\uBC1C\uC13C\uD130 \uC785\uB2C8\uB2E4.<br>\r\n</Html>");
 		pass_shop_key.setBounds(100, 187, 210, 21);
 		panel_ftp.add(pass_shop_key);
 		pass_shop_key.setText((String) null);
@@ -283,7 +304,8 @@ public class Main_Config extends JDialog implements ActionListener{
 		panel_ftp.add(label_pciamge_path);
 		
 		text_pcimage_path = new JTextField();
-		text_pcimage_path.setBounds(100, 257, 210, 21);
+		text_pcimage_path.setToolTipText("<Html>\r\n\uC9C1\uC811 \uC791\uC5C5\uD55C \uC774\uBBF8\uC9C0\uB97C \uBD88\uB7EC\uC624\uAE30 \uC704\uD55C \uD3F4\uB354 \uC785\uB2C8\uB2E4.<br>\r\n\uC790\uC8FC \uC0AC\uC6A9\uD558\uC2DC\uB294 \uC774\uBBF8\uC9C0 \uD3F4\uB354\uB97C \uC9C0\uC815\uD558\uC138\uC694!<br>\r\n\uC9C0\uC815 \uD558\uC9C0 \uC54A\uC73C\uC154\uB3C4 \uC774\uBBF8\uC9C0 \uC120\uD0DD \uD654\uBA74\uC5D0\uC11C \uC6D0\uD558\uB294<br>\r\n\uD3F4\uB354\uB97C \uC9C0\uC815 \uD558\uC2E4 \uC218 \uC788\uC2B5\uB2C8\uB2E4.<br>\r\n</Html>");
+		text_pcimage_path.setBounds(100, 257, 140, 21);
 		panel_ftp.add(text_pcimage_path);
 		text_pcimage_path.setColumns(10);
 		
@@ -293,11 +315,41 @@ public class Main_Config extends JDialog implements ActionListener{
 		label_pcimage_title.setBounds(12, 232, 298, 15);
 		panel_ftp.add(label_pcimage_title);
 		
+		JButton btn_config_folder = new JButton("\uD3F4\uB354");
+		btn_config_folder.setToolTipText("<Html>\r\n\uC9C1\uC811 \uC791\uC5C5\uD55C \uC774\uBBF8\uC9C0\uB97C \uBD88\uB7EC\uC624\uAE30 \uC704\uD55C \uD3F4\uB354 \uC785\uB2C8\uB2E4.<br>\r\n\uC790\uC8FC \uC0AC\uC6A9\uD558\uC2DC\uB294 \uC774\uBBF8\uC9C0 \uD3F4\uB354\uB97C \uC9C0\uC815\uD558\uC138\uC694!<br>\r\n\uC9C0\uC815 \uD558\uC9C0 \uC54A\uC73C\uC154\uB3C4 \uC774\uBBF8\uC9C0 \uC120\uD0DD \uD654\uBA74\uC5D0\uC11C \uC6D0\uD558\uB294<br>\r\n\uD3F4\uB354\uB97C \uC9C0\uC815 \uD558\uC2E4 \uC218 \uC788\uC2B5\uB2C8\uB2E4.<br>\r\n</Html>");
+		btn_config_folder.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				getFolderChoose();				
+			}
+		});
+		
+		
+		btn_config_folder.setBounds(253, 256, 57, 23);
+		panel_ftp.add(btn_config_folder);
+		
 		JPanel panel_office = new JPanel();
 		panel_office.setLayout(null);
 		panel_office.setBorder(new LineBorder(new Color(0, 0, 0)));
 		panel_office.setBounds(686, 10, 322, 310);
 		getContentPane().add(panel_office);
+		
+		JLabel label_FunctionKey = new JLabel("\uAE30\uB2A5\uBC84\uD2BC \uBAA8\uC74C");
+		label_FunctionKey.setHorizontalAlignment(SwingConstants.CENTER);
+		label_FunctionKey.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+		label_FunctionKey.setBounds(12, 10, 298, 30);
+		panel_office.add(label_FunctionKey);
+		
+		JButton btn_xls_output = new JButton("\uBD84\uB958\uC5D1\uC140\uCD9C\uB825");
+		btn_xls_output.setToolTipText("<Html>\r\n\uD604\uC7AC \uB9E4\uC7A5\uC758 \uBD84\uB958\uB97C \uC1FC\uD551\uBAB0 \uCF54\uB4DC \uD615\uC2DD\uC73C\uB85C \uC5D1\uC140 \uCD9C\uB825 \uD569\uB2C8\uB2E4.<br>\r\n\uCD9C\uB825\uB41C \uC5D1\uC140\uD30C\uC77C\uC744 \uC1FC\uD551\uBAB0 \uBD84\uB958\uC77C\uAD04 \uB4F1\uB85D\uC5D0\uC11C \uB4F1\uB85D\uD574 \uC8FC\uC138\uC694!\r\n</Html>");
+		btn_xls_output.setBounds(12, 220, 298, 35);
+		panel_office.add(btn_xls_output);
+		
+		JButton btn_Shyc_Start = new JButton("\uB3D9\uAE30\uD654 \uC2DC\uC791");
+		btn_Shyc_Start.setToolTipText("<Html>\r\n\uBCC0\uACBD\uB41C \uC0C1\uD488\uC744 \uC1FC\uD551\uBAB0\uACFC \uC989\uC2DC \uB3D9\uAE30\uD654 \uD560\uB54C \uC0AC\uC6A9 \uD569\uB2C8\uB2E4.\r\n</Html>");
+		btn_Shyc_Start.setBounds(12, 265, 298, 35);
+		panel_office.add(btn_Shyc_Start);
+		btn_Shyc_Start.addActionListener(this);
+		btn_xls_output.addActionListener(this);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -311,20 +363,13 @@ public class Main_Config extends JDialog implements ActionListener{
 		getContentPane().add(panel_2);
 		panel_2.setLayout(null);
 		
-		JButton btn_Shyc_Start = new JButton("\uB3D9\uAE30\uD654 \uC2DC\uC791");
-		btn_Shyc_Start.addActionListener(this);
-		btn_Shyc_Start.setBounds(12, 175, 298, 35);
-		panel_2.add(btn_Shyc_Start);
-		
-		JButton btn_xls_output = new JButton("\uBD84\uB958\uC5D1\uC140\uCD9C\uB825");
-		btn_xls_output.setBounds(12, 130, 298, 35);
-		panel_2.add(btn_xls_output);
-		
-		JButton btn_server_save = new JButton("\uC800\uC7A5");
+		JButton btn_server_save = new JButton("\uC800 \uC7A5");
+		btn_server_save.setToolTipText("<Html>\r\n\uC11C\uBC84 \uC124\uC815 \uBCC0\uACBD \uB0B4\uC6A9 \uBC0F \uB9E4\uC7A5\uD658\uACBD \uC124\uC815 \uBCC0\uACBD \uB0B4\uC6A9\uC744 \uC800\uC7A5\uD569\uB2C8\uB2E4.\r\n</Html>");
 		btn_server_save.setBounds(12, 220, 298, 35);
 		panel_2.add(btn_server_save);
 		
-		JButton btn_close = new JButton("\uC885\uB8CC");
+		JButton btn_close = new JButton("\uC885 \uB8CC");
+		btn_close.setActionCommand("종료");
 		btn_close.addActionListener(this);
 		btn_close.setBounds(12, 265, 298, 35);
 		panel_2.add(btn_close);
@@ -334,9 +379,41 @@ public class Main_Config extends JDialog implements ActionListener{
 		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		panel.setBounds(12, 330, 322, 310);
 		getContentPane().add(panel);
+		
+		label_info = new JLabel("New label");
+		label_info.setBounds(12, 10, 298, 290);
+		panel.add(label_info);
 		btn_server_save.addActionListener(this);
-		btn_xls_output.addActionListener(this);
 				
+		
+		String info_title = "<Html>"
+							+"<table>"
+      +"<th>"
+        +"<td>쇼핑몰 환경설정</td>"
+      +"</th>"      
+      +"<th>"
+        +"<td>"
+        +"매장과 연동 설정을 위해서 쇼핑몰의 관리자 페이지 프로그램샵<br>"
+        +"외부 DB연동 MS-SQL DB연동설정 에서 현재 매장의 서버 IP주소를<br>"
+        +"입력해 주셔야 합니다."
+        +"</td>"
+      +"</th>"      
+    +"</table>"
++"</Html>";	
+		
+		info_title = "<HTML><TABLE>"
+				+ "<TH><TD>쇼핑몰 환경설정</TD></TH>"
+				+ "</TABLE>"
+				+ "<TABLE>"
+				+ "<TH><TD>매장과 쇼핑몰의 연동 설정을 위해서<br> "
+				+ "쇼핑몰의 관리자 페이지 > 프로그램샵 > <br>"
+				+ "외부 DB연동 > MS-SQL DB연동설정 에서 <br>"
+				+ "현재 매장의 서버 IP주소를"
+				+ " 입력해 <br>주셔야 정상 작동 합니다.</TD></TH>"
+				+ "</TABLE></HTML>";		
+		
+		label_info.setText(info_title);
+		
 	}
 		
 	//설정을 배치합니다.
@@ -521,7 +598,7 @@ public class Main_Config extends JDialog implements ActionListener{
 						+" From goods_info as a inner join goods as b on a.barcode=b.barcode" 
 						+" Where a.edit_tran='1' and img_path <> '' and a.shoppingmall_use='1' ";*/
 		
-		String query = "Select * From ( "
+		/*String query = "Select * From ( "
 						+ " Select * From goods_info Where edit_tran='1' and img_path <> '' and shoppingmall_use='1' "
 						+ " ) C inner join ( "
 						+ " Select A.Barcode, A.G_Name, A.Pur_Pri, A.Sell_Pri, A.Real_Sto, A.Sale_Pur, A.Sale_Sell, A.Sale_Use, A.Write_Date, B.Goods_NewCate as Goods_Cate " 
@@ -531,8 +608,39 @@ public class Main_Config extends JDialog implements ActionListener{
 						+ " ) A inner join ( "
 						+ " Select  (L_Code+M_Code+SM_SCode) + Replicate('0', 8 - Len(L_Code+M_Code+SM_SCode)) as Goods_NewCate,(L_Code+M_Code+S_Code) + Replicate('0', 8 - Len(L_Code+M_Code+S_Code) ) as Goods_OldCate From s_branch "
 						+ " ) B on A.Goods_Cate=B.Goods_OldCate "
-						+ " ) D on C.Barcode=D.Barcode ";
-				
+						+ " ) D on C.Barcode=D.Barcode ";*/		
+		
+		String query = "Select X.Barcode, X.ShoppingMall_use, X.UpLoad, X.Shop_View, X.Sto_Use, X.Pro_Sto, X.img_path, "
+						+"X.Img_path_use, X.Edit_Tran, X.Img_Name, X.Shop_MainCode, X.G_Name, X.Pur_Pri, "
+						+"'Sell_Pri' = Case "
+						+"When X.Length4 = '1' Then Z.H_SellPri "
+						+"When X.Scale_Use = '1' Then Z.H_SellPri "
+						+"Else X.Sell_Pri "
+						+"End, "
+						+"X.Real_Sto, X.Sale_Pur, X.Sale_Sell, X.Sale_Use, X.Scale_Use, X.Length4, X.Write_Date, X.Goods_Cate "
+						+"From "
+						+"( "
+						+"Select C.Barcode, C.ShoppingMall_use, C.UpLoad, C.Shop_View, C.Sto_Use, C.Pro_Sto, C.img_path, C.Img_path_use, C.Edit_Tran, C.Img_Name, C.Shop_MainCode, D.G_Name, D.Pur_Pri, D.Sell_Pri, D.Real_Sto, D.Sale_Pur, D.Sale_Sell, D.Sale_Use, D.Scale_Use, D.Length4, D.Write_Date, D.Goods_Cate "
+						+"From ( "  
+						+		"Select * From goods_info Where edit_tran='1' and img_path <> '' and shoppingmall_use='1' "  
+						+		") C "
+						+		"inner join ( "  
+						+				"Select A.Barcode, A.G_Name, A.Pur_Pri, A.Sell_Pri, A.Real_Sto, A.Sale_Pur, A.Sale_Sell, A.Sale_Use, A.Scale_Use, A.Length4, A.Write_Date, B.Goods_NewCate as Goods_Cate "  
+						+				"From ( "  
+						+					"Select BarCode, G_Name, Pur_Pri, Sell_Pri, (L_Code+M_Code+S_Code) + Replicate('0', 8 - Len(L_Code+M_Code+S_Code) ) as Goods_Cate, Real_Sto, Sale_Pur, Sale_Sell, Sale_Use, Write_Date, Scale_use, 'Length4' =  CASE  WHEN Len(Barcode) = 4 THEN '1'  ELSE '0' END "  
+						+					"From Goods " 
+						+				") A "
+						+				"inner join ( "  
+						+					"Select  (L_Code+M_Code+SM_SCode) + Replicate('0', 8 - Len(L_Code+M_Code+SM_SCode)) as Goods_NewCate,(L_Code+M_Code+S_Code) + Replicate('0', 8 - Len(L_Code+M_Code+S_Code) ) as Goods_OldCate " 
+						+					"From s_branch "
+						+				") B "
+						+				"on A.Goods_Cate=B.Goods_OldCate "  
+						+		") D "
+						+		"on C.Barcode=D.Barcode "
+						+	") X left Join ( "
+						+	"Select * From Hot_Key "
+						+	") Z on X.Barcode=Z.H_Barcode ";
+		
 		//전송결과를 서버에 저장합니다. (성공시 Edit_Tran을 1->0 으로 변경)
 		String resultQuery = "Update goods_info set UpLoad = '1', Edit_Tran='0' where barcode in (";
 		String queryIn = "";
@@ -916,6 +1024,25 @@ public class Main_Config extends JDialog implements ActionListener{
         
         this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
+	
+	public void getFolderChoose(){
+		
+		JFileChooser jfiledialog = new JFileChooser();		
+		int ret = -1;
+		    	
+    	jfiledialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    	//파일선택 창을 띄웁니다.		
+    	jfiledialog.setCurrentDirectory(new File(text_pcimage_path.getText().toString()));
+		
+    	ret = jfiledialog.showOpenDialog(this);	
+		System.out.println("결과 보기 : "+ret);
+    	
+		//폴더를 선택 했다면 선택 폴더의 모든 이미지를 불러옵니다.
+		if(ret == 0){
+			text_pcimage_path.setText(jfiledialog.getSelectedFile().toString());		
+		}
+	}
+	
 		
 	@Override
 	public void actionPerformed(ActionEvent e) {

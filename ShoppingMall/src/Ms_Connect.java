@@ -272,7 +272,8 @@ public class Ms_Connect {
 			socketAddress = new InetSocketAddress(ip, Integer.parseInt(port));
 			socket = new Socket();
 		}catch(NumberFormatException e){
-			e.printStackTrace();
+			errCode = 1;
+    	    errMsg = e.getMessage();
 			return false;
 		}
 		
@@ -281,16 +282,19 @@ public class Ms_Connect {
 			socket.connect(socketAddress, 5000); 	/* socket연결 자체에대한 timeout */			
 			return true;
 		} catch (SocketException e){
-			e.printStackTrace();
+			errCode = 3;
+    	    errMsg = e.getMessage();
 			return false;
 		} catch (IOException e) {
-			e.printStackTrace();
+			errCode = 3;
+    	    errMsg = e.getMessage();
 			return false;
 		} finally {		
 			try {
 				socket.close();
 			} catch (IOException e) {
-				e.printStackTrace();				
+				errCode = 3;
+	    	    errMsg = e.getMessage();		
 			}
 		}		
 	}

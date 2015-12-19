@@ -1,8 +1,8 @@
 #\uD658\uACBD\uC124\uC815 \uC800\uC7A5
-#Thu Dec 17 19:43:18 KST 2015
-PCImagePath=D\:\\1) \uC0C1\uD488\uC774\uC9C0\uC9C0\\9\uC6D4 1-1
+#Sat Dec 19 17:31:28 KST 2015
+PCImagePath=C\:\\
 ServerIp=localhost
-ServerDBpw=tips
 ServerPort=16000
+ServerDBpw=tips
 ServerDBname=tips
 ServerDBid=sa

@@ -16,6 +16,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JDesktopPane;
+import javax.swing.JDialog;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
@@ -31,6 +32,7 @@ import javax.swing.UIManager;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -114,6 +116,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		Character.Subset[] subset = {Character.UnicodeBlock.HANGUL_SYLLABLES};
 		ctx.setCharacterSubsets(subset);
 		config = new Main_Config();
+		
 		//진입점
 		initLocation();		
 		
@@ -121,7 +124,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		//menu_frame();
 				
 		//하단 버튼
-		bottom_button();
+		//bottom_button();
 		
 		//setFocusable(false);
 		System.out.println("메인서버");
@@ -134,11 +137,19 @@ public class Main_Frame extends JFrame implements ActionListener{
 	// 종료 & 화면중앙
     private void initLocation() {    	
     	
-    	if(Server_Config.getOFFICENAME().equals("")){    	
-    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9");
-    	}else{
-    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9 "+"[ "+Server_Config.getOFFICECODE() +" "+Server_Config.getOFFICENAME()+" ]" );
-    	}
+    	try{    		
+	    	if(Server_Config.getOFFICENAME().equals("")){    	
+	    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9");
+	    	}else{
+	    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9 "+"[ "+Server_Config.getOFFICECODE() +" "+Server_Config.getOFFICENAME()+" ]" );
+	    	}
+    	}catch(NullPointerException e){
+    		//프로그램 최초 실행 시 보여집니다.
+    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9"+" *********************** 환경설정을 실행해 주세요!!! *****************************");
+    		JOptionPane.showMessageDialog(this, "환경설정을 실행해 주세요~!! 기능이 정상 작동 안될 수 있습니다.");
+    		startConfigSet();
+    	}    	
+    	
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(1024, 768);
     	
@@ -258,7 +269,7 @@ public class Main_Frame extends JFrame implements ActionListener{
     	
     	JLabel lblTitle = new JLabel(title);
     	JButton btnClose = new JButton();    	
-
+    	btnClose.setActionCommand(title);
     	btnClose.setIcon(new ImageIcon(getClass().getClassLoader().getResource("Icon/btn_tab_close.png")));
     	btnClose.setMargin(new Insets(2, 2, 2, 2));
     	
@@ -279,19 +290,68 @@ public class Main_Frame extends JFrame implements ActionListener{
     	btnClose.addActionListener(new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				int index = tabbedPane.getSelectedIndex();
+				
+				String title = e.getActionCommand();
+				// TODO Auto-generated method stub								
+				int index = tabbedPane.indexOfTab(title);
 		        if (index >= 0) {
-		        	tabbedPane.removeTabAt(index);		          
+		        	tabbedPane.removeTabAt(index);          
 		        }
+		        
 			}
 		});				
     }
         
     //하단 기능 버튼
-    private void bottom_button(){
-	
-		
+    private void startConfigSet(){
+	    	JPanel panel = new JPanel();
+			
+			JLabel label = new JLabel("비밀번호 : ");
+			JPasswordField pass = new JPasswordField(10);
+			pass.addKeyListener(new KeyListener() {
+				
+				@Override
+				public void keyTyped(KeyEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void keyReleased(KeyEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void keyPressed(KeyEvent e) {
+					// TODO Auto-generated method stub
+					if(e.getKeyCode() == KeyEvent.VK_ENTER){
+						pass.transferFocus();						
+					}
+				}
+			});
+			panel.add(label);
+			panel.add(pass);
+			
+			String[] options = new String[]{"확인", "취소"};			
+			int option = JOptionPane.showOptionDialog(this, panel, Con_Manager,
+			                         JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
+			                         null, options, pass);
+			if(option == 0) // pressing OK button
+			{
+			    char[] password = pass.getPassword();
+			    if(new String(password).equals("tips")){			    	
+			    	
+			    	config.setLocationRelativeTo(this);
+			    	config.setTitle("환경 설정");
+			    	config.setModal(true);					
+			    	config.setVisible(true);					
+					config.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			    }else{
+			    	JOptionPane.showMessageDialog(this, "비밀번호를 잘못 입력 하셨습니다.", "비밀번호 불일치", DO_NOTHING_ON_CLOSE);
+			    	return;
+			    }
+			}
     }
   
 	@Override
@@ -337,51 +397,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 			//이벤트관리
 			break;
 		case Con_Manager:
-			JPanel panel = new JPanel();
-			JLabel label = new JLabel("비밀번호 : ");
-			JPasswordField pass = new JPasswordField(10);
-			pass.addKeyListener(new KeyListener() {
-				
-				@Override
-				public void keyTyped(KeyEvent e) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void keyReleased(KeyEvent e) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void keyPressed(KeyEvent e) {
-					// TODO Auto-generated method stub
-					if(e.getKeyCode() == KeyEvent.VK_ENTER){
-						pass.transferFocus();						
-					}
-				}
-			});
-			panel.add(label);
-			panel.add(pass);
-			String[] options = new String[]{"확인", "취소"};
-			int option = JOptionPane.showOptionDialog(null, panel, Con_Manager,
-			                         JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
-			                         null, options, pass);
-			if(option == 0) // pressing OK button
-			{
-			    char[] password = pass.getPassword();
-			    if(new String(password).equals("tips")){			    	
-			    	
-			    	config.setLocationRelativeTo(this);
-			    	config.setModal(true);					
-			    	config.setVisible(true);					
-					config.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-			    }else{
-			    	JOptionPane.showMessageDialog(this, "비밀번호를 잘못 입력 하셨습니다.", "비밀번호 불일치", DO_NOTHING_ON_CLOSE);
-			    	return;
-			    }
-			}	
+			startConfigSet();
 			break;
 		case Close_Manager:
 			if(JOptionPane.showConfirmDialog(this, "프로그램을 종료 합니다.", "프로그램 종료", JOptionPane.YES_NO_OPTION) == 0){
