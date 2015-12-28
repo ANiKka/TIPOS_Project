@@ -74,6 +74,8 @@ import net.miginfocom.swing.MigLayout;
 import java.awt.GridLayout;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.UIManager;
@@ -87,8 +89,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = 1542846856561L;
 	
-	private JPanel P = this;
-	
+	private JPanel P = this;	
 	private String GUBUN = "";
 	
 	//private JPanel contentPane_Goods;
@@ -379,10 +380,10 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			query2 += ", Img_path_use='"+String.valueOf(combox_Detail_ImageConnectUse.getSelectedIndex())+"' ";
 			edit_goods_info = true;			
 		}
-				
+		
 		//이미지 경로를 변경 했는지 확인 합니다.
 		String img_path = text_Detail_ImagePath.getText();
-		System.out.println("이미지경로 : "+temp_detail.get(22).toString() + " 저장값 : "+img_path);
+		//System.out.println("이미지경로 : "+temp_detail.get(22).toString() + " 저장값 : "+img_path);
 		if(!temp_detail.get(22).equals(img_path)){
 			query2 += ", img_path='"+img_path+"' ";
 			edit_goods_info = true;	
@@ -617,7 +618,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 	            switch (keyCode) {
 	            case KeyEvent.VK_ENTER:
 	                search_start();
-	                break;	            
+	                break;	
 	            }
 			}
 		});
@@ -731,7 +732,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		combo_image_get.setModel(new DefaultComboBoxModel<String>(new String[] {"\uC804\uCCB4", "\uC774\uBBF8\uC9C0\uC5C6\uC2B4", "\uC774\uBBF8\uC9C0\uC788\uC2B4"}));
 		combo_image_get.setMaximumRowCount(3);
 		
-		JLabel label_top_maincode = new JLabel("\uBA54\uC778\uCF54\uB4DC\uCD9C\uB825");
+		JLabel label_top_maincode = new JLabel("\uC0C1\uD488\uC9C4\uC5F4\uC704\uCE58");
 		panel_2.add(label_top_maincode, "cell 12 0");
 		
 		JButton btn_top_maincode = new JButton("\uC120\uD0DD");
@@ -1135,7 +1136,6 @@ public class Goods_Manage extends JPanel implements ActionListener {
 	}
 		
 	
-	
 	//기본 쿼리 선언
 	private void search_query(){
 		//query = "Select * from goods where goods_use='1' ";
@@ -1298,7 +1298,6 @@ public class Goods_Manage extends JPanel implements ActionListener {
     /*
 	 * [마우스 두번 클릭]
 	 * - 마우스 더블클릭 시 선택 된 상품을 우측의 상세 정보로 보냅니다.
-	 * 
 	 */	
 	public void setGoodsDetail(){
 		
@@ -1307,7 +1306,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		detail_Renew();
 		
 		// 테이블의 선택된 행의 인덱스 번호 취득
-		int row = table.getSelectedRow();
+		int row = table.getSelectedRow();		
+		System.out.println(row);
 		int col = table.getColumnCount();
 		
 		//Vector<Object> temp = new Vector<Object>(); 
@@ -1320,7 +1320,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		
 		//"0 순번", "1 바코드", "2 상품명", "3 규격", "4 매입가", "5 판매가", "6 현재고", "7 안전재고", 
 		// "8 분류코드", "9 대코드", "10 대명", "11 중코드", "12 중명", "13 소코드", "14 소명", "15 행사", "16 상품연동",
-		//"`17 쇼핑몰", "`18 진열유무", "`19 재고연동", (20.추가 메인출력코드) "21 이미지설정", "22 이미지경로"  (23.추가 이미지명)};		
+		//"`17 쇼핑몰", "`18 진열유무", "`19 재고연동", (20.추가 메인출력코드) "21 이미지설정", "22 이미지경로"  (23.추가 이미지명)};
 		label_Detail_Number.setText(temp_detail.get(0).toString()); //순번
 		text_Detail_Barcode.setText(temp_detail.get(1).toString()); //바코드
 		text_Detail_Name.setText(temp_detail.get(2).toString());  //상품명
@@ -1367,13 +1367,13 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		String maincode = temp_detail.get(20).toString();
 		label_default_maincode.setText(maincode);
 		
-		
 		if(temp_detail.get(21).equals("단독폴더")){
 			combox_Detail_ImageConnectUse.setSelectedItem("단독폴더"); //이미지 폴더선택
 		}else{
 			combox_Detail_ImageConnectUse.setSelectedItem("공용폴더"); //이미지 폴더선택
 		}
 		
+		try{
 		if(!temp_detail.get(22).toString().equals("")){			
 			Image image = null;
 	        try {
@@ -1394,8 +1394,10 @@ public class Goods_Manage extends JPanel implements ActionListener {
 	        	label_image_view.setIcon(new ImageIcon(image.getScaledInstance(150, 150, Image.SCALE_SMOOTH)));
 	        }else{	       
 	        	JOptionPane.showMessageDialog(this, "이미지  FTP서버의 접속이 안되고 있습니다. 네트워크를 확인해 주세요!!");
-	        }	        		        	
-	        
+	        }
+		}
+		}catch(NullPointerException e){
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
 		
 		text_Detail_ImagePath.setText(temp_detail.get(22).toString()); //이미지경로				
@@ -1411,8 +1413,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 	 * [마우스 클릭 시 ]
 	 * 상품명을 그대로 검색 조건에 넘겨 줍니다. 
 	 * 
-	 * */
-	
+	 * */	
 	public void setSearchGoodsName(){		
 		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
@@ -1456,7 +1457,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		panel_main.setLayout(new BorderLayout());
 		
 		//상단 설명 문구<html>Hello World!<br>blahblahblah</html>", SwingConstants.CENTER		
-		JLabel main_title = new JLabel("<html><h2 align='center' style='font-family: 맑은 고딕'>메인출력상품 코드를 선택해 주세요!!</h2><p align='center'>- \"출력안함\" 옵션과 중복으로 선택 시 정상적인 검색이 안 될수 있습니다.!</p><hr><br></html>", SwingConstants.CENTER);
+		JLabel main_title = new JLabel("<html><h2 align='center' style='font-family: 맑은 고딕'>상품 출력 위치를 선택해 주세요!!</h2><p align='center'>- \"출력안함\" 옵션과 중복으로 선택 시 정상적인 검색이 안 될수 있습니다.!</p><hr><br></html>", SwingConstants.CENTER);
 		panel_main.add(main_title, BorderLayout.NORTH);
 		
 		//선택 체크박스를 만듭니다.
@@ -1483,8 +1484,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			panel.add(chk_box);
 			chkboxs_top.add(chk_box);
 		}
-		
-		
+				
 		//목록을 만듭니다.
 		//현재 저장되어있는 리스트가 있다면 불러옵니다.		
 		String [] list_item;
@@ -1554,7 +1554,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		}
 		
 		if(main_code.size() <= 0){
-			JOptionPane.showMessageDialog(this, "메인출력 코드를 생성하지 않았습니다. 쇼핑몰 관리자에게 문의 하세요!!");
+			JOptionPane.showMessageDialog(this, "상품출력 위치를 만들지 않았습니다. 쇼핑몰 관리자에게 문의 하세요!!");
 			return;
 		}
 		
@@ -1563,7 +1563,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		panel_main.setLayout(new BorderLayout());
 		
 		//상단 설명 문구<html>Hello World!<br>blahblahblah</html>", SwingConstants.CENTER		
-		JLabel main_title = new JLabel("<html><h2 align='center' style='font-family: 맑은 고딕'>메인출력상품 코드를 선택해 주세요!!</h2><p align='center'>- 중복 선택 가능합니다. 지우시려면 출력안함을 선택해 주세요!!</p><hr><br></html>", SwingConstants.CENTER);
+		JLabel main_title = new JLabel("<html><h2 align='center' style='font-family: 맑은 고딕'>상품 출력 위치를 선택해 주세요!!</h2><p align='center'>- 중복 선택 가능합니다. 지우시려면 출력안함을 선택해 주세요!!</p><hr><br></html>", SwingConstants.CENTER);
 		panel_main.add(main_title, BorderLayout.NORTH);
 		
 		//선택 체크박스를 만듭니다.
@@ -1976,7 +1976,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	combo_Detail_View.setMaximumRowCount(2);
     	panel_goods_detail.add(combo_Detail_View, "cell 3 10,growx,aligny center");
     	
-    	JLabel label_maincode = new JLabel("\uBA54\uC778\uCD9C\uB825\uCF54\uB4DC");
+    	JLabel label_maincode = new JLabel("\uC0C1\uD488\uC9C4\uC5F4\uC704\uCE58");
     	label_maincode.setHorizontalAlignment(SwingConstants.CENTER);
     	panel_goods_detail.add(label_maincode, "cell 1 11 2 1,alignx center,aligny center");
     	
@@ -1987,7 +1987,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	size.setSize(170, 30);
     	label_default_maincode.setMaximumSize(size);
     	
-    	JButton btn_default_maincode = new JButton("\uCF54\uB4DC\uC120\uD0DD");
+    	JButton btn_default_maincode = new JButton("\uC704\uCE58\uC120\uD0DD");
     	btn_default_maincode.addActionListener(new ActionListener() {
     		public void actionPerformed(ActionEvent e) {
     			//메인코드 출력 리스트를 작성합니다.
@@ -2037,9 +2037,14 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	panel_goods_detail.add(label_Detail_ImagePath, "cell 1 14 2 1,alignx center,aligny center");
     	
     	text_Detail_ImagePath = new JTextField();
-    	panel_goods_detail.add(text_Detail_ImagePath, "cell 3 14 4 1,growx,aligny center");
+    	panel_goods_detail.add(text_Detail_ImagePath, "cell 3 14 3 1,growx,aligny center");
     	text_Detail_ImagePath.setColumns(10);
     	text_Detail_ImagePath.setEditable(false);
+    	
+    	JButton btn_ftpimage_delete = new JButton("\uC774\uBBF8\uC9C0\uC0AD\uC81C");
+    	btn_ftpimage_delete.setActionCommand("FTP_ImageDelete");    	
+    	btn_ftpimage_delete.addActionListener(this);
+    	panel_goods_detail.add(btn_ftpimage_delete, "cell 6 14,alignx center,aligny center");
     	
     	JSeparator separator_1 = new JSeparator();
     	panel_goods_detail.add(separator_1, "cell 1 16 7 1,growx,aligny top");
@@ -2249,9 +2254,24 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		
 		table.getTableHeader().setReorderingAllowed(false);  //이동불가
 		
+		//정렬후 선택시 이상한값 안 올라 오게 하기
+		/*ListSelectionModel rowSM = table.getSelectionModel();
+		  rowSM.addListSelectionListener(new ListSelectionListener(){
+		    public void valueChanged(ListSelectionEvent e) {
+		      ListSelectionModel lsm = (ListSelectionModel)e.getSource();
+		        if(e.getValueIsAdjusting()){
+		          if(!lsm.isSelectionEmpty()){ // index가 선택 되었을때
+		        	  temp_detail  = (Vector) dtm.getDataVector().get(lsm.getMinSelectionIndex());
+		        	  // sort한 테이블의 인덱스 찾기.		                         
+		        	  // selectedRow = lsm.getMinSelectionIndex();		 
+		        }
+		      }
+		    }
+		  });   //		
+	
 		table.setAutoCreateRowSorter(true);
 		TableRowSorter<TableModel> tsorter = new TableRowSorter<TableModel>(table.getModel());
-		table.setRowSorter(tsorter);
+		table.setRowSorter(tsorter);*/	
 		
 		table.addMouseListener(new MouseListener() {
 			
@@ -2339,9 +2359,9 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		table.getColumn("규격").setPreferredWidth(40);
 		table.getColumn("규격").setCellRenderer(celAlignCenter);
 		
-		//String[] colunm = {"순번", "바코드", "상품명", "규격", "매입가", "판매가", "현재고", "안전재고", 
-		//"분류코드", "대코드", "대명", "중코드", "중명", "소코드", "소명", "행사", "상품연동", "진열여부", "연동유무", "재고연동", 
-		//"메인출력", "이미지설정", "이미지경로" , "이미지명", "저울상품"};
+		//String[] colunm = {"0. 순번", "1. 바코드", "2. 상품명", "3. 규격", "4. 매입가", "5. 판매가", "6. 현재고", "7. 안전재고", 
+		//"8. 분류코드", "9. 대코드", "10. 대명", "11. 중코드", "12. 중명", "13. 소코드", "14. 소명", "15. 행사", "16. 상품연동", "17. 진열여부", "18. 연동유무", "19. 재고연동", 
+		//"20. 메인출력", "21. 이미지설정", "22. 이미지경로" , "23. 이미지명", "24. 저울상품"};
 		
 		table.getColumn("매입가").setPreferredWidth(60);
 		table.getColumn("매입가").setCellRenderer(celAlignRight);
@@ -2621,9 +2641,10 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		
 		table_hotkey.getTableHeader().setReorderingAllowed(false);  //이동불가		
 		
-		table_hotkey.setAutoCreateRowSorter(true);
+		//정렬 관련 문제가 없어 질때 까지 잠정 보류
+		/*table_hotkey.setAutoCreateRowSorter(true);
 		TableRowSorter<TableModel> tsorter = new TableRowSorter<TableModel>(table_hotkey.getModel());
-		table_hotkey.setRowSorter(tsorter);
+		table_hotkey.setRowSorter(tsorter);*/
 				
 		table_hotkey.getColumn("순번").setPreferredWidth(30);
 		table_hotkey.getColumn("순번").setCellRenderer(celAlignCenter);
@@ -2755,21 +2776,33 @@ public class Goods_Manage extends JPanel implements ActionListener {
 					Vector<Object> temp_one = new Vector<Object>();		
 					
 					temp_one.add(table.getModel().getValueAt(row[j], 1));			//바코드
-					temp_one.add(table.getModel().getValueAt(row[j], 22));       //이미지설정
-					temp_one.add(table.getModel().getValueAt(row[j], 23));		//이미지경로
+					temp_one.add(table.getModel().getValueAt(row[j], 21));       //이미지설정
 					
-					if(temp_one.get(1).equals(gubun.toString().trim()) && temp_one.get(2).equals(" ") || temp_one.get(2).equals("")){
+					//System.out.println("21 : " +table.getModel().getValueAt(row[j], 21));
+					//System.out.println(table.getModel().getValueAt(row[j], 22));
+					//System.out.println(table.getModel().getValueAt(row[j], 23));	
+					
+					temp_one.add(table.getModel().getValueAt(row[j], 22));		//이미지경로
+					
+					//"20. 메인출력", "21. 이미지설정", "22. 이미지경로" , "23. 이미지명", "24. 저울상품"};					
+					try{
+						if(temp_one.get(1).equals(gubun.toString().trim()) && temp_one.get(2).equals(" ") || temp_one.get(2).equals("")){
+							temp_image += "'"+temp_one.get(0)+"', ";	
+							count++;
+							total_count++;
+						}
+					}catch(NullPointerException e){
 						temp_image += "'"+temp_one.get(0)+"', ";	
 						count++;
-						total_count++;	
+						total_count++;
+						e.getMessage();
 					}
-					
 					label_result.setText(result_text+total_count+"건 매칭시도 "+result_count+"건 매칭완료");
 					
 					//1000개씩 끊어서 매칭 합니다.
 					if(count == 1000){
 					
-						temp_image = temp_image.substring(0, temp_image.length()-2);		
+						temp_image = temp_image.substring(0, temp_image.length()-2);	
 						query += "and barcode in ("+temp_image+")";
 						
 						ms_connect.setImageSetting();
@@ -3551,7 +3584,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
     //선택된 이미지를 저장합니다.
     public void saveImageChoose(String[] item)	{
     	
-    	if(dtm.getRowCount() == 0 || dtm.getRowCount() > 1){
+    	
+    	if(table.getSelectedRowCount() == 0 || table.getSelectedRowCount() > 1){
     		JOptionPane.showMessageDialog(this, "입력할 상품을 하나만 선택해 주세요~!!");    		
     		return;
     	}
@@ -3625,6 +3659,68 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		String uploadFail = "";
 		
 		FTPClient ftpConn = new FTPClient();
+		
+		//기존 선택한 상품에 파일이 있다면 파일을 먼저 삭제 합니다.
+		int row = table.getSelectedRow();
+		
+		//Vector<Object> temp = new Vector<Object>();
+		
+		//for(int i = 0; i < table_hotkey.getColumnCount(); i++){
+		//이미지 파일 여부를 확인 합니다.
+		String path_gubun = (String)dtm.getValueAt(row, 21);
+		String path = (String)dtm.getValueAt(row, 22);
+		path = path.trim();
+		System.out.println(path_gubun);
+		//}
+		
+		try{
+			if( path.length() > 0 && path_gubun.equals("단독폴더")){
+				//파일이 존재 한다면				
+				System.out.println("서버에 파일이 존재합니다. 삭제 진행 합니다.");
+				//서버를 삭제 합니다.
+				
+				//ftp파일을 삭제합니다.
+				try {
+					
+					ftpConn.connect(Server_Config.getFTPIP(), Server_Config.getFTPPORT());
+					ftpConn.login(Server_Config.getFTPID(), Server_Config.getFTPPW());				
+					
+					System.out.println(ftpConn.currentDirectory());
+					String path_ext = path.substring(path.length()-3, path.length());
+					System.out.println(path_ext);
+					
+					ftpConn.changeDirectory(Server_Config.getFTPMARTPATH());
+					
+					//기존에 저장되어 있는 파일을 삭제 합니다.
+					ftpConn.deleteFile(barcode.trim()+"."+path_ext);
+					ftpConn.disconnect(true);
+					
+					//이미지디비에 저장하기 위해 쿼리를 모아 둡니다.
+					/*String query_ftp = "Delete From FTP_Image Where Barcode = '"+barcode+"' and path_gubun='0' and path='"+Server_Config.getFTPMARTPATH()+"' ";
+					String query_delete = "Update Goods_info set Edit_Tran='0', Img_Name='', Img_path_use='0', img_path='', where Barcode='"+barcode+"' ";
+					
+					System.out.println(query_ftp);					
+					System.out.println(query_delete);
+					
+					//이미지 서버에 
+					ms_connect.setImageSetting();
+					ms_connect.connect_update(query_ftp);					
+					
+					ms_connect.setMainSetting();
+					ms_connect.connect_update(query_delete);		*/			
+					
+					System.out.println("기본 파일 삭제 성공");
+				} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
+					// TODO Auto-generated catch block					
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(this, "FTP의 기존 이미지를 삭제하지 못했습니다. . \r\n 오류내용 : "+e.getMessage());
+					return state=true;
+				}
+				
+			}
+		}catch(NullPointerException e){
+			e.printStackTrace();
+		}
 		
 		//FTP 폴더에 있는 파일이면 우선 특정 폴더로 다운로드 합니다.
 		System.out.println(GUBUN);
@@ -3717,6 +3813,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			ms_connect.connect_update(query_goodsInfo);	
 		}
 		
+		JOptionPane.showMessageDialog(this, "저장이 완료 되었습니다.");
 		System.out.println("저장완료");	
 		return state;
 	}
@@ -4229,6 +4326,88 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	}
     }
     
+    //ftp 이미지를 삭제 합니다.
+    public void deleteFtpImage(){
+    	
+    	int result = JOptionPane.showConfirmDialog(this, "정말로 삭제 하시겠습니까?", "선택이미지 삭제 ",  JOptionPane.OK_CANCEL_OPTION);    	
+    	if(result!= 0) return;
+    	
+    	int row = table.getSelectedRow();		
+    	if(row < 0) JOptionPane.showMessageDialog(this, "상품을 선택해 주세요");
+    	
+    	String barcode = (String)dtm.getValueAt(row, 1);
+		String path_gubun = (String)dtm.getValueAt(row, 21);
+		String path = (String)dtm.getValueAt(row, 22);
+		System.out.println(path_gubun);
+		
+		try{			
+			if( path.length() > 0){
+				
+				if(path_gubun.equals("단독폴더")){
+					//서버를 삭제 합니다.
+					
+					//ftp파일을 삭제합니다.		
+					try {
+						FTPClient ftpConn = new FTPClient();
+						
+						ftpConn.connect(Server_Config.getFTPIP(), Server_Config.getFTPPORT());
+						ftpConn.login(Server_Config.getFTPID(), Server_Config.getFTPPW());				
+						
+						System.out.println(ftpConn.currentDirectory());
+						String path_ext = path.substring(path.length()-3, path.length());
+						System.out.println(path_ext);
+						
+						ftpConn.changeDirectory(Server_Config.getFTPMARTPATH());
+						
+						//기존에 저장되어 있는 파일을 삭제 합니다. 
+						ftpConn.deleteFile(barcode.trim()+"."+path_ext);
+						ftpConn.disconnect(true);
+						
+						//이미지디비에 저장하기 위해 쿼리를 모아 둡니다.
+						String query_ftp = "Delete From FTP_Image Where Barcode = '"+barcode+"' and path_gubun='0' and path='"+Server_Config.getFTPMARTPATH()+"' ";
+						String query_delete = "Update Goods_info set Edit_Tran='1', Img_Name='', img_path='' where Barcode='"+barcode+"' ";
+						
+						System.out.println(query_ftp);					
+						System.out.println(query_delete);
+						
+						//이미지 서버에 
+						ms_connect.setImageSetting();
+						ms_connect.connect_update(query_ftp);					
+						
+						ms_connect.setMainSetting();
+						ms_connect.connect_update(query_delete);			
+						
+						System.out.println("기본 파일 삭제 성공");
+					} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
+						// TODO Auto-generated catch block					
+						e.printStackTrace();
+						JOptionPane.showMessageDialog(this, "FTP의 기존 이미지를 삭제하지 못했습니다. . \r\n 오류내용 : "+e.getMessage());						
+					}
+				}else{				
+					//공용폴더에 있을때에는 ftp주소만 삭제 합니다.
+					String query_delete = "Update Goods_info set Edit_Tran='1', Img_Name='', img_path='' where Barcode='"+barcode+"' ";
+															
+					System.out.println(query_delete);					
+					ms_connect.setMainSetting();
+					ms_connect.connect_update(query_delete);	
+				}
+				
+			}
+		}catch(NullPointerException e){
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "저장된 이미지가 없습니다.");
+			return;
+		}
+		
+		JOptionPane.showMessageDialog(this, "삭제 완료 되었습니다.");
+		
+		detail_Renew();		
+		//검색하기
+		search_start();	
+		
+    }
+    
+    
     
 	class ChkboxItemListioner_Top implements ItemListener{
 
@@ -4387,6 +4566,9 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			break;
 		case "HotKey_ListDown":
 			setHotkeyListUpDown("DOWN");
+			break;
+		case "FTP_ImageDelete":
+			deleteFtpImage();
 			break;
 		}
 	}

@@ -71,8 +71,9 @@ import javax.swing.JTabbedPane;
 
 public class Main_Frame extends JFrame implements ActionListener{
 	
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 22513545765121L;
 	
+	private final String Version =  "Ver 1.0.2";
 	
 	private final String Shop_Manager = "쇼핑몰관리"; 
 	private final String Pro_Manager = "상품관리";
@@ -87,7 +88,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 	private  Goods_Manage goods_manage;
 	private Image_Upload image_upload;
 	private Main_Config config;
-	
+	private Member_Manage member_manage;
 	
 	JTabbedPane tabbedPane;
 	/**
@@ -139,9 +140,9 @@ public class Main_Frame extends JFrame implements ActionListener{
     	
     	try{    		
 	    	if(Server_Config.getOFFICENAME().equals("")){    	
-	    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9");
+	    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9 "+Version);
 	    	}else{
-	    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9 "+"[ "+Server_Config.getOFFICECODE() +" "+Server_Config.getOFFICENAME()+" ]" );
+	    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9 "+Version+" [ "+Server_Config.getOFFICECODE() +" "+Server_Config.getOFFICENAME()+" ]" );
 	    	}
     	}catch(NullPointerException e){
     		//프로그램 최초 실행 시 보여집니다.
@@ -217,6 +218,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		btn_order.setIconTextGap(10);
 		btn_order.setFont(new Font("맑은 고딕", Font.BOLD, 15));
 		btn_order.setFocusable(false);
+		btn_order.addActionListener(this);
 		menuBar.add(btn_order);
 		
 		JButton btn_member = new JButton("\uD68C\uC6D0\uAD00\uB9AC");
@@ -224,6 +226,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		btn_member.setIconTextGap(10);
 		btn_member.setFont(new Font("맑은 고딕", Font.BOLD, 15));
 		btn_member.setFocusable(false);
+		btn_member.addActionListener(this);
 		menuBar.add(btn_member);
 		
 		JButton btn_message = new JButton("\uBA54\uC138\uC9C0\uAD00\uB9AC");
@@ -231,6 +234,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		btn_message.setIconTextGap(10);
 		btn_message.setFont(new Font("맑은 고딕", Font.BOLD, 15));
 		btn_message.setFocusable(false);
+		btn_message.addActionListener(this);
 		menuBar.add(btn_message);
 		
 		JButton btn_cupon = new JButton("\uCFE0\uD3F0\uAD00\uB9AC");
@@ -238,6 +242,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		btn_cupon.setIconTextGap(10);
 		btn_cupon.setFont(new Font("맑은 고딕", Font.BOLD, 15));
 		btn_cupon.setFocusable(false);
+		btn_cupon.addActionListener(this);
 		menuBar.add(btn_cupon);
 		
 		JButton config_setting = new JButton("환경설정");
@@ -371,14 +376,14 @@ public class Main_Frame extends JFrame implements ActionListener{
 		case Pro_Manager:
 			//상품관리
 			goods_manage = new Goods_Manage();			
-			tabbedPane.add(Pro_Manager, goods_manage);
+			tabbedPane.addTab(Pro_Manager, goods_manage);
 			close_button(Pro_Manager);
 			break;
 		case Img_Manager:			
 			//이미지 관리
-			image_upload = new Image_Upload();
-			tabbedPane.add(Img_Manager, image_upload);
-			close_button(Img_Manager);
+			/*image_upload = new Image_Upload();
+			tabbedPane.addTab(Img_Manager, image_upload);
+			close_button(Img_Manager);*/
 			break;
 		case Ord_Manager:
 			//주문관리
@@ -388,7 +393,9 @@ public class Main_Frame extends JFrame implements ActionListener{
 			
 		case Mem_Manager:
 			//회원관리
-			
+			/*member_manage = new Member_Manage();
+			tabbedPane.addTab(Mem_Manager, member_manage);
+			close_button(Mem_Manager);*/
 			break;
 		case Msg_Manager:
 			//메세지관리

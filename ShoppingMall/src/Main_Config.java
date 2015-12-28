@@ -57,10 +57,9 @@ import javax.swing.JList;
 
 
 public class Main_Config extends JDialog implements ActionListener{
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 157448436L;
+	
 	private JTextField text_server_ip;
 	private JTextField text_server_port;
 	private JTextField text_server_dbname;
@@ -77,10 +76,9 @@ public class Main_Config extends JDialog implements ActionListener{
 	private File file;
 	private JPasswordField pass_shop_key;
 	
-	private Ms_Connect ms_connect;
-	
+	private Ms_Connect ms_connect;	
 	HashMap<String, String> temp_config;
-	private JTextField text_pcimage_path;
+	private JTextField text_pcimage_path;	
 	
 	//환경설정 설명서
 	private JLabel label_info;
@@ -366,6 +364,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		JButton btn_server_save = new JButton("\uC800 \uC7A5");
 		btn_server_save.setToolTipText("<Html>\r\n\uC11C\uBC84 \uC124\uC815 \uBCC0\uACBD \uB0B4\uC6A9 \uBC0F \uB9E4\uC7A5\uD658\uACBD \uC124\uC815 \uBCC0\uACBD \uB0B4\uC6A9\uC744 \uC800\uC7A5\uD569\uB2C8\uB2E4.\r\n</Html>");
 		btn_server_save.setBounds(12, 220, 298, 35);
+		btn_server_save.setActionCommand("저장");
 		panel_2.add(btn_server_save);
 		
 		JButton btn_close = new JButton("\uC885 \uB8CC");

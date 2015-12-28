@@ -360,7 +360,7 @@ public class Image_Upload extends  JPanel implements ActionListener{
 				}
 				
 				//이미지디비에 저장하기 위해 쿼리를 모아 둡니다.
-				String query = "Insert into FTP_Image values('"+file.substring(0, file.indexOf("."))+"', '"+Server_Config.getFTPMARTPATH()+"', '0', '', '"+file.substring(file.indexOf(".")+1, file.length())+"')";
+				String query = "Insert into FTP_Image values('"+file.substring(0, file.indexOf("."))+"', '"+Server_Config.getFTPMARTPATH()+"', '0', '', '"+file.substring(file.indexOf(".")+1, file.length())+"', '')";
 				queryList.add(query);
 			}else{
 				//업로드 실패시 저장합니다.

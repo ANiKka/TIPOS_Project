@@ -1,39 +1,51 @@
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Graphics;
+
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import net.miginfocom.swing.MigLayout;
 
 public class Main_Contents extends JPanel {
-
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 15648534567654L;
+
 	/**
 	 * Create the frame.
 	 */
 	public Main_Contents() {
 		
-		setBorder(new EmptyBorder(5, 5, 5, 5));				
-		setLayout(null);
-		setLayout(new BorderLayout());		
+		setBorder(new EmptyBorder(10, 10, 10, 10));				
+		//setLayout(null);
 		
-		openUrl("jeilmart.kr");
+		
+		
+		setLayout(new MigLayout("", "[grow]", "[grow]"));
+		
+		//JLabel label = new JLabel();
+		//label.setIcon(new ImageIcon(getClass().getClassLoader().getResource("Icon/intro.jpg")));		
+		//add(label, "cell 0 0,alignx center,aligny center");
+		
+	}
+	
+	
+	public void paintComponent(Graphics g){
+		super.paintComponent(g);
+		
+		ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource("Icon/intro.jpg"));
+		
+		Dimension d = getSize();
+		g.drawImage(icon.getImage(), 0, 0, d.width, d.height, null);
+	
+		
 	}
 
 	
-	public static void openUrl(String url){
-		
-		String os = System.getProperty("os.name");
-		Runtime runtime = Runtime.getRuntime();
-			try {            
-				// Block for Windows Platform        
-				System.out.println(os.toString());
-				if (os.startsWith("Windows")) {                
-					String cmd = "rundll32 url.dll,FileProtocolHandler " + url;                
-					Process p = runtime.exec(cmd);					
-					System.out.println("실행완료");
-				}
-			} catch (Exception x) {
-					System.err.println("Exception occurd while invoking Browser!");            
-					x.printStackTrace();       
-			}
-	}
+	
 	
 }
