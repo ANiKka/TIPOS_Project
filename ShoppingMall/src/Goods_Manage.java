@@ -139,6 +139,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 	private String query;
 	private String query_goods = "";
 	private String query_info = ""; 
+	private String query_pro = "";
 	
 	private DefaultTableModel dtm; 
 		
@@ -271,9 +272,9 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		label_top_maincode_chk.setText("선택 안됨");
 		
 		chkeck_top_anstock.setSelected(false);		
-		dtm.setRowCount(0);
+		//dtm.setRowCount(0);
 		tx_barcode.requestFocus();	
-		detail_Renew();
+		//detail_Renew();
 	}
 	
 	
@@ -366,7 +367,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		System.out.println("메인출력코드 : "+maincode + " 저장값 : "+select_item);
 		if(!select_item.equals(maincode)){
 			if(select_item.equals("") || select_item.equals("none")){
-				query2 += ", Shop_MainCode = '' ";
+				query2 += ", Shop_MainCode = 'none' ";
 			}else{
 				query2 += ", Shop_MainCode = '"+select_item+"' ";
 			}
@@ -408,16 +409,18 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		
 		if(edit_goods || edit_goods_info){
 			switch(result){
-			case 0 :				
-				detail_Renew();
-				JOptionPane.showMessageDialog(null, "저장이 완료 되었습니다.");
+			case 0:
+				new TransferDataGoodsSet(ms_connect, this, barcode);	
+				detail_Renew();	
+				JOptionPane.showMessageDialog(null, "저장이 완료 되었습니다.");				
 				//상품검색 시작
-				search_goods(query);	
-				break;
+				search_goods(query);
+				break;				
 			default :
 				JOptionPane.showMessageDialog(null, "오류로 저장하지 못했습니다. \r\n 서버를 점검해 주세요!!");
 				break;
-			}		
+			}
+			
 		}else{
 			JOptionPane.showMessageDialog(null, "변경된 정보가 없습니다.");
 		}
@@ -514,7 +517,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	JPanel p_top = new JPanel();
 		p_top.setBorder(new LineBorder(new Color(0, 0, 0)));
 		this.add(p_top, BorderLayout.NORTH);
-		p_top.setLayout(new MigLayout("", "[50px,grow][][][grow]", "[grow][fill][24px,grow]"));
+		p_top.setLayout(new MigLayout("", "[50px,grow][grow][grow][grow]", "[grow][fill][24px,grow]"));
 		
 		JPanel panel = new JPanel();
 		p_top.add(panel, "cell 0 0,grow");
@@ -661,8 +664,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				
+				// TODO Auto-generated method stub				
 				tx_Lcode.setText("");
 				tx_Lname.setText("");
 				tx_Mcode.setText("");
@@ -673,13 +675,12 @@ public class Goods_Manage extends JPanel implements ActionListener {
 				Object[] ot = { tx_Lcode, tx_Lname, tx_Mcode, tx_Mname, tx_Scode, tx_Sname};
 				ClassSearch cs = new ClassSearch(ot);
 				cs.setAlwaysOnTop(true);
-				cs.setLocationRelativeTo(P);				
-				
+				cs.setLocationRelativeTo(P);
 			}		
 		});
 		
 		JButton bt_renew = new JButton("\uC0C8\uB85C\uC785\uB825");
-		p_top.add(bt_renew, "cell 2 1,growx,aligny bottom");
+		p_top.add(bt_renew, "cell 2 1,alignx center,aligny center");
 		
 		bt_renew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -793,7 +794,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		chkeck_top_anstock.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		bt_search = new JButton("\uC0C1\uD488\uAC80\uC0C9");
-		p_top.add(bt_search, "cell 2 2,grow");
+		p_top.add(bt_search, "cell 2 2,alignx center,growy");
 		
 		bt_search.addActionListener(new ActionListener() {
 			
@@ -962,8 +963,9 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		}
 		
 		//안전재고검색
+		query_pro="";
 		if(chkeck_top_anstock.isSelected()){			
-			query_goods += "and real_sto <= pro_sto ";			
+			query_pro = "where a.real_sto <= b.pro_sto and b.pro_sto <> '0' ";			
 		}
 		
 		switch(combo_top_stockuse.getSelectedIndex()){
@@ -1144,7 +1146,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 				+ "a.s_code, a.s_name, a.bus_code, a.bus_name, a.goods_use, a.scale_use, b.shoppingmall_use, b.upload, b. shop_view, b.sto_use, ISNULL(b.shop_maincode, '') as shop_maincode, b.img_path_use, b.img_path, ISNULL(b.img_name, '') as img_name "
 				+ "From ( Select * From Goods Where L_code <> 'AA' and goods_use='1' "+query_goods+" ) a join "
 				+ " (select * from goods_info where 1=1 "+query_info+" ) b "
-				+ " on a.barcode=b.barcode " ;
+				+ " on a.barcode=b.barcode "+query_pro ;
 	}
         
 	
@@ -1665,14 +1667,22 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
+				// TODO Auto-generated method stub				
 				table.selectAll();
 			}
 		});
+				
+		JButton btn_all_clear = new JButton("\uC804\uCCB4\uD574\uC81C");
+		btn_all_clear.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				table.clearSelection();
+			}
+		});
+		panel.add(btn_all_clear, "cell 1 0,alignx left,aligny top");
 		
 		//상품 불러오기 임시 기능???
 		JButton bt_ftp_connect = new JButton("불러오기");
-		panel.add(bt_ftp_connect, "cell 1 0,alignx left,aligny top");
+		panel.add(bt_ftp_connect, "cell 2 0,alignx left,aligny top");
 		
 		bt_ftp_connect.addActionListener(new ActionListener() {
 			
@@ -1683,70 +1693,70 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			}
 		});		
 		bt_ftp_connect.setVisible(false);
-				
-				JLabel lblNewLabel_4 = new JLabel("\uC0C1\uD488 \uAC80\uC0C9 \uBAA9\uB85D");
-				panel.add(lblNewLabel_4, "cell 3 0,alignx left,aligny center");
-				lblNewLabel_4.setForeground(Color.BLACK);
-				lblNewLabel_4.setBackground(SystemColor.textHighlight);
-				lblNewLabel_4.setFont(new Font("맑은 고딕", Font.BOLD, 12));
-				lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
-				
-				/*JButton bt_All_Save = new JButton("\uC77C\uAD04\uBCC0\uACBD");
-				panel.add(bt_All_Save, "cell 7 0,alignx left,aligny top");
-				
-						bt_All_Save.addActionListener(new ActionListener() {
-							
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								// TODO Auto-generated method stub
-																							
-								if(table.getSelectedRowCount() > 0 && table.getSelectedRow() > -1){
-								
-									//수정된 사항이 있다면 다시 돌아 갑니다.
-									if(change_Flags()) return;
-									
-									// TODO Auto-generated method stub
-									changeDialog = new AllChangeDialog(table);
-									changeDialog.setModal(true);	
-									changeDialog.setLocationRelativeTo(P);
-									changeDialog.open();
-									tabPane_detail.add(changeDialog, 2);
-															
-								}else{
-									JOptionPane.showMessageDialog(Goods_Manage.this, "상품을 선택해 주세요!!");
-								}				
-							}
-						});*/
-				
-				JLabel label_Detail_Title = new JLabel("\uC0C1\uD488 \uC0C1\uC138 \uC815\uBCF4");
-				panel.add(label_Detail_Title, "cell 15 0,alignx left,aligny center");
-				label_Detail_Title.setFont(new Font("맑은 고딕", Font.BOLD, 12));
-				label_Detail_Title.setHorizontalAlignment(SwingConstants.CENTER);
-				
-				JButton btn_detail_renew = new JButton("\uD558\uB2E8 \uC0C8\uB85C\uC785\uB825");
-				btn_detail_renew.addActionListener(new ActionListener() {
+		
+		JLabel lblNewLabel_4 = new JLabel("\uC0C1\uD488 \uAC80\uC0C9 \uBAA9\uB85D");
+		panel.add(lblNewLabel_4, "cell 3 0,alignx left,aligny center");
+		lblNewLabel_4.setForeground(Color.BLACK);
+		lblNewLabel_4.setBackground(SystemColor.textHighlight);
+		lblNewLabel_4.setFont(new Font("맑은 고딕", Font.BOLD, 12));
+		lblNewLabel_4.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		/*JButton bt_All_Save = new JButton("\uC77C\uAD04\uBCC0\uACBD");
+		panel.add(bt_All_Save, "cell 7 0,alignx left,aligny top");
+		
+				bt_All_Save.addActionListener(new ActionListener() {
+					
+					@Override
 					public void actionPerformed(ActionEvent e) {
-						//수정된 사항이 있다면 다시 돌아 갑니다.
-						if(change_Flags()) return;
+						// TODO Auto-generated method stub
+																					
+						if(table.getSelectedRowCount() > 0 && table.getSelectedRow() > -1){
 						
-						switch(tabPane_detail.getSelectedIndex()){
-						
-						case 0:
-							detail_Renew();
-							break;
-						case 1:
-							jtab_image_Renew();							
-							break;
-						case 2:
-							jtab_allChange_Renew();
-							break;
-						case 3:
-							jtab_hotkey_Renew();
-							break;
-						}						
+							//수정된 사항이 있다면 다시 돌아 갑니다.
+							if(change_Flags()) return;
+							
+							// TODO Auto-generated method stub
+							changeDialog = new AllChangeDialog(table);
+							changeDialog.setModal(true);	
+							changeDialog.setLocationRelativeTo(P);
+							changeDialog.open();
+							tabPane_detail.add(changeDialog, 2);
+													
+						}else{
+							JOptionPane.showMessageDialog(Goods_Manage.this, "상품을 선택해 주세요!!");
+						}				
 					}
-				});
-				panel.add(btn_detail_renew, "cell 17 0,alignx center");
+				});*/
+		
+		JLabel label_Detail_Title = new JLabel("\uC0C1\uD488 \uC0C1\uC138 \uC815\uBCF4");
+		panel.add(label_Detail_Title, "cell 15 0,alignx left,aligny center");
+		label_Detail_Title.setFont(new Font("맑은 고딕", Font.BOLD, 12));
+		label_Detail_Title.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		JButton btn_detail_renew = new JButton("\uD558\uB2E8 \uC0C8\uB85C\uC785\uB825");
+		btn_detail_renew.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				//수정된 사항이 있다면 다시 돌아 갑니다.
+				if(change_Flags()) return;
+				
+				switch(tabPane_detail.getSelectedIndex()){
+				
+				case 0:
+					detail_Renew();
+					break;
+				case 1:
+					jtab_image_Renew();							
+					break;
+				case 2:
+					jtab_allChange_Renew();
+					break;
+				case 3:
+					jtab_hotkey_Renew();
+					break;
+				}						
+			}
+		});
+		panel.add(btn_detail_renew, "cell 17 0,alignx center");
 				
     	JPanel panel_goods_detail = new JPanel();
     	//panel_1.add(panel_goods_detail, BorderLayout.EAST);
@@ -2055,7 +2065,9 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	label_image_view.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
     	panel_goods_detail.add(label_image_view, "cell 1 18 3 1,grow");
     	JButton btn_Detail_Save = new JButton("\uC800\uC7A5");
-    	btn_Detail_Save.setFont(new Font("맑은 고딕", Font.PLAIN, 15));
+    	btn_Detail_Save.setForeground(Color.RED);
+    	btn_Detail_Save.setBackground(Color.BLUE);
+    	btn_Detail_Save.setFont(new Font("맑은 고딕", Font.BOLD, 15));
     	panel_goods_detail.add(btn_Detail_Save, "cell 6 18,growx,aligny center");
     	
     	JPanel panel_jtaballchange = new JPanel();    	
@@ -2226,6 +2238,9 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	panel_3.add(label_result, "cell 0 2,growx,aligny top");
     	
     	btn_Change = new JButton("\uC120\uD0DD \uC635\uC158 \uBCC0\uACBD");
+    	btn_Change.setForeground(Color.RED);
+    	btn_Change.setFont(new Font("맑은 고딕", Font.BOLD, 13));
+    	btn_Change.setBackground(Color.BLUE);
     	panel_jtaballchange.add(btn_Change, "cell 0 11,growy");
     	btn_Change.setActionCommand("OK");
     	btn_Change.addActionListener(this);
@@ -2546,7 +2561,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		btn_jtab_hotkey_del.setActionCommand("HotKey_Del");
 		btn_jtab_hotkey_del.addActionListener(this);
 		
-		btn_jtab_hotkey_save = new JButton("\uC800\uC7A5");
+		btn_jtab_hotkey_save = new JButton("\uC21C\uC11C\uC800\uC7A5");
 		jtab_hotkey_sell.add(btn_jtab_hotkey_save, "cell 5 5,growx");
 		btn_jtab_hotkey_save.setActionCommand("HotKey_Save");
 		btn_jtab_hotkey_save.addActionListener(this);
@@ -2792,7 +2807,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 							total_count++;
 						}
 					}catch(NullPointerException e){
-						temp_image += "'"+temp_one.get(0)+"', ";	
+						temp_image += "'"+temp_one.get(0)+"', ";
 						count++;
 						total_count++;
 						e.getMessage();
@@ -3026,7 +3041,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 				if(i == 1){
 					if(select_item.equals("none")){
 						//선택되어 있는 내용을 삭제합니다.
-						goods_info_query += ", Shop_MainCode='' ";
+						goods_info_query += ", Shop_MainCode='none' ";
 						edit_check_info = true;
 					}else{
 						goods_info_query += ", Shop_MainCode='"+select_item+"' ";
@@ -3582,8 +3597,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     }
     
     //선택된 이미지를 저장합니다.
-    public void saveImageChoose(String[] item)	{
-    	
+    public void saveImageChoose(String[] item)	{    	
     	
     	if(table.getSelectedRowCount() == 0 || table.getSelectedRowCount() > 1){
     		JOptionPane.showMessageDialog(this, "입력할 상품을 하나만 선택해 주세요~!!");    		
@@ -3611,7 +3625,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
     		ms_connect.setMainSetting();
 			int res = ms_connect.connect_update(query_goodsInfo);
 			switch(res){
-			case 0:
+			case 0:				
+				new TransferDataGoodsSet(ms_connect, this, barcode);
 				JOptionPane.showMessageDialog(this, "이미지가 정상 등록 되었습니다.");
 				break;
 			default:
@@ -3674,6 +3689,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		//}
 		
 		try{
+			
 			if( path.length() > 0 && path_gubun.equals("단독폴더")){
 				//파일이 존재 한다면				
 				System.out.println("서버에 파일이 존재합니다. 삭제 진행 합니다.");
@@ -3721,6 +3737,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		}catch(NullPointerException e){
 			e.printStackTrace();
 		}
+		
 		
 		//FTP 폴더에 있는 파일이면 우선 특정 폴더로 다운로드 합니다.
 		System.out.println(GUBUN);
@@ -3813,6 +3830,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			ms_connect.connect_update(query_goodsInfo);	
 		}
 		
+		new TransferDataGoodsSet(ms_connect, this, barcode);
 		JOptionPane.showMessageDialog(this, "저장이 완료 되었습니다.");
 		System.out.println("저장완료");	
 		return state;
@@ -4224,14 +4242,17 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	//}    	
     	   	
     	//쿼리를 작성합니다.
-    	String query = "Update Hot_Key Set H_SellPri='"+sellpri+"' Where H_Barcode='"+barcode+"' ";
-    	    	
+    	String[] query_won = new String[2];
+    	query_won[0] = "Update Hot_Key Set H_SellPri='"+sellpri+"' Where H_Barcode='"+barcode+"' ";
+    	query_won[1] = "Update Goods_Info Set ShoppingMall_Use='1', Shop_View='1', Edit_Tran='1' Where Barcode='"+barcode+"' ";    	
     	//서버로 전송합니다.
     	ms_connect.setMainSetting();
-    	int result = ms_connect.connect_update(query);
+    	int result = ms_connect.connect_update(query_won);
     	
     	switch(result){
     	case 0:
+    		//정상 저장 되어서 바로 올립니다.
+    		new TransferDataGoodsSet(ms_connect, this, barcode);
     		break;
     	case 1:
     		JOptionPane.showMessageDialog(this, ms_connect.errMsg);
