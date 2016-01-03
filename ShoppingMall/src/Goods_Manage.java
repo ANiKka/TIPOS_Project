@@ -228,6 +228,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		ms_connect = new Ms_Connect();
 		shop_api = new Trans_ShopAPI();
         			
+    	setLayout(new BorderLayout(0, 0));
 		setBorder(new EmptyBorder(5, 5, 5, 5));
 				
 		//상단 검색조건
@@ -511,8 +512,6 @@ public class Goods_Manage extends JPanel implements ActionListener {
     
     //상단 검색 조건
     private void top_search(){
-    	
-    	setLayout(new BorderLayout(0, 0));
     	    	
     	JPanel p_top = new JPanel();
 		p_top.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -1654,7 +1653,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		
 		JPanel panel_1 = new JPanel();
 		add(panel_1);
-		panel_1.setLayout(new BorderLayout(0, 0));
+		panel_1.setLayout(new BorderLayout(5, 0));
 		
 		JPanel panel = new JPanel();
 		panel_1.add(panel, BorderLayout.NORTH);

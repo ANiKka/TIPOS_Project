@@ -81,7 +81,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 	private final String Ord_Manager = "주문관리";
 	private final String Mem_Manager = "회원관리";
 	private final String Msg_Manager = "메세지관리";
-	private final String Evt_Manager = "이벤트관리";
+	private final String Evt_Manager = "쿠폰관리";
 	private final String Con_Manager = "환경설정";
 	private final String Close_Manager = "종료";
 	
@@ -89,6 +89,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 	private Image_Upload image_upload;
 	private Main_Config config;
 	private Member_Manage member_manage;
+	private Event_Manage event_manage;
 	
 	JTabbedPane tabbedPane;
 	/**
@@ -182,6 +183,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setBackground(Color.GRAY);
+		
 		tabbedPane.setBounds(0, 0, 1008, 681);
 				
 		Main_Contents mc = new Main_Contents();
@@ -205,13 +207,13 @@ public class Main_Frame extends JFrame implements ActionListener{
     	
     	goods_ad.addActionListener(this);
 		
-		JButton image_upload_1 = new JButton("이미지관리");
+		/**JButton image_upload_1 = new JButton("이미지관리");
 		menuBar.add(image_upload_1);
 		image_upload_1.setFont(new Font("맑은 고딕", Font.BOLD, 15));    	
 		image_upload_1.setIcon(new ImageIcon(getClass().getClassLoader().getResource("Icon/btn_image_upload.png")));
 		image_upload_1.setIconTextGap(10);
 		image_upload_1.setFocusable(false);
-		image_upload_1.addActionListener(this);
+		image_upload_1.addActionListener(this);*/
 		
 		JButton btn_order = new JButton("\uC8FC\uBB38\uAD00\uB9AC");
 		btn_order.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_order.png")));
@@ -297,7 +299,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 			public void actionPerformed(ActionEvent e) {
 				
 				String title = e.getActionCommand();
-				// TODO Auto-generated method stub								
+				// TODO Auto-generated method stub
 				int index = tabbedPane.indexOfTab(title);
 		        if (index >= 0) {
 		        	tabbedPane.removeTabAt(index);          
@@ -393,15 +395,18 @@ public class Main_Frame extends JFrame implements ActionListener{
 			
 		case Mem_Manager:
 			//회원관리
-			/*member_manage = new Member_Manage();
+			member_manage = new Member_Manage();
 			tabbedPane.addTab(Mem_Manager, member_manage);
-			close_button(Mem_Manager);*/
+			close_button(Mem_Manager);
 			break;
 		case Msg_Manager:
 			//메세지관리
 			break;
 		case Evt_Manager:
 			//이벤트관리
+			event_manage = new Event_Manage();
+			tabbedPane.addTab(Evt_Manager, event_manage);
+			close_button(Evt_Manager);
 			break;
 		case Con_Manager:
 			startConfigSet();

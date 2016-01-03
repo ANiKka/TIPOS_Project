@@ -354,8 +354,7 @@ public class Trans_ShopAPI {
 	
 	//회원 정보 조회
 	String mem_info = "https://ssl.anybuild.co.kr/API/member/mem_info.php";
-	//상품 메인출력 코드 불러오기 API
-	//쇼핑몰 메인코드를 불러 옵니다.
+	
 	public JSONArray getMemberManage(String hp, String mem_id){
 				
 		//환경설정
@@ -621,15 +620,18 @@ public class Trans_ShopAPI {
 		
 		String shop_data = "";
 		try {
-			shop_data = "api_key="+shop_key.toString();//+"&hp=01090077611";//+URLEncoder.encode("010-8619-7484", "UTF-8");
-			shop_data +="&push_title=게릴라이벤트&push_msg=지금 방문하시면 아메리카노1잔 서비스 제공합니다.&push_link=/main&push_img_url="
+			shop_data = "api_key="+shop_key;//+"&hp=01090077611";//+URLEncoder.encode("010-8619-7484", "UTF-8");
+			shop_data +="&push_title="+URLEncoder.encode("게릴라이벤트", "UTF-8")+"&push_msg="+URLEncoder.encode("지금 방문하시면 아메리카노1잔 서비스 제공합니다.", "UTF-8")+"&push_link=&push_img_url="
 					+URLEncoder.encode("http://sskshop1.anybuild.com/thum_img/sskshop1/goods_img2/85b6f89b41cae26786ac72365fff771b_water_3afcaf174b6d740dcc3f8f859871184e_c1_w320_h320.jpg", "UTF-8")
-					+"&memlv=&mem_only=ALL&platform=&devicename=&devicemodel=&deviceversion=&hp_num=01090077611";
+					+"&memlv=&mem_only=ALL&platform=&devicename=&devicemodel=&deviceversion=&hp_num=01090077611&event_idx=75";
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
+		/*shop_data = "api_key="+shop_key;//+"&hp=01090077611";//+URLEncoder.encode("010-8619-7484", "UTF-8");
+		shop_data +="&push_title=게릴라이벤트&push_msg=지금 방문하시면 아메리카노1잔 서비스 제공합니다.&push_link=/main&push_img_url="
+				+"&memlv=&mem_only=ALL&platform=&devicename=&devicemodel=&deviceversion=&hp_num=01090077611";*/
 		System.out.println(shop_data);
 		
 		//기록을 남길 파일을 생성합니다.

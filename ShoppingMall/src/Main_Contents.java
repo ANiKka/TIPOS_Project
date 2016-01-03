@@ -98,14 +98,16 @@ public class Main_Contents extends JPanel implements ActionListener{
 			String exeFile = "C:\\Program Files\\TIPS\\PosManager.exe";			
 			setStartProgram(exeFile);
 			break;
+			
 		case "POP":
 			exeFile = "C:\\Program Files\\TIPS\\EasyPop\\easypop.exe";			
 			setStartProgram(exeFile);
 			break;
+			
 		case "SHOP":			
 			
 			String addr="";
-			/*try {
+			/**try {
 				addr = "http://www.tips1311.tipos.or.kr/admin/sub_login/login_ok.php?id="+URLEncoder.encode("tips1311", "UTF-8")+"&bu_id="+URLEncoder.encode("root", "UTF-8")+"&pwd="+URLEncoder.encode("kis5749948", "UTF-8")
 				 +"&referer=&login_type=&mode=&login_lan=&login_admin_mode=&first_url=&smart_design_yn=&smart_design_mode&this_domain=&post_action=";
 			} catch (UnsupportedEncodingException e1) {
