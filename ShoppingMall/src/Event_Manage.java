@@ -8,6 +8,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
 
+import org.json.simple.*;
+
 import com.toedter.calendar.*;
 import net.miginfocom.swing.*;
 
@@ -28,6 +30,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 	private JButton top_btn_search;
 	
 	private Ms_Connect ms_connect;
+	private Trans_ShopAPI trans_shopapi;
 	
 	private JLabel east_label_title;
 	private JLabel east_label_code;
@@ -144,6 +147,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		//디비 접속 도구
 		ms_connect = new Ms_Connect();
+		trans_shopapi = new Trans_ShopAPI();
 		
 		//상단 검색 창
 		panel_top = new JPanel();
@@ -508,27 +512,25 @@ public class Event_Manage extends JPanel implements ActionListener {
 		}
 		
 		if(map.get("e_Over_YN").equals("0")){
-			east_radio_overlapn.setSelected(true);
-		}else{
 			east_radio_overlapy.setSelected(true);
+		}else{
+			east_radio_overlapn.setSelected(true);
 		}
 		
 		if(map.get("Del_YN").equals("0")){
-			east_radio_usen.setSelected(true);
-		}else{
 			east_radio_usey.setSelected(true);
+		}else{
+			east_radio_usen.setSelected(true);
 		}
 						
 		east_text_point.setText(map.get("e_Point"));
 		east_text_prizesname.setText(map.get("e_Product"));
-		east_text_prizescount.setText(map.get("e_pCnt"));		
-		
-		
-		east_btn_save.setText("수정");
+		east_text_prizescount.setText(map.get("e_pCnt"));
 				
+		east_btn_save.setText("쿠폰 수정");
+		east_btn_save.setActionCommand("쿠폰수정");				
 	}
-	
-	
+		
 	
 	//쿠폰리스트 우측 등록 수정화면
 	private void event_Reg(){
@@ -548,6 +550,9 @@ public class Event_Manage extends JPanel implements ActionListener {
 		east_text_code.setColumns(10);
 		
 		east_btn_callevent = new JButton("\uC774\uBCA4\uD2B8 \uBD88\uB7EC\uC624\uAE30");
+		east_btn_callevent.setToolTipText("<html>\r\n\uD648\uD398\uC774\uC9C0 \uAD00\uB9AC\uC790 \uD398\uC774\uC9C0\uC5D0\uC11C \uB4F1\uB85D\uD55C \uC774\uBCA4\uD2B8 \uBAA9\uB85D\uC744 \uBD88\uB7EC\uC635\uB2C8\uB2E4.\r\n</html>");
+		east_btn_callevent.setActionCommand("이벤트불러오기");
+		east_btn_callevent.addActionListener(this);
 		east_btn_callevent.setFont(new Font("맑은 고딕", Font.PLAIN, 10));
 		panel_east.add(east_btn_callevent, "cell 4 2,aligny center");
 		
@@ -721,7 +726,9 @@ public class Event_Manage extends JPanel implements ActionListener {
 		east_bg_useyn.add(east_radio_usey);
 		east_bg_useyn.add(east_radio_usen);
 		
-		east_btn_save = new JButton("\uC800\uC7A5");
+		east_btn_save = new JButton("\uCFE0\uD3F0\uC800\uC7A5");
+		east_btn_save.setActionCommand("쿠폰저장");
+		east_btn_save.addActionListener(this);
 		east_btn_save.setForeground(Color.RED);
 		east_btn_save.setFont(new Font("맑은 고딕", Font.BOLD, 15));
 		east_btn_save.setBackground(Color.BLUE);
@@ -1136,6 +1143,45 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 	}
 	
+	//이벤트 리스트를 불러와서 목록으로 보여 줍니다.
+	public void getEventListChoose(){
+		
+		//목록을 호출합니다.
+		JSONArray temp_event = trans_shopapi.getPushEventList();
+				
+		if(temp_event.size() <= 0){			
+			JOptionPane.showMessageDialog(this, "이벤트 목록을 불러오는 실패 했습니다.");
+			return;
+		}
+				
+		String[] list = new String[temp_event.size()];
+		for(int i = 0; i < temp_event.size(); i++){
+			JSONObject temp_map = (JSONObject)temp_event.get(i);
+			
+			String item = temp_map.get("idx")+" : "+temp_map.get("subject");
+			list[i] = item;			
+		}
+		
+		//호출한 목록을 다이얼 로그로 띄웁니다.		
+	    String input = (String) JOptionPane.showInputDialog(east_combo_gubun, "적용할 이벤트를 선택하세요!!",
+	    		"이벤트 목록", JOptionPane.QUESTION_MESSAGE, null, // Use
+	                                                                        // default
+	                                                                        // icon
+	        list, // Array of choices
+	        list[0]); // Initial choice
+	    System.out.println(input);
+		
+	    try{
+		//선택한 이벤트를 불러 옵니다.
+		east_text_code.setText(input.substring(0, input.indexOf(":")).trim());
+		east_text_name.setText(input.substring(input.indexOf(":")+1, input.length()).trim());
+	    }catch(NullPointerException e){
+	    		    	
+	    }
+		
+	}
+	
+	
 	
 	//상단 검색 정보 초기화 하기
 	public void setTopRenew(){
@@ -1175,11 +1221,33 @@ public class Event_Manage extends JPanel implements ActionListener {
 				
 		east_radio_usey.setSelected(true);
 		
-		east_btn_save.setText("저장");
+		east_btn_save.setText("쿠폰 저장");
+		east_btn_save.setActionCommand("쿠폰저장");
 		
 	}
 	
-	
+	//쿠폰정보를 수정합니다.
+	private void setCouponUpdate() {
+		
+		
+	}
+
+	//쿠폰정보를 등록합니다.
+	private void setCouponSave() {
+		
+		//코드가 등록 되었는지 확인 해야 합니다.
+		
+		//등록 되어 있다면 사용할수 없습니다.
+		
+		//오류 검사
+		//등록 코드가 숫자로 이루어 졌는지 확인 합니다.
+		//제목의 문자 길이를 측정합니다.
+		//쿠폰 구분에 따라서 포인트 및 사은품명 또는 사은품 수량을 넣었는지 확인 합니다.
+		//선택한 날자가 시작일이 종료일보다 앞인지 확인 합니다.
+		
+		
+		
+	}
 	
 	
 	@Override
@@ -1197,10 +1265,21 @@ public class Event_Manage extends JPanel implements ActionListener {
 		case "새로입력":
 			setRenewCouponReg();
 			break;
+		case "이벤트불러오기":
+			getEventListChoose();			
+			break;
+		case "쿠폰저장":
+			setCouponSave();
+			break;
+		case "쿠폰수정":
+			setCouponUpdate();
+			break;
 		}
 	}
 	
 	
+
+
 	public class CouponListTableCellRenderer extends JLabel implements TableCellRenderer {
 		
     	/**

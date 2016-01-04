@@ -1,9 +1,4 @@
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -596,11 +591,6 @@ public class Trans_ShopAPI {
 	}	
 	
 	
-	
-	
-	
-	
-	
 	/* 검색 하려면 아래 변수를 뒤쪽에 추가하시면 됩니다. 아래 검색조건을 입력하지 않는 경우 모든 APP 설치 고객에게 메세지 전송되므로 주의 하시기 바랍니다.
 	&memlv=회원등급(빈값입력시 모두선택, 100,1000,1100....)&mem_id=회원아이디&mem_only=(ALL:전체 선택,Y:회원가입한회원만 선택,N:비회원만 선택)&platform=플랫폼&devicename=제조사명&devicemodel=제조사 모델명&deviceversion=플랫폼 버젼&hp_num=핸드폰번호	
 	"api_key=333d4794fbf4b1a9d2b4e26b0091df59&push_title=게릴라이벤트&push_msg=지금 방문하시면 아메리카노1잔 서비스 제공합니다."
@@ -725,6 +715,70 @@ public class Trans_ShopAPI {
 	}	
 	
 	
+	//푸시 이벤트 목록 불러오기
+	public JSONArray getPushEventList(){
+		
+			//환경설정
+			String shop_key = Server_Config.getSHOPKEY();
+			
+			//접속 쇼핑몰정보 정의하기
+			String shop_address = "https://ssl.anybuild.co.kr/API/app/push_event_list.php?api_key="+shop_key;	
+			System.out.println(" 동기화를 시작합니다. 접속 주소 --> " + shop_address);
+			
+			//담을곳을 정의 합니다.
+			JSONArray data = new JSONArray();
+			
+			//결과를 전송 합니다.
+			//전송폼을 생성합니다.
+			try {
+				
+				URL url = new URL(shop_address);
+				HttpURLConnection shop_url = (HttpURLConnection)url.openConnection();
+			
+				shop_url.setDoInput(true);
+				
+				System.out.println("전송상태 출력");
+				System.out.println(" URL : "+shop_url.getURL());			
+								
+				//전송 결과 수신
+				InputStreamReader isr = new InputStreamReader(shop_url.getInputStream(), "UTF-8");	
+				JSONObject object = (JSONObject)JSONValue.parseWithException(isr);							
+							
+				isr.close();
+				
+				if(object.get("result_code").equals("OK")){				
+					data = (JSONArray)object.get("result_data");
+					System.out.println(data.toJSONString());
+				}
+				
+				//결과출력
+				System.out.println(object.toString());
+								
+				SimpleDateFormat formatter = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss", Locale.KOREA );
+				Date currentTime = new Date ( );
+				String dTime = formatter.format ( currentTime );
+				
+				String sb = "푸시 이벤트 목록 -> 호출위치 : 푸시 이벤트 목록"
+							+ "전송 시간 : " + dTime + " \r\n"; 
+						sb += "resultcode : "+object.get("result_code")+" result_msg : "+object.get("result_msg")+" result_cnt : "+object.get("result_cnt");					
+				
+				char[] paser = sb.toCharArray();				
+				System.out.println("조회가 완료 되었습니다.");
+							
+				//로그를 기록합니다.
+				setLogFile(paser);
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();			
+			}
+			
+			return data;
+	}
+	
 	
 	
 	//api key 정의 하기	
@@ -740,6 +794,47 @@ public class Trans_ShopAPI {
 		
 	
 		
+		
+	}
+	
+	
+	//로그파일 생성해서 남기기
+	private void setLogFile(char[] paser){		
+		
+		//기록을 남길 파일을 생성합니다.
+		File file = new File("result.log");
+				
+		if(!file.isFile()){
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		//로그파일을 작성합니다.
+		OutputStreamWriter bos;
+		try {
+			bos = new OutputStreamWriter(new FileOutputStream(file, true), "euc-kr");
+			
+			StringBuffer result_str = new StringBuffer();
+			
+			for(char str : paser){
+				bos.write(str);
+				result_str.append(str);
+			}	
+			System.out.println(result_str);
+			
+			bos.write('\r');
+			bos.write('\n');	
+			
+			bos.close();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}				
 		
 	}
 	

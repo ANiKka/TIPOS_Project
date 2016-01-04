@@ -1,71 +1,23 @@
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.LayoutManager;
-import java.awt.Toolkit;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
 import javax.swing.JDesktopPane;
-import javax.swing.JDialog;
-import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JSeparator;
 import javax.swing.JLabel;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dialog;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.im.InputContext;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.Vector;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.border.LineBorder;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 
-import java.awt.Font;
-import java.awt.SystemColor;
-
-import javax.swing.JToggleButton;
-
-import java.awt.Insets;
-import java.beans.PropertyVetoException;
 import javax.swing.JTabbedPane;
 
 
@@ -86,7 +38,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 	private final String Close_Manager = "종료";
 	
 	private  Goods_Manage goods_manage;
-	private Image_Upload image_upload;
+	//private Image_Upload image_upload;
 	private Main_Config config;
 	private Member_Manage member_manage;
 	private Event_Manage event_manage;
@@ -167,12 +119,15 @@ public class Main_Frame extends JFrame implements ActionListener{
 		    System.err.println("Cannot set look and feel:" + e.getMessage()); 
 		}
         
-        Toolkit tk = Toolkit.getDefaultToolkit();
+		//화면 중앙에 배치 
+       Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension dm = tk.getScreenSize();
         Dimension fm = this.getSize();
-        this.setLocation((int) (dm.getWidth() / 2 - fm.getWidth() / 2),
-                (int) (dm.getHeight() / 2 - fm.getHeight() / 2));
-       
+        this.setLocation((int) (dm.getWidth() / 2 - fm.getWidth() / 2), (int) (dm.getHeight() / 2 - fm.getHeight() / 2));
+               
+        //화면 전체 사이즈로 시작하기
+        setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+        
         getContentPane().setLayout(new BorderLayout());
 		
 		JDesktopPane jdp = new JDesktopPane();
