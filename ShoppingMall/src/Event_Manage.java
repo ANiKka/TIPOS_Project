@@ -218,7 +218,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		center_tabbed_couponlist = new JPanel();
 		center_tabbed_couponlist.setOpaque(false);
-		center_tabbed.addTab("\uCFE0\uD3F0 \uBAA9\uB85D", null, center_tabbed_couponlist, null);
+		center_tabbed.addTab("\uC774\uBCA4\uD2B8/\uCFE0\uD3F0 \uBAA9\uB85D", null, center_tabbed_couponlist, null);
 		center_tabbed_couponlist.setLayout(new BorderLayout(5, 0));	
 		
 		event_ListView();
@@ -226,13 +226,13 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		//쿠폰전송
 		center_tabbed_coupontran = new JPanel();
-		center_tabbed.addTab("\uCFE0\uD3F0 \uC804\uC1A1", null, center_tabbed_coupontran, null);
+		center_tabbed.addTab("\uBA54\uC138\uC9C0/\uCFE0\uD3F0 \uC804\uC1A1", null, center_tabbed_coupontran, null);
 		center_tabbed_coupontran.setLayout(new BorderLayout(5, 0));
 		
 		panel_coupontran_1 = new JPanel();
 		panel_coupontran_1.setBorder(new LineBorder(new Color(0, 0, 0)));
 		center_tabbed_coupontran.add(panel_coupontran_1, BorderLayout.WEST);
-		panel_coupontran_1.setLayout(new MigLayout("", "[][grow]", "[][][][][][100px][][][100px][][40px]"));
+		panel_coupontran_1.setLayout(new MigLayout("", "[][grow]", "[30px][][][][][100px][30px][][100px][30px][40px]"));
 		
 		event_CouponTran();
 		
@@ -620,10 +620,12 @@ public class Event_Manage extends JPanel implements ActionListener {
 		panel_east.add(east_label_memberyn, "cell 0 8,alignx trailing,aligny center");
 		
 		east_radio_memberyn = new JRadioButton("\uD68C\uC6D0+\uBE44\uD68C\uC6D0");
+		east_radio_memberyn.setName("0");
 		east_radio_memberyn.setEnabled(false);
 		panel_east.add(east_radio_memberyn, "cell 2 8");
 		
 		east_radio_membery = new JRadioButton("\uD68C\uC6D0");
+		east_radio_membery.setName("1");
 		east_radio_membery.setEnabled(false);
 		east_radio_membery.setSelected(true);
 		panel_east.add(east_radio_membery, "cell 4 8");
@@ -636,10 +638,12 @@ public class Event_Manage extends JPanel implements ActionListener {
 		panel_east.add(east_label_memoverlap, "cell 0 9,alignx trailing,aligny center");
 		
 		east_radio_overlapn = new JRadioButton("\uD5C8\uC6A9\uC548\uD568");
+		east_radio_overlapn.setName("0");
 		east_radio_overlapn.setSelected(true);
 		panel_east.add(east_radio_overlapn, "cell 2 9");
 		
 		east_radio_overlapy = new JRadioButton("\uD5C8\uC6A9\uD568");
+		east_radio_overlapy.setName("1");
 		panel_east.add(east_radio_overlapy, "cell 4 9");
 		
 		east_bg_overlapyn = new ButtonGroup();
@@ -716,18 +720,20 @@ public class Event_Manage extends JPanel implements ActionListener {
 		panel_east.add(east_label_useyn, "cell 0 11,alignx trailing");
 		
 		east_radio_usey = new JRadioButton("\uC0AC\uC6A9\uD568");
+		east_radio_usey.setName("0");
 		east_radio_usey.setSelected(true);
 		panel_east.add(east_radio_usey, "cell 2 11");
 		
 		east_radio_usen = new JRadioButton("\uC0AC\uC6A9\uC548\uD568");
+		east_radio_usen.setName("1");
 		panel_east.add(east_radio_usen, "cell 4 11");
 		
 		east_bg_useyn = new ButtonGroup();
 		east_bg_useyn.add(east_radio_usey);
 		east_bg_useyn.add(east_radio_usen);
 		
-		east_btn_save = new JButton("\uCFE0\uD3F0\uC800\uC7A5");
-		east_btn_save.setActionCommand("쿠폰저장");
+		east_btn_save = new JButton("\uCFE0\uD3F0\uB4F1\uB85D");
+		east_btn_save.setActionCommand("쿠폰등록");
 		east_btn_save.addActionListener(this);
 		east_btn_save.setForeground(Color.RED);
 		east_btn_save.setFont(new Font("맑은 고딕", Font.BOLD, 15));
@@ -803,19 +809,20 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tranmsg_panel_msg = new JPanel();
 		tranmsg_panel_msg.setBorder(new LineBorder(new Color(0, 0, 0)));
 		tran_panel_msg.add(tranmsg_panel_msg, BorderLayout.WEST);
-		tranmsg_panel_msg.setLayout(new MigLayout("", "[][grow][]", "[][][grow][]"));
+		tranmsg_panel_msg.setLayout(new MigLayout("", "[][grow][]", "[30px][][grow][]"));
 		
 		tranmsg_label_title = new JLabel("\uC81C\uBAA9");
 		tranmsg_panel_msg.add(tranmsg_label_title, "cell 0 0,alignx trailing");
 		
 		tranmsg_text_title = new JTextField();
-		tranmsg_panel_msg.add(tranmsg_text_title, "cell 1 0 2 1,growx");
+		tranmsg_panel_msg.add(tranmsg_text_title, "cell 1 0 2 1,grow");
 		tranmsg_text_title.setColumns(10);
 		
 		tranmsg_label_msg = new JLabel("\uBA54\uC138\uC9C0");
 		tranmsg_panel_msg.add(tranmsg_label_msg, "cell 0 1,alignx trailing");
 		
 		tranmsg_textArea_msg = new JTextArea();
+		tranmsg_textArea_msg.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
 		tranmsg_panel_msg.add(tranmsg_textArea_msg, "cell 1 1 2 2,grow");
 		
 		tranmsg_label_linkurl = new JLabel("\uB9C1\uD06C URL");
@@ -823,7 +830,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		tranmsg_text_linkurl = new JTextField();
 		tranmsg_panel_msg.add(tranmsg_text_linkurl, "cell 1 3,growx");
-		tranmsg_text_linkurl.setColumns(10);
+		tranmsg_text_linkurl.setColumns(20);
 		
 		tranmsg_btn_msgsave = new JButton("\uBA54\uC81C\uC9C0 \uC800\uC7A5");
 		tranmsg_panel_msg.add(tranmsg_btn_msgsave, "cell 2 3");
@@ -1221,8 +1228,8 @@ public class Event_Manage extends JPanel implements ActionListener {
 				
 		east_radio_usey.setSelected(true);
 		
-		east_btn_save.setText("쿠폰 저장");
-		east_btn_save.setActionCommand("쿠폰저장");
+		east_btn_save.setText("쿠폰 등록");
+		east_btn_save.setActionCommand("쿠폰등록");
 		
 	}
 	
@@ -1234,6 +1241,74 @@ public class Event_Manage extends JPanel implements ActionListener {
 
 	//쿠폰정보를 등록합니다.
 	private void setCouponSave() {
+		
+		//모든 등록된 데이타를 불러옵니다.
+		String code = east_text_code.getText();
+		if(code.length() <= 0){
+			JOptionPane.showMessageDialog(this, "이벤트/쿠폰 코드를 숫자로 입력해 주세요");
+			return;
+		}
+				
+		String name = east_text_name.getText();
+		if(name.length() <= 0){
+			JOptionPane.showMessageDialog(this, "이벤트/쿠폰 이름을 입력해 주세요~!");
+			return;						
+		}		
+		if(name.length() > 25){
+			JOptionPane.showMessageDialog(this, "이벤트/쿠폰 이름을 입력해 주세요~!");
+			return;						
+		}
+				
+		int gubun = east_combo_gubun.getSelectedIndex();
+		
+		Date sdate = east_chooser_start.getDate();
+		Date edate = east_chooser_end.getDate();
+		
+		int tallDate = sdate.compareTo(edate);
+		System.out.println(tallDate);
+		if(tallDate > 0){
+			JOptionPane.showMessageDialog(this, "시작 날자가 종료일 보다 큽니다. 날자를 다시 설정해 주세요");
+			return;
+		}
+		
+		int memberyn = getRadioButtonSelect(east_bg_memberyn);
+		int overlapyn = getRadioButtonSelect(east_bg_overlapyn);
+		int useyn = getRadioButtonSelect(east_bg_useyn);
+		
+		String point = "";
+		String prizes = "";
+		String pcount = "";
+		if(gubun == 0){			
+			point = east_text_point.getText();
+			
+			if(point.length() <= 0){
+				JOptionPane.showMessageDialog(this, "포인트 점수를 입력해 주세요!");
+				return;
+			}
+			
+			if(isNumber(point)){
+				JOptionPane.showMessageDialog(this, "포인트는 숫자만 등록 가능합니다.");
+				return;
+			}
+			
+		}else{
+			prizes = east_text_prizesname.getText();
+			pcount = east_text_prizesname.getText();
+			
+			
+		}
+		
+		
+		
+		
+		//유효성 검사하기		
+		if(isNumber(code)){
+			JOptionPane.showMessageDialog(this, "이벤트/쿠폰 코드는 숫자만 등록 가능합니다.");
+			return;
+		}else{			
+			
+		};
+			
 		
 		//코드가 등록 되었는지 확인 해야 합니다.
 		
@@ -1247,6 +1322,50 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		
 		
+	}
+	
+	//그룹버튼 불러가기
+	private int getRadioButtonSelect(ButtonGroup btng){
+		
+		Enumeration<AbstractButton> enums = btng.getElements();
+		int gibonCode = 0;
+		while(enums.hasMoreElements()) {            // hasMoreElements() Enum에 더 꺼낼 개체가 있는지 체크한다. 없으며 false 반환
+		    AbstractButton ab = enums.nextElement();    // 제네릭스가 AbstractButton 이니까 당연히 AbstractButton으로 받아야함
+		    JRadioButton jb = (JRadioButton)ab;         // 형변환. 물론 윗줄과 이줄을 합쳐서 바로 형변환 해서 받아도 된다.
+		 
+		    if(jb.isSelected())                         // 받아낸 라디오버튼의 체크 상태를 확인한다. 체크되었을경우 true 반환.
+		        gibonCode = Integer.parseInt(jb.getName().trim()); //getText() 메소드로 문자열 받아낸다.
+		}
+		
+		return gibonCode;
+	}
+	
+	//숫자 유효성 체크
+	public boolean isNumber(String str){
+		/*try {
+	        Double.parseDouble(str);
+	        return true;
+	    } catch (NumberFormatException e) {
+	        return false;
+	    }	*/
+		
+		 boolean flag = true;
+		    if (str == null || "".equals(str))
+		    	return false;
+		    int size = str.length();
+		    int st_no= 0;
+		    if ( str.charAt(0)  ==  45 )//음수인지 아닌지 판별 . 음수면 시작위치를 1부터
+		    	st_no = 1;
+
+		    for ( int i = st_no ; i < size ; ++i ){
+		    	if( !(48 <= ((int)str.charAt(i)) && 57>= ((int)str.charAt(i)))){
+		    		flag = false;
+		    		break;
+		    	}
+		    }
+		    return flag;	
+		
+		//return str.matches("^[0-9]*$");
 	}
 	
 	
@@ -1268,7 +1387,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		case "이벤트불러오기":
 			getEventListChoose();			
 			break;
-		case "쿠폰저장":
+		case "쿠폰등록":
 			setCouponSave();
 			break;
 		case "쿠폰수정":
