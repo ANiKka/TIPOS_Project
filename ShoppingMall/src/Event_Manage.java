@@ -10,6 +10,7 @@ import javax.swing.table.*;
 
 import org.json.simple.*;
 
+import com.sun.xml.internal.ws.api.streaming.XMLStreamReaderFactory.Default;
 import com.toedter.calendar.*;
 import net.miginfocom.swing.*;
 
@@ -162,6 +163,9 @@ public class Event_Manage extends JPanel implements ActionListener {
 		add(panel_center, BorderLayout.CENTER);
 		panel_center.setLayout(new BorderLayout(0, 0));
 		event_List();
+		
+		//목록을 바로 불러 옵니다	
+		getTopSearchStart();			
 		
 	}
 	
@@ -512,9 +516,9 @@ public class Event_Manage extends JPanel implements ActionListener {
 		}
 		
 		if(map.get("e_Over_YN").equals("0")){
-			east_radio_overlapy.setSelected(true);
-		}else{
 			east_radio_overlapn.setSelected(true);
+		}else{
+			east_radio_overlapy.setSelected(true);
 		}
 		
 		if(map.get("Del_YN").equals("0")){
@@ -1029,6 +1033,8 @@ public class Event_Manage extends JPanel implements ActionListener {
 	//상단 검색 정보 불러오기
 	public void getTopSearchStart(){
 		
+		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		
 		String query = "Select * From "
 						 + "( Select x.*, Isnull( (Select Count(*) use_cnt From e_Coupon_History a Where x.e_Seq=a.e_Seq ), 0) use_cnt From e_Coupon_List x ) "
 						 + " X Where 1=1 ";		
@@ -1059,6 +1065,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 			break;
 		}		
 		
+		query +=" Order by e_EDate DESC, Write_Date DESC, Edit_DATE DESC ";
 		ms_connect.setMainSetting();
 		ArrayList<HashMap<String, String>> temp_array = ms_connect.connection(query);
 		
@@ -1066,6 +1073,8 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		setEventList(temp_array);
 		System.out.println(temp_array);
+		
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 	
 	//목록 생성
@@ -1147,17 +1156,17 @@ public class Event_Manage extends JPanel implements ActionListener {
 			dtm_couponlist.addRow(v);
 			count++;
 		}
-		
 	}
 	
 	//이벤트 리스트를 불러와서 목록으로 보여 줍니다.
 	public void getEventListChoose(){
 		
+		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		//목록을 호출합니다.
 		JSONArray temp_event = trans_shopapi.getPushEventList();
 				
 		if(temp_event.size() <= 0){			
-			JOptionPane.showMessageDialog(this, "이벤트 목록을 불러오는 실패 했습니다.");
+			JOptionPane.showMessageDialog(this, "이벤트 목록 검색에 실패 했습니다.");
 			return;
 		}
 				
@@ -1179,13 +1188,14 @@ public class Event_Manage extends JPanel implements ActionListener {
 	    System.out.println(input);
 		
 	    try{
-		//선택한 이벤트를 불러 옵니다.
-		east_text_code.setText(input.substring(0, input.indexOf(":")).trim());
-		east_text_name.setText(input.substring(input.indexOf(":")+1, input.length()).trim());
+			//선택한 이벤트를 불러 옵니다.
+			east_text_code.setText(input.substring(0, input.indexOf(":")).trim());
+			east_text_name.setText(input.substring(input.indexOf(":")+1, input.length()).trim());
 	    }catch(NullPointerException e){
-	    		    	
+	    	this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	    }
-		
+	    
+	    this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));		
 	}
 	
 	
@@ -1241,21 +1251,33 @@ public class Event_Manage extends JPanel implements ActionListener {
 
 	//쿠폰정보를 등록합니다.
 	private void setCouponSave() {
+				
+		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
 		//모든 등록된 데이타를 불러옵니다.
+		//코드가 등록 되었는지 확인 해야 합니다.
+		//등록 되어 있다면 사용할수 없습니다.
+		//오류 검사
+		//등록 코드가 숫자로 이루어 졌는지 확인 합니다.
+		//제목의 문자 길이를 측정합니다.
+		//쿠폰 구분에 따라서 포인트 및 사은품명 또는 사은품 수량을 넣었는지 확인 합니다.
+		//선택한 날자가 시작일이 종료일보다 앞인지 확인 합니다.		
 		String code = east_text_code.getText();
 		if(code.length() <= 0){
 			JOptionPane.showMessageDialog(this, "이벤트/쿠폰 코드를 숫자로 입력해 주세요");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;
 		}
 				
 		String name = east_text_name.getText();
 		if(name.length() <= 0){
 			JOptionPane.showMessageDialog(this, "이벤트/쿠폰 이름을 입력해 주세요~!");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;						
 		}		
 		if(name.length() > 25){
 			JOptionPane.showMessageDialog(this, "이벤트/쿠폰 이름을 입력해 주세요~!");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;						
 		}
 				
@@ -1268,6 +1290,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		System.out.println(tallDate);
 		if(tallDate > 0){
 			JOptionPane.showMessageDialog(this, "시작 날자가 종료일 보다 큽니다. 날자를 다시 설정해 주세요");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;
 		}
 		
@@ -1277,51 +1300,66 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		String point = "";
 		String prizes = "";
-		String pcount = "";
+		int pcount=0;
 		if(gubun == 0){			
 			point = east_text_point.getText();
 			
 			if(point.length() <= 0){
 				JOptionPane.showMessageDialog(this, "포인트 점수를 입력해 주세요!");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 				return;
 			}
 			
-			if(isNumber(point)){
+			if(!isNumber(point)){
 				JOptionPane.showMessageDialog(this, "포인트는 숫자만 등록 가능합니다.");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 				return;
 			}
 			
 		}else{
+			point="0";
 			prizes = east_text_prizesname.getText();
-			pcount = east_text_prizesname.getText();
+			pcount = Integer.parseInt(east_text_prizescount.getText());
 			
+			if(prizes == null || "".equals(prizes)){
+				JOptionPane.showMessageDialog(this, "사은품명을 입력해 주세요.");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return;
+			}	
+			
+			if(pcount <= 0){
+				JOptionPane.showMessageDialog(this, "사은품 수량을 변경해 주세요.");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return;				
+			}
 			
 		}
 		
-		
-		
-		
 		//유효성 검사하기		
-		if(isNumber(code)){
+		if(!isNumber(code)){
 			JOptionPane.showMessageDialog(this, "이벤트/쿠폰 코드는 숫자만 등록 가능합니다.");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;
 		}else{			
 			
 		};
-			
 		
-		//코드가 등록 되었는지 확인 해야 합니다.
+		String query = "INSERT Into e_Coupon_List( e_Seq, e_CouponName, e_gubun, e_Sdate, e_Edate, e_MEM_YN, e_Over_YN , e_Point , e_Product , e_pCnt, e_bBarcode , e_bCnt, e_DcPri , "
+				+"e_DcPri_Oyn, e_DcPer , e_DcPerLimit, e_DcPer_Oyn, e_MinLimitPri, e_pBarcode , e_pDCPri, e_pDcPer , e_pDcPerLimit, Writer ) Values( '"+code+"', '"+name+"', '"+gubun+"', '"+new SimpleDateFormat("yyyy-MM-dd").format(sdate)+"',"
+				+" '"+new SimpleDateFormat("yyyy-MM-dd").format(edate)+"', '"+memberyn+"', '"+overlapyn+"', '"+point+"', '"+prizes+"', "+pcount+", '', 0, '0', '', '0', '0', '', '0', '', '0', '0', '0', 'shop' )";
 		
-		//등록 되어 있다면 사용할수 없습니다.
+		ms_connect.setMainSetting();
+		int result = ms_connect.connect_update(query);
 		
-		//오류 검사
-		//등록 코드가 숫자로 이루어 졌는지 확인 합니다.
-		//제목의 문자 길이를 측정합니다.
-		//쿠폰 구분에 따라서 포인트 및 사은품명 또는 사은품 수량을 넣었는지 확인 합니다.
-		//선택한 날자가 시작일이 종료일보다 앞인지 확인 합니다.
-		
-		
-		
+		switch(result){
+		case 0:			
+			JOptionPane.showMessageDialog(this, "정상 등록 되었습니다.");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			getTopSearchStart();
+			return;				
+		}		
+		JOptionPane.showMessageDialog(this, "등록에 실패 했습니다.");
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 	
 	//그룹버튼 불러가기
@@ -1375,8 +1413,8 @@ public class Event_Manage extends JPanel implements ActionListener {
 		String command = e.getActionCommand();
 		
 		switch(command){
-		case "검색":
-			getTopSearchStart();			
+		case "검색":			
+			getTopSearchStart();
 			break;			
 		case "지우기":
 			setTopRenew();
