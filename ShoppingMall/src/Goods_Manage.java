@@ -1254,34 +1254,10 @@ public class Goods_Manage extends JPanel implements ActionListener {
     //한번 사용하기 위해서 만든 함수 입니다.
     private void ftp_Connect(){
     	
-    	FTPClient ftpclient = new FTPClient();
-    	// TODO Auto-generated method stub
-		// 검색 FTP 불러오기
-		// 서버에 연결되어서 불러오기 입니다.
-		
-    	String serverName = "이미지 서버";
-    	String ftpIP = Server_Config.getFTPIP();
-    	int ftpPort = Server_Config.getFTPPORT();
-    	String ftpID = Server_Config.getFTPID();
-    	String ftpPW = Server_Config.getFTPPW();
-    	String ftpLocalPath = Server_Config.getFTPLOCALPATH();
-    	String ftpServerPath = Server_Config.getFTPSERVERPATH();
-    	    			
-    	
-    	//네가게 이미지서버에서 불러왔습니다.    	
-    	String imageServerName = "이미지 서버";
-    	String imgaeFtpIP = "14.38.161.45";
-    	//int ftpPort = Server_Config.getFTPPORT();
-    	String imageFtpID = "tipos";
-    	String imageFtpPW = "k5749948";
-    	String imageFtpLocalPath = ".";
-    	String imageFtpServerPath = "main_goods";
-    	
-    	
+    	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     	//저장할 이름을 올립니다.
-    	ArrayList<String> filelist_map = new ArrayList<String>();
-    	
-    	
+    	HashMap<String, String> file_map = new HashMap<String, String>();
+    	    	
     	/* 
     	 * 이미지 폴더를 설정합니다.
     	 * 폴더에 파일을 불러들여서 split을 합니다. 
@@ -1291,121 +1267,88 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	* 태일 트랜 서버에서 상품명을 불러 옵니다.
     	* 이미지를 FTP서버로 업로드 합니다.
     	* 이미지서버에 저장합니다. 
-    	*/
-    	
+    	*/    	
     	
     	String path = JOptionPane.showInputDialog("불러올 경로를 입력해 주세요");
     	System.out.println(path);
+    	
+    	//서버에서 파일이 존재 하는지 확인 합니다.
+    	String query = "Select Barcode From FTP_Image Where Barcode In( ";    	
     	
     	//파일을 불러 옵니다.
     	File file_path = new File(path);
     	String[] file_list = file_path.list();
     	final String[] FILE_EXTENSION = {"jpg","gif","png","bmp"};
+    	
+    	int file_count = 0;
     	//분리 작업을 합니다.
     	for(String file:file_list){
-    	
     		if(!file.contains(".")) continue; 
-			//파일명을 "." 을 기점으로 뒷자리를 잘라 냅니다.						
+			//파일명을 "." 을 기점으로 뒷자리를 잘라 냅니다.
 			//System.out.println(fileName);
 			String perfix = file.substring(0, file.lastIndexOf("."));
 			String ext = file.substring(file.lastIndexOf(".")+1, file.length()).toString();
 			
 			//String tempPath=tempFile.getParent();
-			//확장자를 검사해서 그림 파일만 불러 옵니다.				
+			//확장자를 검사해서 그림 파일만 불러 옵니다.
 			for(int i =0; i < FILE_EXTENSION.length; i++){
 				if(ext.equals(FILE_EXTENSION[i])){
-					//파일을 불러옵니다.				
+					//파일을 불러옵니다.
+					file_map.put(perfix, ext);
 					
+					query += "'"+perfix+"', ";
+					file_count++;
 				}
-			}
-    		
+			}  
     	}    	
     	
-    	
-    	
-    	System.out.println("접속시작 합니다.");
-		try {
-			ftpclient.connect(ftpIP);
-			ftpclient.login(ftpID, ftpPW);    		
-    		
-    		// 연결 시도 후, 성공했는지 응답 코드 확인
-			if (!ftpclient.isConnected()) {
-				ftpclient.disconnect(true);
-				JOptionPane.showMessageDialog(this, "접속실패!!");
-				return;
-			}    		
-			System.out.println("접속성공");			
-			System.out.println("폴더변경합니다 -> 폴더명 : "+ftpServerPath);
-			//공용폴더선택
-			ftpclient.changeDirectory(ftpServerPath);
-			System.out.println(ftpclient.currentDirectory());
-			System.out.println(ftpclient.isConnected());
-		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			return;
-		}   
+    	query = query.substring(0, query.length()-2);
+    	query += " )";
+    	//서버에서 파일이 존재 하는지 확인 합니다.
+    	ms_connect.setImageSetting();
+    	ArrayList<HashMap<String, String>> temp_map = ms_connect.connection(query);
     	    	
-    	System.out.println("파일불러오기 시작");    	
-    	String[] fileName=null;
+    	System.out.println(temp_map.size()+" == "+file_list.length );
+    	if(temp_map.size() == file_list.length){
+    		JOptionPane.showMessageDialog(this, "업로드할 이미지 파일이 없습니다.");
+    		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    		return;
+    	}
     	
-    	try {
-			fileName = ftpclient.listNames();
-		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException
-				| FTPDataTransferException | FTPAbortedException | FTPListParseException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}		
-		if(fileName.length < 0){
-			JOptionPane.showMessageDialog(this, "검색된 파일이 없습니다.");
-			return;
-		}
+    	Iterator<HashMap<String, String>> temp = temp_map.iterator();
     	
-    	//파일불러오기 입니다.
-    	FTPFile[] files = null;		
-		try {
-			files = ftpclient.list();			
-		} catch (IOException | IllegalStateException | FTPIllegalReplyException | FTPException | FTPDataTransferException | FTPAbortedException | FTPListParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(this, "파일을 불러오지 못했습니다. \r\n"+e.getMessage());
-			return;
-		}
-		
-		System.out.println(files.length);		
-		System.out.println("파일을 불러왔습니다.");
-		ArrayList<String> temp_image = new ArrayList<String>();
-		
-		System.out.println("쿼리를 작성합니다.");		
-		//불러온 파일을 서버에 저장합니다.
-		for(String file_temp: fileName){		
-			
-			String query_ftpfile = "insert into FTP_Image (Barcode, Path, Path_Gubun, G_Name, Ext) Values(";			
-			String[] file_name = new String[2];			
-			file_name = file_temp.split("\\.");
-			//file_name[0] = 바코드///file_name[1] = 확장자 			
-			query_ftpfile += "'"+file_name[0]+"', 'main_goods', '1', '', '"+file_name[1]+"' )";			
-			temp_image.add(query_ftpfile);
-		}
-		
-		System.out.println("쿼리 작성이 완료 되었습니다.");
-		
-		//서버에 저장합니다.		
-		ms_connect.setImageSetting();
-		ms_connect.connect_update(temp_image);
-		System.out.println(temp_image.get(0).toString());
-		
-		System.out.println("저장 완료 되었습니다.");
-		
-		if(ftpclient.isConnected()){			
-				try {
-					ftpclient.disconnect(true);
-					JOptionPane.showMessageDialog(this, "접속종료합니다.");
-				} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}	
-		}
+    	//검색 결과에 바코드가 존재하면 삭제 합니다. 
+    	while(temp.hasNext()){
+    		HashMap<String, String> map = temp.next();    		
+    		file_map.remove(map.get("Barcode"));    		
+    	}
+    	
+    	System.out.println(file_count);
+    	System.out.println(file_map.toString());
+    	System.out.println(file_map.size());
+    	    	
+    	//서버에 업로드된 파일을 저장합니다.
+    	ArrayList<String> query_list = new ArrayList<String>();
+    	Iterator<String> iter = file_map.keySet().iterator();
+    	while(iter.hasNext()){
+    		String image_query = "Insert Into FTP_Image (barcode, path, path_gubun, g_name, ext, pop_tran) Values( ";
+    		String key = (String)iter.next();    		
+    		image_query += "'"+key.trim()+"', 'http://14.38.161.45:7080/main_goods/"+key.trim()+"."+file_map.get(key).trim()+"', '1', '', '"+file_map.get(key).trim()+"', '' )";   		
+    		query_list.add(image_query);
+    	}
+    	ms_connect.setImageSetting();
+    	int result = ms_connect.connect_update(query_list);
+    	
+    	switch(result){
+    	case 0:
+    		JOptionPane.showMessageDialog(this, "정상 등록 되었습니다.");
+    		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    		return;
+    	case 1:
+    		JOptionPane.showMessageDialog(this, "업로드에 실패 했습니다.");
+    	}
+    	
+    	this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
     
     /*
@@ -1803,7 +1746,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 				ftp_Connect();
 			}
 		});		
-		bt_ftp_connect.setVisible(false);
+		//bt_ftp_connect.setVisible(false);
 		
 		JLabel lblNewLabel_4 = new JLabel("\uC0C1\uD488 \uAC80\uC0C9 \uBAA9\uB85D");
 		panel.add(lblNewLabel_4, "cell 3 0,alignx left,aligny center");
