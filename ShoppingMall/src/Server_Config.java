@@ -32,8 +32,12 @@ public class Server_Config {
 	private static String IMAGE_DBID="sa";
 	private static String IMAGE_DBPW="tips";
 		
-	//image 저장폴더
+	//PC image 저장폴더
 	private static String PCIMAGE_PATH="C:\\";
+	
+	//상품전송방식
+	private static String GOODS_TRANYN="1";
+	
 	
 	//SERVER
 	public static void setSERVER_DBID(String sERVER_DBID) {
@@ -230,6 +234,14 @@ public class Server_Config {
 
 	public static void setPCIMAGE_PATH(String iMAGE_PATH) {
 		PCIMAGE_PATH = iMAGE_PATH;
+	}
+
+	public static String getGOODS_TRANYN() {
+		return GOODS_TRANYN;
+	}
+
+	public static void setGOODS_TRANYN(String gOODS_TRANYN) {
+		GOODS_TRANYN = gOODS_TRANYN;
 	}
 	
 }

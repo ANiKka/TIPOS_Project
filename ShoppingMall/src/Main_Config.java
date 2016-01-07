@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -54,6 +55,7 @@ import jxl.write.WritableWorkbook;
 import java.awt.Toolkit;
 import javax.swing.JScrollPane;
 import javax.swing.JList;
+import javax.swing.JCheckBox;
 
 
 public class Main_Config extends JDialog implements ActionListener{
@@ -71,6 +73,7 @@ public class Main_Config extends JDialog implements ActionListener{
 	private JTextField text_office_http;
 	private JTextField text_office_id;
 	private JPasswordField text_office_pw;
+	private JCheckBox chkbx_config_tranyn;
 	
 	private Properties config_file;
 	private File file;
@@ -124,7 +127,10 @@ public class Main_Config extends JDialog implements ActionListener{
 				temp_config = 	temp_al.get(0);
 				setOnlineValues();
 			}
-		}		
+		}
+		
+		System.out.println(Server_Config.getGOODS_TRANYN());
+		
 	}
 			
 	public void init() {
@@ -209,11 +215,18 @@ public class Main_Config extends JDialog implements ActionListener{
 		panel_server.add(label_ftp_dandock);
 		label_ftp_dandock.setHorizontalAlignment(SwingConstants.CENTER);
 		
-		JButton btn_serverSave = new JButton("\uC11C\uBC84\uC800\uC7A5");
+		JButton btn_serverSave = new JButton("\uC11C\uBC84 \uC815\uBCF4\uBCC0\uACBD");
 		btn_serverSave.setToolTipText("<Html>\r\n\uC11C\uBC84\uD658\uACBD\uC124\uC815 \uB0B4\uC6A9\uB9CC \uC800\uC7A5 \uD569\uB2C8\uB2E4.<br>\r\n\uC6B0\uCE21\uC758 \uB9E4\uC7A5\uD658\uACBD \uC124\uC815\uC758 \uBCC0\uACBD \uB0B4\uC6A9\uC740 \uC800\uC7A5\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.<br>\r\n\uC800\uC7A5 \uD6C4 \uD504\uB85C\uADF8\uB7A8\uC744 \uC7AC\uC2E4\uD589\uD574 \uC8FC\uC138\uC694!!\r\n</Html>");
 		btn_serverSave.addActionListener(this);
-		btn_serverSave.setBounds(213, 277, 97, 23);
+		btn_serverSave.setBounds(94, 259, 216, 41);
 		panel_server.add(btn_serverSave);
+		
+		JLabel label_server_info = new JLabel("<html>\r\n\uC11C\uBC84 \uB0B4\uC6A9\uC774 \uBCC0\uACBD\uB418\uBA74 \uC544\uB798 \uC800\uC7A5<br>\r\n\uBC84\uD2BC\uC744 \uB20C\uB7EC \uC8FC\uC138\uC694!!\r\n</html>");
+		label_server_info.setBackground(SystemColor.info);
+		label_server_info.setOpaque(true);
+		label_server_info.setHorizontalAlignment(SwingConstants.CENTER);
+		label_server_info.setBounds(94, 217, 216, 41);
+		panel_server.add(label_server_info);
 		
 		JPanel panel_ftp = new JPanel();
 		panel_ftp.setLayout(null);
@@ -339,13 +352,26 @@ public class Main_Config extends JDialog implements ActionListener{
 		
 		JButton btn_xls_output = new JButton("\uBD84\uB958\uC5D1\uC140\uCD9C\uB825");
 		btn_xls_output.setToolTipText("<Html>\r\n\uD604\uC7AC \uB9E4\uC7A5\uC758 \uBD84\uB958\uB97C \uC1FC\uD551\uBAB0 \uCF54\uB4DC \uD615\uC2DD\uC73C\uB85C \uC5D1\uC140 \uCD9C\uB825 \uD569\uB2C8\uB2E4.<br>\r\n\uCD9C\uB825\uB41C \uC5D1\uC140\uD30C\uC77C\uC744 \uC1FC\uD551\uBAB0 \uBD84\uB958\uC77C\uAD04 \uB4F1\uB85D\uC5D0\uC11C \uB4F1\uB85D\uD574 \uC8FC\uC138\uC694!\r\n</Html>");
-		btn_xls_output.setBounds(12, 220, 298, 35);
+		btn_xls_output.setBounds(12, 87, 298, 35);
 		panel_office.add(btn_xls_output);
 		
 		JButton btn_Shyc_Start = new JButton("\uB3D9\uAE30\uD654 \uC2DC\uC791");
 		btn_Shyc_Start.setToolTipText("<Html>\r\n\uBCC0\uACBD\uB41C \uC0C1\uD488\uC744 \uC1FC\uD551\uBAB0\uACFC \uC989\uC2DC \uB3D9\uAE30\uD654 \uD560\uB54C \uC0AC\uC6A9 \uD569\uB2C8\uB2E4.\r\n</Html>");
-		btn_Shyc_Start.setBounds(12, 265, 298, 35);
+		btn_Shyc_Start.setBounds(12, 256, 298, 44);
 		panel_office.add(btn_Shyc_Start);
+		
+		JLabel label_funtionkey_info = new JLabel("<html>\r\n\uBCC0\uACBD\uB41C \uB0B4\uC6A9 \uB3D9\uAE30\uD654 \uC791\uC5C5 \uC2DC \uC218\uC2ED\uBD84\uC774 \uC18C\uC694 \uB429\uB2C8\uB2E4.<br>\t\r\n\uD504\uB85C\uADF8\uB7A8\uC744 \uC885\uB8CC\uD558\uC9C0 \uB9D0\uC544 \uC8FC\uC138\uC694!!<br>\r\n\uD2B8\uB798\uD53D\uAD00\uB9AC\uB97C \uC704\uD574\uC11C \uD55C\uBC88 \uC804\uC1A1 \uC2DC 10\uAC1C \uC0C1\uD488\uC529<br>\r\n\uB04A\uC5B4\uC11C \uC6F9\uC11C\uBC84\uB85C \uC804\uC1A1\uD569\uB2C8\uB2E4.\r\n</html>");
+		label_funtionkey_info.setBackground(SystemColor.info);
+		label_funtionkey_info.setOpaque(true);
+		label_funtionkey_info.setFont(new Font("맑은 고딕", Font.BOLD, 13));
+		label_funtionkey_info.setHorizontalAlignment(SwingConstants.CENTER);
+		label_funtionkey_info.setBounds(12, 132, 298, 125);
+		panel_office.add(label_funtionkey_info);
+		
+		JLabel label_xls_info = new JLabel("<html>\r\n\uAD00\uB9AC\uD504\uB85C\uADF8\uB7A8\uC758 \uBD84\uB958\uB97C \uC1FC\uD551\uBAB0 \uD615\uC2DD\uC5D0 \uB9DE\uAC8C<br>\r\n\uC5D1\uC140\uB85C \uCD9C\uB825 \uD569\uB2C8\uB2E4.\r\n<html>");
+		label_xls_info.setHorizontalAlignment(SwingConstants.CENTER);
+		label_xls_info.setBounds(12, 50, 298, 35);
+		panel_office.add(label_xls_info);
 		btn_Shyc_Start.addActionListener(this);
 		btn_xls_output.addActionListener(this);
 		
@@ -354,6 +380,29 @@ public class Main_Config extends JDialog implements ActionListener{
 		panel_1.setBounds(349, 330, 322, 310);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
+		
+		JLabel label_config_title = new JLabel("\uB9E4\uC7A5\uD658\uACBD\uC124\uC815");
+		label_config_title.setHorizontalAlignment(SwingConstants.CENTER);
+		label_config_title.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+		label_config_title.setBounds(12, 10, 298, 30);
+		panel_1.add(label_config_title);
+		
+		JLabel label_config_tranyn = new JLabel("\uC804\uC1A1\uBC29\uC2DD");
+		label_config_tranyn.setHorizontalAlignment(SwingConstants.CENTER);
+		label_config_tranyn.setBounds(12, 50, 84, 15);
+		panel_1.add(label_config_tranyn);
+		
+		chkbx_config_tranyn = new JCheckBox("\uC218\uC815 \uD6C4 \uBC14\uB85C \uC804\uC1A1");
+		chkbx_config_tranyn.setSelected(true);
+		chkbx_config_tranyn.setBounds(104, 46, 206, 23);
+		panel_1.add(chkbx_config_tranyn);
+		
+		JLabel label_config_info = new JLabel("<html>\r\n\uC0C1\uD488\uAD00\uB9AC \uBA54\uB274\uC5D0\uC11C \uC0C1\uD488 \uC218\uC815 \uC2DC<br>\r\n\uC1FC\uD551\uBAB0\uC5D0 \uC2E4\uC2DC\uAC04 \uBC18\uC601\uB418\uB294 \uAE30\uB2A5\uC785\uB2C8\uB2E4.<br>\r\n\uCCB4\uD06C \uD574\uC81C\uC2DC \uD658\uACBD\uC124\uC815>\uB3D9\uAE30\uD654\uBC84\uD2BC \uB610\uB294<br>\r\n\uB9E4\uC7A5\uC11C\uBC84\uC5D0\uC11C \uC815\uD574\uC9C4 \uC2DC\uAC04 \uD6C4 \uC1FC\uD551\uBAB0\uB85C<br>\r\n\uC790\uB3D9 \uC804\uC1A1 \uB429\uB2C8\uB2E4.\r\n<br><br>\r\n\uC801\uC6A9 \uBA54\uB274(\uC0C1\uD488\uAD00\uB9AC)<br>\r\n\uC0C1\uC138\uC815\uBCF4 > \uC800\uC7A5<br>\r\n\uC774\uBBF8\uC9C0\uAD00\uB9AC> \uC774\uBBF8\uC9C0\uC120\uD0DD<br>\r\n\uD310\uB9E4\uAE08\uC561> \uAE08\uC561\uC218\uC815\r\n<html>");
+		label_config_info.setHorizontalAlignment(SwingConstants.CENTER);
+		label_config_info.setOpaque(true);
+		label_config_info.setBackground(SystemColor.info);
+		label_config_info.setBounds(12, 75, 298, 164);
+		panel_1.add(label_config_info);
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -380,6 +429,8 @@ public class Main_Config extends JDialog implements ActionListener{
 		getContentPane().add(panel);
 		
 		label_info = new JLabel("New label");
+		label_info.setHorizontalAlignment(SwingConstants.CENTER);
+		label_info.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
 		label_info.setBounds(12, 10, 298, 290);
 		panel.add(label_info);
 		btn_server_save.addActionListener(this);
@@ -411,7 +462,7 @@ public class Main_Config extends JDialog implements ActionListener{
 				+ " 입력해 <br>주셔야 정상 작동 합니다.</TD></TH>"
 				+ "</TABLE></HTML>";		
 		
-		label_info.setText(info_title);
+		label_info.setText("<HTML>\r\n<h2>\uC1FC\uD551\uBAB0 \uD658\uACBD\uC124\uC815</h2>\r\n\uB9E4\uC7A5\uACFC \uC1FC\uD551\uBAB0\uC758 \uC5F0\uB3D9 \uC124\uC815\uC744 \uC704\uD574\uC11C<br> \r\n\uC1FC\uD551\uBAB0\uC758 \uAD00\uB9AC\uC790 \uD398\uC774\uC9C0 > \uD504\uB85C\uADF8\uB7A8\uC0F5 > <br>\r\n\uC678\uBD80 DB\uC5F0\uB3D9 > MS-SQL DB\uC5F0\uB3D9\uC124\uC815 \uC5D0\uC11C <br>\r\n\uD604\uC7AC \uB9E4\uC7A5\uC758 \uC11C\uBC84 IP\uC8FC\uC18C\uB97C \uC785\uB825\uD574 <br>\r\n\uC8FC\uC154\uC57C \uC815\uC0C1 \uC791\uB3D9 \uD569\uB2C8\uB2E4.\r\n</HTML>");
 		
 	}
 		
@@ -432,11 +483,19 @@ public class Main_Config extends JDialog implements ActionListener{
 			
 			//pc이미지 폴더 설정
 			text_pcimage_path.setText(config_file.getProperty("PCImagePath", "C:\\"));
+			
+			//상품 전송 방식 선택
+			boolean tranyn = true;
+			if(config_file.getProperty("Goods_TranYN", "1").equals("0")){
+				System.out.println("설정안됨");
+				tranyn = false;
+			}
+			chkbx_config_tranyn.setSelected(tranyn);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();	
 			return;
-		}		
+		}
 	}
 		
 	//파일이 있는지 검사 합니다.
@@ -460,6 +519,7 @@ public class Main_Config extends JDialog implements ActionListener{
 				config_file.setProperty("ServerDBpw", "tips");
 				
 				config_file.setProperty("PCImagePath", "C:\\");
+				config_file.setProperty("Goods_TranYN", "1");
 				/*config_file.setProperty("FTPdan", "");
 				
 				config_file.setProperty("OfficeCode", "");				
@@ -495,6 +555,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		Server_Config.setSERVER_DBPW(config_file.getProperty("ServerDBpw"));		
 		
 		Server_Config.setPCIMAGE_PATH(config_file.getProperty("PCImagePath"));
+		Server_Config.setGOODS_TRANYN(config_file.getProperty("Goods_TranYN"));
 	}
 	
 	private void setOnlineValues(){
@@ -529,8 +590,9 @@ public class Main_Config extends JDialog implements ActionListener{
 		config_file.setProperty("ServerDBpw", new String(pass));
 		
 		config_file.setProperty("PCImagePath", text_pcimage_path.getText());
+		config_file.setProperty("Goods_TranYN", chkbx_config_tranyn.isSelected()?"1":"0");
 		
-		try{	
+		try{
 			config_file.store(new FileOutputStream(file), "환경설정 저장");
 		}catch(IOException e){			
 			JOptionPane.showMessageDialog(this, e.getMessage());
@@ -578,6 +640,27 @@ public class Main_Config extends JDialog implements ActionListener{
 		}	
 	}
 	
+	
+	private void setRestart(){
+		
+		StringBuilder cmd = new StringBuilder();
+        cmd.append(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java ");
+        for (String jvmArg : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+            cmd.append(jvmArg + " ");
+        }
+        cmd.append("-cp ").append(ManagementFactory.getRuntimeMXBean().getClassPath()).append(" ");
+        cmd.append(Main_Frame.class.getName()).append(" ");
+        /*for (String arg : args) {
+            cmd.append(arg).append(" ");
+        }*/
+        try {
+			Runtime.getRuntime().exec(cmd.toString());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        System.exit(0);	
+	}
 	
 	
 	//강제 동기화 하기 
@@ -1063,8 +1146,9 @@ public class Main_Config extends JDialog implements ActionListener{
 		case "종료":
 			this.dispose();
 			break;
-		case "서버저장":
+		case "서버 정보변경":
 			setServerSave();
+			setRestart();
 			System.exit(1);
 			break;
 		}		
