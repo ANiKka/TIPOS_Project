@@ -144,9 +144,9 @@ public class Goods_Manage extends JPanel implements ActionListener {
 	private String query_info = ""; 
 	private String query_pro = "";
 	
-	private DefaultTableModel dtm; 
+	private DefaultTableModel dtm;
 		
-	Ms_Connect ms_connect;
+	private Ms_Connect ms_connect;
 	private JTextField tx_officecode;
 	
 	private JTextField text_imagename;
@@ -2309,14 +2309,15 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	panel_3.setBackground(SystemColor.window);
     	panel_3.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\uC774\uBBF8\uC9C0 \uC5F0\uB3D9", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
     	panel_jtaballchange.add(panel_3, "cell 0 6 2 1,grow");
-    	panel_3.setLayout(new MigLayout("", "[grow][]", "[][][15px][16px]"));
+    	panel_3.setLayout(new MigLayout("", "[grow][][100px]", "[][][15px][16px]"));
     	
     	JPanel panel_9 = new JPanel();
     	FlowLayout flowLayout_4 = (FlowLayout) panel_9.getLayout();
     	flowLayout_4.setVgap(0);
     	flowLayout_4.setHgap(0);
-    	panel_3.add(panel_9, "cell 0 1 2 1,growx");
+    	panel_3.add(panel_9, "cell 0 1 3 1,growx");
     	panel_9.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+    	panel_9.setVisible(false);
     	
     	JLabel lblNewLabel_6 = new JLabel("\uC800\uC7A5 \uD3F4\uB354 \uC635\uC158");
     	panel_9.add(lblNewLabel_6);
@@ -2344,7 +2345,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	
     	
     	btn_imagecall = new JButton("\uC5F0\uB3D9\uC2DC\uC791");
-    	panel_3.add(btn_imagecall, "cell 1 2 1 2,alignx center,growy");
+    	panel_3.add(btn_imagecall, "cell 2 2 1 2,grow");
     	btn_imagecall.addActionListener(this);
     	btn_imagecall.setActionCommand("Image");
     	
@@ -2899,11 +2900,11 @@ public class Goods_Manage extends JPanel implements ActionListener {
 				String result_text_com = "건 매칭 됨";
 				String gubun = bg_shoppingmall[2].getSelection().getActionCommand();
 								
-				if(gubun.equals("공용폴더")){
+				//if(gubun.equals("공용폴더")){
 					query += "path_gubun='1' ";					
-				}else{
-					query += "path_gubun='0' ";					
-				}
+				//}else{
+				//	query += "path_gubun='0' ";					
+				//}
 				
 				progressbar.setValue(0);
 				progressbar.setMaximum(row.length);				
@@ -2959,8 +2960,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
 						ArrayList<String> query_result = new ArrayList<String>();
 					
 						while(iter.hasNext()){					
-							HashMap<String, String> map = iter.next();
-							String temp = "Update Goods_Info Set Img_Path='http://14.38.161.45:7080/main_goods/"+map.get("Barcode")+".jpg', Edit_Tran='1' Where Barcode='"+map.get("Barcode")+"' ";
+							HashMap<String, String> map = iter.next();							
+							String temp = "Update Goods_Info Set Img_Path='http://14.38.161.45:7080/main_goods/"+map.get("Barcode").trim()+"."+map.get("Ext").trim()+"', Img_Path_Use='1', Edit_Tran='1' Where Barcode='"+map.get("Barcode")+"' ";
 							query_result.add(temp);
 							result_count++;
 							label_result.setText(result_text+total_count+"건 매칭시도 "+result_count+"건 매칭중");							
@@ -3013,14 +3014,14 @@ public class Goods_Manage extends JPanel implements ActionListener {
 							
 					while(iter.hasNext()){						
 						HashMap<String, String> map = iter.next();
-						String temp = "Update Goods_Info Set Img_Path='http://14.38.161.45:7080/"+map.get("Path").trim()+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim()+"', Edit_Tran='1' Where Barcode='"+map.get("Barcode").trim()+"' ";
-						query_result.add(temp);	
+						String temp = "Update Goods_Info Set Img_Path='http://14.38.161.45:7080/"+map.get("Path").trim()+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim()+"', Img_Path_Use='1', Edit_Tran='1' Where Barcode='"+map.get("Barcode").trim()+"' ";						
+						query_result.add(temp);
 						result_count++;
-						label_result.setText(result_text+total_count+"건 매칭시도 "+result_count+"건 매칭중");						
+						label_result.setText(result_text+total_count+"건 매칭시도 "+result_count+"건 매칭중");
 					}
 										
 					ms_connect.setMainSetting();
-					int a = ms_connect.connect_update(query_result);					
+					int a = ms_connect.connect_update(query_result);
 					
 					//완료후 초기화
 					switch(a){
@@ -3406,6 +3407,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			HashMap<String, String> map = temp.get(0);			
 			//query = "Update Goods_Info Set Img_Path='http://14.38.161.45:7080/"+map.get("Path")+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim()+"', Edit_Tran='1' Where Barcode='"+map.get("Barcode").trim()+"' ";
 			String imagepath = "http://14.38.161.45:7080/"+map.get("Path")+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim();
+			
 			edit_goods_info = true;
 			text_imagename.setText(map.get("G_Name"));
 			combox_Detail_ImageConnectUse.setSelectedIndex(Integer.parseInt(map.get("Path_Gubun")));
@@ -3628,7 +3630,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
     		
     		String path = "";
     		if(GUBUN.equals("FTP")){
-    			path = "http://14.38.161.45:7080/"+map.get("Path")+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim(); //이미지의 경로
+    			path = "http://14.38.161.45:7080/"+map.get("Path").trim()+"/"+map.get("Barcode").trim()+"."+map.get("Ext").trim(); //이미지의 경로
+    			
     			System.out.println(path);
     		}else{
     			path = map.get("Path"); //이미지의 경로
@@ -3736,7 +3739,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     }
     
     //선택된 이미지를 저장합니다.
-    public void saveImageChoose(String[] item)	{    	
+    public void saveImageChoose(String[] item)	{	
     	
     	if(table.getSelectedRowCount() == 0 || table.getSelectedRowCount() > 1){
     		JOptionPane.showMessageDialog(this, "입력할 상품을 하나만 선택해 주세요~!!");    		
@@ -3749,27 +3752,29 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	int row = table.getSelectedRow();
     	//item 0:바코드/1:폴더명/2:상품명/3:확장자/4:패스/5:순번
     	
+    	//현재 상품의 연결 이미지를 확인합니다.
     	String barcode = ""; //현재 선택된 상품 바코드    	
-    	barcode = (String)dtm.getValueAt(row, 1);
-    	
+    	barcode = (String)dtm.getValueAt(row, 1);    	
     	String gname = ""; //현재 선택된 상품 상품명    	
-    	gname = (String)dtm.getValueAt(row, 2);
+    	gname = (String)dtm.getValueAt(row, 2);   	
     	
     	String filepath = item[4].toString(); //현재 선택된 상품파일패스
     	
     	//파일이 공용폴더 및 같은 FTP이미지 매장 폴더가 아니라면 파일을 자기 폴더로 옮기고 서버에 저장을 합니다.
     	if(item[1].equals(Server_Config.getFTPMARTPATH()) || item[1].equals(Server_Config.getFTPSERVERPATH()) ){    
     		System.out.println("단독폴더 또는 공용폴더입니다.");
+    	
     		//마트폴더와 같고 공용폴더와 같을때 
     		//굳이 변경할 내용이 없습니다.
     		String gubun = "1";
     		if(item[1].equals(Server_Config.getFTPMARTPATH())){
     			gubun = "0";
     		}
-    		
+    	
     		String query_goodsInfo = "Update Goods_info set Edit_Tran='1', Img_Name='"+gname+"', Img_path_use='"+gubun+"', img_path='"+filepath+"', Shop_view='1', ShoppingMall_use='1' where Barcode='"+barcode+"' ";
     		ms_connect.setMainSetting();
 			int res = ms_connect.connect_update(query_goodsInfo);
+		
 			switch(res){
 			case 0:
 				//환경설정에서 옵션 선택 시 적용 됩니다. 
@@ -3785,11 +3790,13 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	}else{
     		//그렇지 않다면 파일을 불러옵니다.
     		System.out.println("타매장폴더 또는 PC폴더 입니다.");    		
-    		filepath = "http://14.38.161.45:7080/"+Server_Config.getFTPMARTPATH()+"/"+barcode+"."+item[3].toString(); //현재 상품 이미지 번호    		
     		
+    		filepath = "http://14.38.161.45:7080/"+Server_Config.getFTPMARTPATH()+"/"+barcode+"."+item[3].toString(); //현재 상품 이미지 번호    		
+    		//filepath = "/"+Server_Config.getFTPMARTPATH()+"/"+barcode+"."+item[3].toString(); //현재 상품 이미지 번호
     		//어디서 검색된 파일인지 확인해서 저장합니다. "FTP" / "폴더"
     		//이미지를 FTP경로에 저장 합니다. 폴더검색된 이미지 이면 크랍해서 저장을 하고 
         	//FTP이미지 다른 폴더에 있던 거면자기 폴더로 복사해서 저장합니다.
+    		    		
     		if(uploadImage(item, filepath, barcode, gname)) return;
     	}
     	
@@ -3823,7 +3830,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		
 		//실패 파일을 저장합니다.
 		String uploadFail = "";
-		
+				
 		FTPClient ftpConn = new FTPClient();
 		
 		//기존 선택한 상품에 파일이 있다면 파일을 먼저 삭제 합니다.
@@ -3833,19 +3840,22 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		
 		//for(int i = 0; i < table_hotkey.getColumnCount(); i++){
 		//이미지 파일 여부를 확인 합니다.
-		String path_gubun = (String)dtm.getValueAt(row, 21);
+		String path_gubun = (String)dtm.getValueAt(row, 21);		
 		String path = (String)dtm.getValueAt(row, 22);
-		path = path.trim();
-		System.out.println(path_gubun);
-		//}
 		
 		try{
+			path = path.trim();
+		}catch(NullPointerException e){
+			e.printStackTrace();
+		}		
+		System.out.println(path_gubun);		
+		try{
+			//기존 이미지가 존재하고 단독 폴더라면 먼저 등록된 이미지를 삭제 합니다.
 			
-			if( path.length() > 0 && path_gubun.equals("단독폴더")){
+			if( path.length() > 0 && path_gubun.equals("단독폴더") && !path.equals("http://14.38.161.45:7080/main_goods/noImage.jpg")){				
 				//파일이 존재 한다면				
-				System.out.println("서버에 파일이 존재합니다. 삭제 진행 합니다.");
-				//서버를 삭제 합니다.
-				
+				System.out.println("서버에 파일이 존재합니다. 삭제 진행 합니다.");				
+				//서버를 삭제 합니다.								
 				//ftp파일을 삭제합니다.
 				try {
 					
@@ -3884,16 +3894,15 @@ public class Goods_Manage extends JPanel implements ActionListener {
 					return state=true;
 				}
 				
-			}
+			}			
 		}catch(NullPointerException e){
-			e.printStackTrace();
+			e.printStackTrace();			
 		}
-		
 		
 		//FTP 폴더에 있는 파일이면 우선 특정 폴더로 다운로드 합니다.
 		System.out.println(GUBUN);
 		if(gubun.equals("FTP")){
-			//FTP 폴더 변경
+			//FTP 폴더 변경			
 			try {				
 				ftpConn.connect(Server_Config.getFTPIP(), Server_Config.getFTPPORT());
 				ftpConn.login(Server_Config.getFTPID(), Server_Config.getFTPPW());				
@@ -3923,7 +3932,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 				return state=true;
 			}
 		}else{
-			//FTP 폴더 변경
+			//FTP 폴더 변경			
 			try {				
 				ftpConn.connect(Server_Config.getFTPIP(), Server_Config.getFTPPORT());
 				ftpConn.login(Server_Config.getFTPID(), Server_Config.getFTPPW());				
@@ -3960,7 +3969,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 				return state=true;
 			}			
 		}
-				
+		
 		//저장할 상품이 있을때만 합니다.
 		if(query.length() > 0){
 			ms_connect.setImageSetting();
@@ -3984,6 +3993,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		if(Server_Config.getGOODS_TRANYN().equals("1")){
 			new TransferDataGoodsSet(ms_connect, this, barcode);
 		}
+		
 		JOptionPane.showMessageDialog(this, "저장이 완료 되었습니다.");
 		System.out.println("저장완료");	
 		return state;
@@ -4505,7 +4515,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
     
     //ftp 이미지를 삭제 합니다.
     public void deleteFtpImage(){
-    	
+    	    	
+    	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     	int row = table.getSelectedRow();		
     	if(row < 0) JOptionPane.showMessageDialog(this, "상품을 선택해 주세요");
     	
@@ -4516,15 +4527,21 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		
 		if(path == null || "".equals(path)){ 
 			JOptionPane.showMessageDialog(this, "삭제할 이미지가 없습니다.");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;
 		}
-		if(path.equals("http://14.38.161.45:7080/main_goods/noImage.jpg")){ 
+		
+		if(path.equals("http://14.38.161.45:7080/main_goods/noImage.jpg")){
 			JOptionPane.showMessageDialog(this, "기본 이미지는 삭제 할수 없습니다.");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;
 		}
 		
 		int result = JOptionPane.showConfirmDialog(this, "정말로 삭제 하시겠습니까?", "선택이미지 삭제 ",  JOptionPane.OK_CANCEL_OPTION);    	
-    	if(result!= 0) return;
+    	if(result!= 0){
+    		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    		return;
+    	}
 		    	
 		try{			
 			if( path.length() > 0){				
@@ -4538,19 +4555,18 @@ public class Goods_Manage extends JPanel implements ActionListener {
 						ftpConn.connect(Server_Config.getFTPIP(), Server_Config.getFTPPORT());
 						ftpConn.login(Server_Config.getFTPID(), Server_Config.getFTPPW());				
 						
-						System.out.println(ftpConn.currentDirectory());
-						String path_ext = path.substring(path.length()-3, path.length());
-						System.out.println(path_ext);
+						path = path.trim();
+						String path_ext = path.trim().substring(path.length()-3, path.length());
 						
 						ftpConn.changeDirectory(Server_Config.getFTPMARTPATH());
 						
 						//기존에 저장되어 있는 파일을 삭제 합니다. 
 						ftpConn.deleteFile(barcode.trim()+"."+path_ext);
 						ftpConn.disconnect(true);
-						
+						System.out.println("삭제완료 되었습니다.");
 						//이미지디비에 저장하기 위해 쿼리를 모아 둡니다.
-						String query_ftp = "Delete From FTP_Image Where Barcode = '"+barcode+"' and path_gubun='0' and path='"+Server_Config.getFTPMARTPATH()+"' ";
-						String query_delete = "Update Goods_info set Edit_Tran='1', Img_Name='noImage', img_path='http://14.38.161.45:7080/main_goods/noImage.jpg' where Barcode='"+barcode+"' ";
+						String query_ftp = "Delete From FTP_Image Where Barcode = '"+barcode+"' and path_gubun='0' and path='"+Server_Config.getFTPMARTPATH()+"' ";						
+						String query_delete = "Update Goods_info set Edit_Tran='1', Img_Name='noImage', img_path='http://14.38.161.45:7080/main_goods/noImage.jpg', img_path_use='1' where Barcode='"+barcode+"' ";
 						
 						System.out.println(query_ftp);					
 						System.out.println(query_delete);
@@ -4569,8 +4585,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
 						JOptionPane.showMessageDialog(this, "FTP의 기존 이미지를 삭제하지 못했습니다. . \r\n 오류내용 : "+e.getMessage());						
 					}
 				}else{
-					//공용폴더에 있을때에는 ftp주소만 삭제 합니다.
-					String query_delete = "Update Goods_info set Edit_Tran='1', Img_Name='noImage', img_path='http://14.38.161.45:7080/main_goods/noImage.jpg' where Barcode='"+barcode+"' ";															
+					//공용폴더에 있을때에는 ftp주소만 삭제 합니다.																				
+					String query_delete = "Update Goods_info set Edit_Tran='1', Img_Name='noImage', img_path='http://14.38.161.45:7080/main_goods/noImage.jpg' where Barcode='"+barcode+"' ";
 					System.out.println(query_delete);					
 					ms_connect.setMainSetting();
 					ms_connect.connect_update(query_delete);
@@ -4717,11 +4733,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		case "Image":
 			if(table.getRowCount() <= 0){				
 				JOptionPane.showMessageDialog(this, "목록에서 상품을 선택해 주세요!");
-			}
-			if(bg_shoppingmall[2].getSelection().getActionCommand().equals("선택안함")){
-				JOptionPane.showMessageDialog(this, "이미지 폴더를 선택해 주세요");
-				return;
-			}			
+			}				
 			setFtp_Image_select();
 			break;
 		case "HotKey_Search":
@@ -4751,10 +4763,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		case "HotKey_ListDown":
 			setHotkeyListUpDown("DOWN");
 			break;
-		case "FTP_ImageDelete":
-			this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-			deleteFtpImage();
-			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		case "FTP_ImageDelete":			
+			deleteFtpImage();			
 			break;
 		}
 	}

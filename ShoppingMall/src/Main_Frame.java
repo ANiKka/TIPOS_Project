@@ -25,7 +25,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 	
 	private static final long serialVersionUID = 22513545765121L;
 	
-	private final String Version =  "Ver 1.0.2";
+	private final String Version =  "Ver 1.0.3";
 	
 	private final String Shop_Manager = "쇼핑몰관리"; 
 	private final String Pro_Manager = "상품관리";
@@ -33,7 +33,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 	private final String Ord_Manager = "주문관리";
 	private final String Mem_Manager = "회원관리";
 	private final String Msg_Manager = "메세지관리";
-	private final String Evt_Manager = "쿠폰-이벤트 관리";
+	private final String Evt_Manager = "쿠폰이벤트관리";
 	private final String Con_Manager = "환경설정";
 	private final String Close_Manager = "종료";
 	
@@ -83,9 +83,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		//setFocusable(false);
 		System.out.println("메인서버");
 		System.out.println(Server_Config.getSERVER_IP());		
-		
-		
-		
+				
 	}		
 	
 	// 종료 & 화면중앙
@@ -152,7 +150,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		menuBar.setMargin(new Insets(0, 0, 10, 0));
 		setJMenuBar(menuBar);
 		
-    	JButton goods_ad = new JButton("상품관리");
+    	JButton goods_ad = new JButton(Pro_Manager);
     	menuBar.add(goods_ad);
     	goods_ad.setFont(new Font("맑은 고딕", Font.BOLD, 15));    	
     	goods_ad.setIcon(new ImageIcon(getClass().getClassLoader().getResource("Icon/btn_goods.png")));
@@ -162,7 +160,7 @@ public class Main_Frame extends JFrame implements ActionListener{
     	
     	goods_ad.addActionListener(this);
 		
-		/**JButton image_upload_1 = new JButton("이미지관리");
+		/**JButton image_upload_1 = new JButton(Img_Manager);
 		menuBar.add(image_upload_1);
 		image_upload_1.setFont(new Font("맑은 고딕", Font.BOLD, 15));    	
 		image_upload_1.setIcon(new ImageIcon(getClass().getClassLoader().getResource("Icon/btn_image_upload.png")));
@@ -170,7 +168,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		image_upload_1.setFocusable(false);
 		image_upload_1.addActionListener(this);*/
 		
-		JButton btn_order = new JButton("\uC8FC\uBB38\uAD00\uB9AC");
+		JButton btn_order = new JButton(Ord_Manager);
 		btn_order.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_order.png")));
 		btn_order.setIconTextGap(10);
 		btn_order.setFont(new Font("맑은 고딕", Font.BOLD, 15));
@@ -178,7 +176,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		btn_order.addActionListener(this);
 		menuBar.add(btn_order);
 		
-		JButton btn_member = new JButton("\uD68C\uC6D0\uAD00\uB9AC");
+		JButton btn_member = new JButton(Mem_Manager);
 		btn_member.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_member.png")));
 		btn_member.setIconTextGap(10);
 		btn_member.setFont(new Font("맑은 고딕", Font.BOLD, 15));
@@ -186,7 +184,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		btn_member.addActionListener(this);
 		menuBar.add(btn_member);
 		
-		JButton btn_message = new JButton("\uBA54\uC138\uC9C0\uAD00\uB9AC");
+		JButton btn_message = new JButton(Msg_Manager);
 		btn_message.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_message.png")));
 		btn_message.setIconTextGap(10);
 		btn_message.setFont(new Font("맑은 고딕", Font.BOLD, 15));
@@ -195,7 +193,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		menuBar.add(btn_message);
 		btn_message.setVisible(false);
 		
-		JButton btn_cupon = new JButton("\uCFE0\uD3F0-\uC774\uBCA4\uD2B8 \uAD00\uB9AC");
+		JButton btn_cupon = new JButton(Evt_Manager);
 		btn_cupon.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_cupon.png")));
 		btn_cupon.setIconTextGap(10);
 		btn_cupon.setFont(new Font("맑은 고딕", Font.BOLD, 15));
@@ -359,8 +357,8 @@ public class Main_Frame extends JFrame implements ActionListener{
 			//메세지관리
 			break;
 		case Evt_Manager:
-			//이벤트관리
-			event_manage = new Event_Manage();
+			//이벤트관리			
+			event_manage = new Event_Manage();			
 			tabbedPane.addTab(Evt_Manager, event_manage);
 			close_button(Evt_Manager);
 			break;

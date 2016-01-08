@@ -10,12 +10,13 @@ import javax.swing.table.*;
 
 import org.json.simple.*;
 
+import com.sun.java.swing.plaf.motif.MotifGraphicsUtils;
 import com.toedter.calendar.*;
 import net.miginfocom.swing.*;
 
 public class Event_Manage extends JPanel implements ActionListener {
 		
-	private static final long serialVersionUID = 154474854451L;
+	private static final long serialVersionUID = 154826599991L;
 	private JPanel panel_top;
 	private JPanel panel_center;
 	private JPanel panel_east;
@@ -71,6 +72,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 	private ButtonGroup east_bg_overlapyn;
 	private ButtonGroup east_bg_useyn;
 	private CardLayout east_cardlayout;
+	private CardLayout message_cardlayout;
 	
 	private JTabbedPane center_tabbed;
 	private JPanel center_tabbed_couponlist;
@@ -139,6 +141,16 @@ public class Event_Manage extends JPanel implements ActionListener {
 	private JTextField tranevt_text_title;
 	private JScrollPane tranevt_scroll_evtlist;
 	private JTable tranevt_table_evtlist;
+	private JPanel tranmsg_panel_message;
+	private JLabel lblNewLabel;
+	private JScrollPane tranmsg_scrollPane_message;
+	private JLabel tranmsg_label_msginfo;
+	
+	private DefaultTableModel dtm_msglist;
+	
+	private String state_y = "출력 문자 내용이 잘릴수 있습니다.";
+	private String state_n = "정상출력";
+	private int cut_cnt = 350;
 	
 	public Event_Manage() {
 		
@@ -148,24 +160,23 @@ public class Event_Manage extends JPanel implements ActionListener {
 		//디비 접속 도구
 		ms_connect = new Ms_Connect();
 		trans_shopapi = new Trans_ShopAPI();
-		
+				
 		//상단 검색 창
 		panel_top = new JPanel();
 		panel_top.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
 		add(panel_top, BorderLayout.NORTH);		
 		panel_top.setLayout(new MigLayout("", "[80px][grow][10px][80px][grow][10px][80px][grow][80px][grow][20px][][100px][100px,grow]", "[15px,grow][grow][15px,grow]"));		
 		top_Search();
-		
-		
+				
 		//이벤트 목록 창
 		panel_center = new JPanel();
 		add(panel_center, BorderLayout.CENTER);
 		panel_center.setLayout(new BorderLayout(0, 0));
 		event_List();
-		
+				
 		//목록을 바로 불러 옵니다	
-		getTopSearchStart();			
-		
+		getTopSearchStart();
+				
 	}
 	
 	/** e_gubun : 1-오픈기념사은품, 0-매장포인트적립 */ 
@@ -222,10 +233,9 @@ public class Event_Manage extends JPanel implements ActionListener {
 		center_tabbed_couponlist = new JPanel();
 		center_tabbed_couponlist.setOpaque(false);
 		center_tabbed.addTab("\uCFE0\uD3F0 \uBC0F \uC774\uBCA4\uD2B8 \uBAA9\uB85D", null, center_tabbed_couponlist, null);
-		center_tabbed_couponlist.setLayout(new BorderLayout(5, 0));	
+		center_tabbed_couponlist.setLayout(new BorderLayout(5, 0));
 		
-		event_ListView();
-		
+		event_ListView();		
 		
 		//쿠폰전송
 		center_tabbed_coupontran = new JPanel();
@@ -235,11 +245,8 @@ public class Event_Manage extends JPanel implements ActionListener {
 		panel_coupontran_1 = new JPanel();
 		panel_coupontran_1.setBorder(new LineBorder(new Color(0, 0, 0)));
 		center_tabbed_coupontran.add(panel_coupontran_1, BorderLayout.WEST);
-		panel_coupontran_1.setLayout(new MigLayout("", "[][grow]", "[30px][][][][][100px][30px][][100px][30px][40px]"));
-		
+		panel_coupontran_1.setLayout(new MigLayout("", "[][grow]", "[30px][][][][][100px][30px][][100px][30px][40px]"));		
 		event_CouponTran();
-		
-		
 		
 		//쿠폰 사용리스트
 		center_tabbed_couponuselist = new JPanel();
@@ -255,7 +262,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 	
 	//이벤트 리스트 목록 UI
 	private void event_ListView(){
-		
+				
 		DefaultTableCellRenderer celAlignCenter = new DefaultTableCellRenderer();
 		celAlignCenter.setHorizontalAlignment(JLabel.CENTER);	
 		
@@ -434,7 +441,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 	
 	//이벤트 정보 수정하기
 	public void setEventDetail(){
-				
+		
 		setRenewCouponReg();
 		
 		//한번이라도 사용한 이력이 있다면 수정을 못하게 막습니다.
@@ -532,6 +539,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 				
 		east_btn_save.setText("쿠폰 수정");
 		east_btn_save.setActionCommand("쿠폰수정");				
+				
 	}
 		
 	
@@ -797,12 +805,38 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tran_label_title2.setBackground(SystemColor.inactiveCaption);
 		panel_coupontran_1.add(tran_label_title2, "cell 0 6 2 1,grow");
 		
-		tran_label_trandata = new JLabel("\uC804\uC1A1\uBC29\uC2DD");
+		tran_label_trandata = new JLabel("\uC804\uC1A1\uBC29\uC2DD");		
 		panel_coupontran_1.add(tran_label_trandata, "cell 0 7,alignx trailing");
 		
 		tran_combo_trandata = new JComboBox<String>();
 		tran_combo_trandata.setModel(new DefaultComboBoxModel<String>(new String[] {"\uBA54\uC138\uC9C0", "\uC774\uBBF8\uC9C0", "\uC774\uBCA4\uD2B8\uCFE0\uD3F0"}));
 		panel_coupontran_1.add(tran_combo_trandata, "cell 1 7,growx");
+		
+		
+		tran_combo_trandata.addItemListener(new ItemListener() {
+			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+				if(e.getStateChange() == 1){
+					
+					String item = (String)e.getItem();
+					
+					switch(item){
+					case "메세지":
+						message_cardlayout.show(panel_coupontran_2, "message");
+						break;
+					case "이미지":
+						message_cardlayout.show(panel_coupontran_2, "image");
+						break;
+					case "이벤트쿠폰":
+						message_cardlayout.show(panel_coupontran_2, "event");
+						break;
+					}					
+				}
+			}
+		});
+		
 		
 		tran_label_title3 = new JLabel("3. \uC804\uC1A1\uD558\uAE30");
 		tran_label_title3.setHorizontalAlignment(SwingConstants.CENTER);
@@ -817,40 +851,97 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		panel_coupontran_2 = new JPanel();
 		center_tabbed_coupontran.add(panel_coupontran_2, BorderLayout.CENTER);
-		panel_coupontran_2.setLayout(new CardLayout(0, 0));
+		message_cardlayout = new CardLayout();
+		panel_coupontran_2.setLayout(message_cardlayout);
 		
 		tran_panel_msg = new JPanel();
-		panel_coupontran_2.add(tran_panel_msg, "name_147218793477676");
+		tran_panel_msg.setName("");
+		panel_coupontran_2.add(tran_panel_msg, "message");
 		tran_panel_msg.setLayout(new BorderLayout(5, 0));
 		
 		tranmsg_panel_msg = new JPanel();
 		tranmsg_panel_msg.setBorder(new LineBorder(new Color(0, 0, 0)));
 		tran_panel_msg.add(tranmsg_panel_msg, BorderLayout.WEST);
-		tranmsg_panel_msg.setLayout(new MigLayout("", "[][grow][]", "[30px][][grow][]"));
+		tranmsg_panel_msg.setLayout(new MigLayout("", "[][grow][]", "[][12px][25px][10px][][][10px][][][]"));
+		
+		lblNewLabel = new JLabel("\uD478\uC2DC \uBA54\uC138\uC9C0");
+		lblNewLabel.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		tranmsg_panel_msg.add(lblNewLabel, "cell 0 0 3 1,grow");
 		
 		tranmsg_label_title = new JLabel("\uC81C\uBAA9");
-		tranmsg_panel_msg.add(tranmsg_label_title, "cell 0 0,alignx trailing");
+		tranmsg_panel_msg.add(tranmsg_label_title, "cell 0 2,alignx trailing");
 		
 		tranmsg_text_title = new JTextField();
-		tranmsg_panel_msg.add(tranmsg_text_title, "cell 1 0 2 1,grow");
+		tranmsg_panel_msg.add(tranmsg_text_title, "cell 1 2 2 1,grow");
 		tranmsg_text_title.setColumns(10);
 		
 		tranmsg_label_msg = new JLabel("\uBA54\uC138\uC9C0");
-		tranmsg_panel_msg.add(tranmsg_label_msg, "cell 0 1,alignx trailing");
+		tranmsg_panel_msg.add(tranmsg_label_msg, "cell 0 4,alignx trailing");
+		
+		tranmsg_panel_message = new JPanel();
+		FlowLayout fl_tranmsg_panel_message = (FlowLayout) tranmsg_panel_message.getLayout();
+		fl_tranmsg_panel_message.setVgap(0);
+		fl_tranmsg_panel_message.setHgap(0);
+		fl_tranmsg_panel_message.setAlignment(FlowLayout.LEFT);
+		tranmsg_panel_msg.add(tranmsg_panel_message, "cell 1 4 2 2,grow");
+		
+		tranmsg_scrollPane_message = new JScrollPane();
+		tranmsg_scrollPane_message.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		tranmsg_panel_message.add(tranmsg_scrollPane_message);
 		
 		tranmsg_textArea_msg = new JTextArea();
+		tranmsg_scrollPane_message.setViewportView(tranmsg_textArea_msg);
+		tranmsg_textArea_msg.setWrapStyleWord(true);
+		tranmsg_textArea_msg.setRows(16);
+		tranmsg_textArea_msg.setColumns(22);
+		tranmsg_textArea_msg.setLineWrap(true);
 		tranmsg_textArea_msg.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
-		tranmsg_panel_msg.add(tranmsg_textArea_msg, "cell 1 1 2 2,grow");
+		
+		tranmsg_textArea_msg.addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+								
+				byte[] str =  tranmsg_textArea_msg.getText().getBytes();
+				if( str.length > cut_cnt ){
+					tranmsg_label_msginfo.setText(state_y+" : "+str.length);					
+				}else{
+					tranmsg_label_msginfo.setText(state_n+" : "+str.length);				
+				}
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
 		
 		tranmsg_label_linkurl = new JLabel("\uB9C1\uD06C URL");
-		tranmsg_panel_msg.add(tranmsg_label_linkurl, "cell 0 3,alignx trailing");
+		tranmsg_panel_msg.add(tranmsg_label_linkurl, "cell 0 7,alignx trailing");
 		
 		tranmsg_text_linkurl = new JTextField();
-		tranmsg_panel_msg.add(tranmsg_text_linkurl, "cell 1 3,growx");
+		tranmsg_panel_msg.add(tranmsg_text_linkurl, "cell 1 7 2 1,growx");
 		tranmsg_text_linkurl.setColumns(20);
 		
 		tranmsg_btn_msgsave = new JButton("\uBA54\uC81C\uC9C0 \uC800\uC7A5");
-		tranmsg_panel_msg.add(tranmsg_btn_msgsave, "cell 2 3");
+		tranmsg_panel_msg.add(tranmsg_btn_msgsave, "cell 2 8");
+		
+		tranmsg_label_msginfo = new JLabel("\uC815\uC0C1\uCD9C\uB825");
+		tranmsg_label_msginfo.setBackground(SystemColor.info);
+		tranmsg_label_msginfo.setOpaque(true);
+		tranmsg_label_msginfo.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		tranmsg_label_msginfo.setHorizontalAlignment(SwingConstants.CENTER);
+		tranmsg_panel_msg.add(tranmsg_label_msginfo, "cell 0 9 3 1,grow");
 		
 		tranmsg_panel_list = new JPanel();
 		tranmsg_panel_list.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -877,31 +968,38 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tranmsg_text_listmsg.setColumns(20);
 		
 		tranmsg_btn_listsearch = new JButton("\uAC80\uC0C9");
+		tranmsg_btn_listsearch.setActionCommand("메세지검색");
+		tranmsg_btn_listsearch.addActionListener(this);
 		tranmsg_panel_list.add(tranmsg_btn_listsearch, "cell 4 3,growx");
 		
 		tranmsg_scroll_list = new JScrollPane();
 		tranmsg_panel_list.add(tranmsg_scroll_list, "cell 0 4 5 1,grow");
 		
-		tranmsg_table_list = new JTable();
-		tranmsg_scroll_list.setViewportView(tranmsg_table_list);
+		
+		
+		//저장목록 구성
+		messageSaveList();		
 		
 		tran_panel_img = new JPanel();
-		panel_coupontran_2.add(tran_panel_img, "name_147231981059254");
+		tran_panel_img.setName("");
+		panel_coupontran_2.add(tran_panel_img, "image");
 		tran_panel_img.setLayout(new BorderLayout(5, 0));
 		
 		tranimg_panel_preview = new JPanel();
 		tranimg_panel_preview.setBorder(new LineBorder(new Color(0, 0, 0)));
 		tran_panel_img.add(tranimg_panel_preview, BorderLayout.WEST);
-		tranimg_panel_preview.setLayout(new MigLayout("", "[][grow]", "[][grow][]"));
+		tranimg_panel_preview.setLayout(new MigLayout("", "[][200px,grow]", "[][][]"));
 		
 		tranimg_label_title = new JLabel("\uC81C\uBAA9");
 		tranimg_panel_preview.add(tranimg_label_title, "cell 0 0,alignx trailing");
 		
 		tranimg_text_title = new JTextField();
 		tranimg_panel_preview.add(tranimg_text_title, "cell 1 0,growx");
-		tranimg_text_title.setColumns(10);
+		tranimg_text_title.setColumns(30);
 		
 		tranimg_editorPane_img = new JEditorPane();
+		tranimg_editorPane_img.setPreferredSize(new Dimension(300, 500));
+		tranimg_editorPane_img.setEditable(false);
 		tranimg_panel_preview.add(tranimg_editorPane_img, "cell 0 1 2 1,grow");
 		
 		tranimg_label_linkurl = new JLabel("\uB9C1\uD06C URL");
@@ -943,8 +1041,8 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tranimg_scroll_imglist.setViewportView(tranimg_panel_imgview);
 		tranimg_panel_imgview.setLayout(new GridLayout(0, 3, 0, 0));
 		
-		tran_panel_evt = new JPanel();
-		panel_coupontran_2.add(tran_panel_evt, "name_147256226379270");
+		tran_panel_evt = new JPanel();		
+		panel_coupontran_2.add(tran_panel_evt, "event");
 		tran_panel_evt.setLayout(new MigLayout("", "[][grow]", "[][][grow]"));
 		
 		tranevt_label_listtitle = new JLabel("\uD478\uC2DC \uC774\uBCA4\uD2B8 \uBAA9\uB85D");
@@ -966,9 +1064,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		
 	}
-	
-	
-	
+		
 	//이벤트 사용 리스트
 	private void event_UseList(){
 		
@@ -1042,6 +1138,117 @@ public class Event_Manage extends JPanel implements ActionListener {
 	}
 	
 	
+	//메세지 저장 리스트 불러오기
+	private void messageSaveList(){
+		
+		DefaultTableCellRenderer celAlignCenter = new DefaultTableCellRenderer();
+		celAlignCenter.setHorizontalAlignment(JLabel.CENTER);	
+		
+		String[] colunm_msglist = {"번호", "내용", "등록일"};
+		
+		dtm_msglist = new DefaultTableModel(null, colunm_msglist){		
+			private static final long serialVersionUID = 456847231284L;
+
+			@Override
+			public boolean isCellEditable(int roe, int column){
+				/**if(column == 4){
+					return true;
+				}else{
+					return false;
+				}*/
+				return false;
+			}
+		};	
+		
+		tranmsg_table_list = new JTable(dtm_msglist);
+		tranmsg_scroll_list.setViewportView(tranmsg_table_list);
+		
+		JTableHeader header_msglist = tranmsg_table_list.getTableHeader();
+	    Dimension d_msglist = header_msglist.getPreferredSize();
+	    d_msglist.height = 40;
+	    header_msglist.setPreferredSize(d_msglist);
+	    
+	    //쿠폰 리스트헤더 부분 중앙정렬
+	    ((DefaultTableCellRenderer)tranmsg_table_list.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(0);
+	    
+	    tranmsg_table_list.setRowHeight(25);
+	    tranmsg_table_list.getTableHeader().setReorderingAllowed(false);  //이동불가
+	    
+	    //center_table_couponlist.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);  //가로 스크롤	    
+	    
+	    TableColumnModel tcm_msglist = tranmsg_table_list.getColumnModel();
+
+        //tcm_uselist.getColumn(0).setMaxWidth(Integer.MAX_VALUE);
+	    tcm_msglist.getColumn(0).setWidth(40);
+	    //tcm_uselist.getColumn(0).setCellRenderer(celAlignCenter);
+	    tcm_msglist.getColumn(0).setPreferredWidth(40);
+	    tcm_msglist.getColumn(0).setCellRenderer(celAlignCenter);
+
+	    tcm_msglist.getColumn(1).setWidth(800);	    
+	    tcm_msglist.getColumn(1).setPreferredWidth(800);
+	    
+	    tcm_msglist.getColumn(2).setWidth(80);	    
+	    tcm_msglist.getColumn(2).setPreferredWidth(80);
+	    tcm_msglist.getColumn(2).setCellRenderer(celAlignCenter);
+	    
+		//tranmsg_scroll_list.setViewportView(tranmsg_table_list);
+		
+		tranmsg_table_list.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// TODO Auto-generated method stub
+				if (e.getClickCount() == 2) {
+					System.out.println("마우스 두번 클릭 됐습니다.");
+					//우측으로 자료를 전송 합니다.
+					getMessageToEdit();
+					
+				} // 더블클릭			
+			}
+		});
+		
+	}
+	
+	//메세지 수정창으로 보냅니다.
+	private void getMessageToEdit(){
+		
+		int row = tranmsg_table_list.getSelectedRow();		
+		String temp = dtm_msglist.getValueAt(row, 1).toString();
+		
+		byte[] cnt = temp.getBytes();
+		
+		if(cnt.length > cut_cnt){			
+			tranmsg_label_msginfo.setText(state_y+" : "+cnt.length);
+		}else{		
+			tranmsg_label_msginfo.setText(state_n+" : "+cnt.length);
+		}		
+		tranmsg_textArea_msg.setText(temp);
+		
+	}
 	
 	//상단 검색 정보 불러오기
 	public void getTopSearchStart(){
@@ -1312,7 +1519,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		int memberyn = getRadioButtonSelect(east_bg_memberyn);
 		int overlapyn = getRadioButtonSelect(east_bg_overlapyn);
-		int useyn = getRadioButtonSelect(east_bg_useyn);
+		//int useyn = getRadioButtonSelect(east_bg_useyn);
 		
 		String point = "";
 		String prizes = "";
@@ -1377,8 +1584,6 @@ public class Event_Manage extends JPanel implements ActionListener {
 		JOptionPane.showMessageDialog(this, "등록에 실패 했습니다.");
 		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
-	
-	
 	
 	//쿠폰정보를 수정합니다.
 	private void setCouponUpdate() {
@@ -1460,9 +1665,6 @@ public class Event_Manage extends JPanel implements ActionListener {
 			
 		}
 		
-		Date date = new Date();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd a hh:mm:ss");
-		
 		String query = "Update e_Coupon_List  Set e_CouponName='"+name+"', e_gubun='"+gubun+"', e_Sdate='"+new SimpleDateFormat("yyyy-MM-dd").format(sdate)+"', "
 				+ "e_Edate='"+new SimpleDateFormat("yyyy-MM-dd").format(edate)+"', e_MEM_YN='"+memberyn+"', e_Over_YN='"+overlapyn+"', e_Point='"+point+"', e_Product='"+prizes+"', e_pCnt="+pcount
 				+ ", del_yn='"+useyn+"', Edit_Date= getdate(), Editor='shop' Where e_Seq='"+code+"' ";
@@ -1480,6 +1682,35 @@ public class Event_Manage extends JPanel implements ActionListener {
 		JOptionPane.showMessageDialog(this, "수정에 실패 했습니다.");
 		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
+	
+	//메세지 불러오기
+	private void getMessageList(){
+
+		String query = "Select SMS_Num, SMS_Memo, Write_Date, Edit_Date, Writer, Editor From SMS_Msg Order By SMS_Num Desc";
+		
+		dtm_msglist.setRowCount(0);
+		
+		ms_connect.setMainSetting();
+		ArrayList<HashMap<String, String>> temp_msg = ms_connect.connection(query);
+		
+		Iterator<HashMap<String, String>> itr_list = temp_msg.iterator();
+		
+		int i = 1;
+		while(itr_list.hasNext()){			
+			HashMap<String, String> map = itr_list.next();
+			Vector<Object> v = new Vector<Object>();			
+			v.addElement(map.get("SMS_Num"));
+			v.addElement(map.get("SMS_Memo"));
+			v.addElement(map.get("Write_Date"));
+			
+			dtm_msglist.addRow(v);
+			i++;
+		}		
+		
+		JOptionPane.showMessageDialog(this, "검색 완료");
+		
+	}
+	
 	
 	
 	//그룹버튼 불러가기
@@ -1540,6 +1771,28 @@ public class Event_Manage extends JPanel implements ActionListener {
 	}
 	
 	
+	//바이트 단위로 한글을 잘라 냅니다.
+    private String setSubString(String str, int cut){
+    	int cutByte = cut;
+    	byte [] strByte = str.getBytes();
+        if( strByte.length < cutByte )
+          return str;
+        int cnt = 0;
+        for( int i = 0; i < cutByte; i++ )
+        {
+           if( strByte[i] < 0 )
+           cnt++;
+        }
+
+       String r_str;
+       if(cnt%2==0) r_str = new String(strByte, 0, cutByte );
+       else r_str = new String(strByte, 0, cutByte + 1 );
+
+       return r_str;    	
+    }
+	
+	
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
@@ -1566,6 +1819,9 @@ public class Event_Manage extends JPanel implements ActionListener {
 			break;
 		case "전송":
 			pushTranStart();
+			break;
+		case "메세지검색":
+			getMessageList();			
 			break;
 		}
 	}
