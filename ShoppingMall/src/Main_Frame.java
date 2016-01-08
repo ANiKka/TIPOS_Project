@@ -33,7 +33,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 	private final String Ord_Manager = "주문관리";
 	private final String Mem_Manager = "회원관리";
 	private final String Msg_Manager = "메세지관리";
-	private final String Evt_Manager = "쿠폰관리";
+	private final String Evt_Manager = "쿠폰-이벤트 관리";
 	private final String Con_Manager = "환경설정";
 	private final String Close_Manager = "종료";
 	
@@ -193,8 +193,9 @@ public class Main_Frame extends JFrame implements ActionListener{
 		btn_message.setFocusable(false);
 		btn_message.addActionListener(this);
 		menuBar.add(btn_message);
+		btn_message.setVisible(false);
 		
-		JButton btn_cupon = new JButton("\uCFE0\uD3F0\uAD00\uB9AC");
+		JButton btn_cupon = new JButton("\uCFE0\uD3F0-\uC774\uBCA4\uD2B8 \uAD00\uB9AC");
 		btn_cupon.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_cupon.png")));
 		btn_cupon.setIconTextGap(10);
 		btn_cupon.setFont(new Font("맑은 고딕", Font.BOLD, 15));

@@ -221,7 +221,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		center_tabbed_couponlist = new JPanel();
 		center_tabbed_couponlist.setOpaque(false);
-		center_tabbed.addTab("\uC774\uBCA4\uD2B8/\uCFE0\uD3F0 \uBAA9\uB85D", null, center_tabbed_couponlist, null);
+		center_tabbed.addTab("\uCFE0\uD3F0 \uBC0F \uC774\uBCA4\uD2B8 \uBAA9\uB85D", null, center_tabbed_couponlist, null);
 		center_tabbed_couponlist.setLayout(new BorderLayout(5, 0));	
 		
 		event_ListView();
@@ -229,7 +229,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		//쿠폰전송
 		center_tabbed_coupontran = new JPanel();
-		center_tabbed.addTab("\uBA54\uC138\uC9C0/\uCFE0\uD3F0 \uC804\uC1A1", null, center_tabbed_coupontran, null);
+		center_tabbed.addTab("\uCFE0\uD3F0 \uBC0F \uC774\uBCA4\uD2B8 \uC804\uC1A1", null, center_tabbed_coupontran, null);
 		center_tabbed_coupontran.setLayout(new BorderLayout(5, 0));
 		
 		panel_coupontran_1 = new JPanel();
@@ -587,7 +587,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 					System.out.println(e.getItem());
 					if(e.getItem().equals("포인트적립 쿠폰")){						
 						east_cardlayout.show(east_panel_data, "point");
-						east_radio_membery.isSelected();
+						east_radio_membery.setSelected(true);						
 						east_radio_memberyn.setEnabled(false);
 						east_radio_membery.setEnabled(false);						
 					}else{
@@ -755,6 +755,10 @@ public class Event_Manage extends JPanel implements ActionListener {
 	private void event_CouponTran(){		
 
 		tran_label_title1 = new JLabel("1. \uC804\uC1A1 \uB300\uC0C1 \uC120\uD0DD");
+		tran_label_title1.setHorizontalAlignment(SwingConstants.CENTER);
+		tran_label_title1.setFont(new Font("맑은 고딕", Font.BOLD, 13));
+		tran_label_title1.setBackground(SystemColor.inactiveCaption);
+		tran_label_title1.setOpaque(true);
 		panel_coupontran_1.add(tran_label_title1, "cell 0 0 2 1,grow");
 		
 		tran_label_level = new JLabel("\uD68C\uC6D0 \uB4F1\uAE09");
@@ -782,10 +786,15 @@ public class Event_Manage extends JPanel implements ActionListener {
 		panel_coupontran_1.add(tran_label_hp, "cell 0 4,alignx trailing");
 		
 		tran_text_hp = new JTextField();
+		tran_text_hp.setText("01090077611");
 		panel_coupontran_1.add(tran_text_hp, "cell 1 4,growx");
 		tran_text_hp.setColumns(10);
 		
 		tran_label_title2 = new JLabel("2. \uC804\uC1A1 \uBC29\uC2DD \uC120\uD0DD");
+		tran_label_title2.setHorizontalAlignment(SwingConstants.CENTER);
+		tran_label_title2.setFont(new Font("맑은 고딕", Font.BOLD, 13));
+		tran_label_title2.setOpaque(true);
+		tran_label_title2.setBackground(SystemColor.inactiveCaption);
 		panel_coupontran_1.add(tran_label_title2, "cell 0 6 2 1,grow");
 		
 		tran_label_trandata = new JLabel("\uC804\uC1A1\uBC29\uC2DD");
@@ -796,9 +805,14 @@ public class Event_Manage extends JPanel implements ActionListener {
 		panel_coupontran_1.add(tran_combo_trandata, "cell 1 7,growx");
 		
 		tran_label_title3 = new JLabel("3. \uC804\uC1A1\uD558\uAE30");
+		tran_label_title3.setHorizontalAlignment(SwingConstants.CENTER);
+		tran_label_title3.setFont(new Font("맑은 고딕", Font.BOLD, 13));
+		tran_label_title3.setBackground(SystemColor.inactiveCaption);
+		tran_label_title3.setOpaque(true);
 		panel_coupontran_1.add(tran_label_title3, "cell 0 9 2 1,grow");
 		
 		tran_btn_submit = new JButton("\uC804\uC1A1");
+		tran_btn_submit.addActionListener(this);
 		panel_coupontran_1.add(tran_btn_submit, "cell 0 10 2 1,grow");
 		
 		panel_coupontran_2 = new JPanel();
@@ -1130,18 +1144,27 @@ public class Event_Manage extends JPanel implements ActionListener {
 			
 			String edit_date = "";
 			try{
-				if(!edit_date.isEmpty()) edit_date = temp.get("Edit_Date");
+				if (temp.get("Edit_Date") == null){
+					edit_date = "";
+				}else{
+					edit_date = temp.get("Edit_Date");
+				}
 			}catch(NullPointerException e){
 				
 			}
 			
 			String del_date = "";
 			try{
-				if(!temp.get("Del_Date").isEmpty()) del_date = temp.get("Del_Date");
+				if(temp.get("Del_Date") == null){
+					del_date = "";
+				}else{
+					del_date = temp.get("Del_Date");
+				}
 			}catch(NullPointerException e){
 				
 			}
-			reg_date += temp.get("Write_Date")+"<br>"+edit_date+"<br>"+del_date+"<html>";			
+			reg_date += temp.get("Write_Date")+"<br>"+edit_date+"<br>"+del_date+"</html>";
+			
 			v.addElement(reg_date);
 						
 			String ingyn = "";
@@ -1242,12 +1265,6 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 	}
 	
-	//쿠폰정보를 수정합니다.
-	private void setCouponUpdate() {
-		
-		
-	}
-
 	//쿠폰정보를 등록합니다.
 	private void setCouponSave() {
 				
@@ -1361,6 +1378,110 @@ public class Event_Manage extends JPanel implements ActionListener {
 		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 	
+	
+	
+	//쿠폰정보를 수정합니다.
+	private void setCouponUpdate() {
+				
+		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		
+		//모든 등록된 데이타를 불러옵니다.
+		//코드가 등록 되었는지 확인 해야 합니다.
+		//등록 되어 있다면 사용할수 없습니다.
+		//오류 검사
+		//등록 코드가 숫자로 이루어 졌는지 확인 합니다.
+		//제목의 문자 길이를 측정합니다.
+		//쿠폰 구분에 따라서 포인트 및 사은품명 또는 사은품 수량을 넣었는지 확인 합니다.
+		//선택한 날자가 시작일이 종료일보다 앞인지 확인 합니다.
+		
+		//수정모드에선 코드는 변경 못합니다.
+		String code = east_text_code.getText();
+		
+		String name = east_text_name.getText();
+		if(name.length() <= 0 && name.length() > 25){
+			JOptionPane.showMessageDialog(this, "이벤트/쿠폰 이름을 입력해 주세요~!");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			return;						
+		}
+						
+		int gubun = east_combo_gubun.getSelectedIndex();
+		
+		Date sdate = east_chooser_start.getDate();
+		Date edate = east_chooser_end.getDate();
+		
+		int tallDate = sdate.compareTo(edate);
+		System.out.println(tallDate);
+		if(tallDate > 0){
+			JOptionPane.showMessageDialog(this, "시작 날자가 종료일 보다 큽니다. 날자를 다시 설정해 주세요");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			return;
+		}
+		
+		int memberyn = getRadioButtonSelect(east_bg_memberyn);
+		int overlapyn = getRadioButtonSelect(east_bg_overlapyn);
+		int useyn = getRadioButtonSelect(east_bg_useyn);
+		
+		String point = "";
+		String prizes = "";
+		int pcount=0;
+		if(gubun == 0){
+			point = east_text_point.getText();
+			
+			if(point.length() <= 0){
+				JOptionPane.showMessageDialog(this, "포인트 점수를 입력해 주세요!");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return;
+			}
+			
+			if(!isNumber(point)){
+				JOptionPane.showMessageDialog(this, "포인트는 숫자만 등록 가능합니다.");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return;
+			}			
+			prizes = "";
+			pcount = 0;
+			
+		}else{
+			point="0";
+			prizes = east_text_prizesname.getText();
+			pcount = Integer.parseInt(east_text_prizescount.getText());
+			
+			if(prizes == null || "".equals(prizes)){
+				JOptionPane.showMessageDialog(this, "사은품명을 입력해 주세요.");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return;
+			}	
+			
+			if(pcount <= 0){
+				JOptionPane.showMessageDialog(this, "사은품 수량을 변경해 주세요.");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return;				
+			}
+			
+		}
+		
+		Date date = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd a hh:mm:ss");
+		
+		String query = "Update e_Coupon_List  Set e_CouponName='"+name+"', e_gubun='"+gubun+"', e_Sdate='"+new SimpleDateFormat("yyyy-MM-dd").format(sdate)+"', "
+				+ "e_Edate='"+new SimpleDateFormat("yyyy-MM-dd").format(edate)+"', e_MEM_YN='"+memberyn+"', e_Over_YN='"+overlapyn+"', e_Point='"+point+"', e_Product='"+prizes+"', e_pCnt="+pcount
+				+ ", del_yn='"+useyn+"', Edit_Date= getdate(), Editor='shop' Where e_Seq='"+code+"' ";
+						
+		ms_connect.setMainSetting();
+		int result = ms_connect.connect_update(query);
+		
+		switch(result){
+		case 0:			
+			JOptionPane.showMessageDialog(this, "정상 수정 되었습니다.");
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			getTopSearchStart();
+			return;				
+		}		
+		JOptionPane.showMessageDialog(this, "수정에 실패 했습니다.");
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	}
+	
+	
 	//그룹버튼 불러가기
 	private int getRadioButtonSelect(ButtonGroup btng){
 		
@@ -1405,6 +1526,19 @@ public class Event_Manage extends JPanel implements ActionListener {
 		//return str.matches("^[0-9]*$");
 	}
 	
+	//메세지 전송하기
+	private void pushTranStart(){
+		
+		HashMap<String, Object> push_list = new HashMap<String, Object>();
+		
+		push_list.put("Title", tranmsg_text_title.getText());
+		push_list.put("Message", tranmsg_textArea_msg.getText());
+		push_list.put("Hp", tran_text_hp.getText());
+		push_list.put("Link", tranmsg_text_linkurl.getText());
+		
+		trans_shopapi.setPushSubimt(push_list);
+	}
+	
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -1429,6 +1563,9 @@ public class Event_Manage extends JPanel implements ActionListener {
 			break;
 		case "쿠폰수정":
 			setCouponUpdate();
+			break;
+		case "전송":
+			pushTranStart();
 			break;
 		}
 	}

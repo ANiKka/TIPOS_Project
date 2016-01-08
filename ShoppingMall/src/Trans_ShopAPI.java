@@ -1,14 +1,9 @@
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.net.*;
+import java.text.*;
+import java.util.*;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
+import org.json.simple.*;
 import org.json.simple.parser.ParseException;
 
 public class Trans_ShopAPI {
@@ -597,23 +592,34 @@ public class Trans_ShopAPI {
 	+ "&push_link=/main&push_img_url=".urlencode('http://sskshop1.anybuild.com/thum_img/sskshop1/goods_img2/85b6f89b41cae26786ac72365fff771b_water_3afcaf174b6d740dcc3f8f859871184e_c1_w320_h320.jpg').""
 	+ "&memlv=&mem_only=ALL&platform=&devicename=&devicemodel=&deviceversion=&hp_num=");*/
 	String push_submit = "https://ssl.anybuild.co.kr/API/app/push_submit.php";
-	public JSONArray setPushSubimt(){
+	public JSONArray setPushSubimt(HashMap<String, Object> push_list){
 		
 		//환경설정
 		String shop_key = Server_Config.getSHOPKEY();
 		
 		//접속 쇼핑몰정보 정의하기
 		String shop_address = "https://ssl.anybuild.co.kr/API/app/push_submit.php";	
-		System.out.println(" 동기화를 시작합니다. 접속 주소 --> " + shop_address);
-				
+		System.out.println(" 동기화를 시작합니다. 접속 주소 --> " + shop_address);				
 		System.out.println(shop_address);
+				
+		String push_title = (String)push_list.get("Title");
+		String push_msg = (String)push_list.get("Message");
+		String push_link = (String)push_list.get("Link");
+		String push_url = "";
+		String event_idx = "";
+		
+		String mem_id = "";
+		String memlv = "";
+		String mem_only = "ALL";
+		String hp_num = (String)push_list.get("Hp");
+		
 		
 		String shop_data = "";
 		try {
-			shop_data = "api_key="+shop_key;//+"&hp=01090077611";//+URLEncoder.encode("010-8619-7484", "UTF-8");
-			shop_data +="&push_title="+URLEncoder.encode("게릴라이벤트", "UTF-8")+"&push_msg="+URLEncoder.encode("지금 방문하시면 아메리카노1잔 서비스 제공합니다.", "UTF-8")+"&push_link=&push_img_url="
-					+URLEncoder.encode("http://sskshop1.anybuild.com/thum_img/sskshop1/goods_img2/85b6f89b41cae26786ac72365fff771b_water_3afcaf174b6d740dcc3f8f859871184e_c1_w320_h320.jpg", "UTF-8")
-					+"&memlv=&mem_only=ALL&platform=&devicename=&devicemodel=&deviceversion=&hp_num=01090077611&event_idx=75";
+			shop_data = "api_key="+shop_key;
+			shop_data +="&push_title="+URLEncoder.encode(push_title, "UTF-8")+"&push_msg="+URLEncoder.encode(push_msg, "UTF-8")+"&push_link="+URLEncoder.encode(push_link, "UTF-8")
+					+"&push_img_url="+URLEncoder.encode(push_url, "UTF-8")+"&mem_id="+URLEncoder.encode(mem_id, "UTF-8")				
+					+"&memlv="+memlv+"&mem_only="+mem_only+"&platform=&devicename=&devicemodel=&deviceversion=&hp_num="+hp_num+"&event_idx="+event_idx;
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

@@ -46,7 +46,7 @@ public class Member_Manage extends JPanel {
 		JButton btnNewButton_3 = new JButton("\uD478\uC2DC\uC804\uC1A1");
 		btnNewButton_3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				t_api.setPushSubimt();
+				//t_api.setPushSubimt();
 			}
 		});
 		btnNewButton_3.setBounds(27, 104, 97, 23);

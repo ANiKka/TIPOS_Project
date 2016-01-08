@@ -92,7 +92,7 @@ public class TransferDataGoodsSet {
 		JSONArray json_map = new JSONArray();
 				
 		if(temp_map.size() <= 0 ){					
-			JOptionPane.showMessageDialog(this.cpn, "업로드 상품 조회 실패");			
+			JOptionPane.showMessageDialog(this.cpn, "즉시 전송 실패 이미지 및 연동 옵션을 확인해 주세요!");			
 			return;
 		}
 				

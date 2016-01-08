@@ -367,7 +367,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		System.out.println("재고사용여부 : "+sto_use + " 저장값 : "+temp_detail.get(19));
 		//재고 사용 유무를 현재 값 하고 틀린지 비교 합니다.  (서로 틀리다면 변경된것)
 		if(!temp_detail.get(19).toString().equals(sto_use)){
-			query2 += ", Sto_Use='0'";
+			query2 += ", Sto_Use='"+sto_use+"' ";
 			edit_goods_info = true;
 		}
 		
@@ -1365,7 +1365,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	}
     	
     	//나머지 처리합니다.
-    	//if(cnt%10 > 0){
+    	//if(cnt%30 > 0){
     		
     		int result = ms_connect.connect_update(query_list);
 	    	switch(result){
@@ -1751,7 +1751,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		
 		JPanel panel = new JPanel();
 		panel_1.add(panel, BorderLayout.NORTH);
-		panel.setLayout(new MigLayout("", "[81px][81px][80px,grow][81px][][][grow][][][][][][][][grow][][][165.00]", "[baseline]"));
+		panel.setLayout(new MigLayout("", "[81px][81px][80px,grow][81px][][][][][][][grow][][][165.00]", "[baseline]"));
 		
 		JButton btn_all_select = new JButton("전체선택");
 		panel.add(btn_all_select, "cell 0 0,alignx left,aligny top");
@@ -1821,7 +1821,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 					}
 				});*/
 		
-		JLabel lblNewLabel_1 = new JLabel("\uBD84\uB958\uCF54\uB4DC(AA) \uB9E4\uC785\uB300\uBD84\uB958 \uC0C1\uD488\uC740 \uAC80\uC0C9 \uC548\uB429\uB2C8\uB2E4.");
+		JLabel lblNewLabel_1 = new JLabel("\uC0AC\uC6A9\uC911\uC9C0 \uC0C1\uD488\uACFC \uB9E4\uC785\uB300\uBD84\uB958(AA) \uC0C1\uD488\uC740 \uAC80\uC0C9 \uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.");
 		lblNewLabel_1.setFont(new Font("맑은 고딕", Font.PLAIN, 11));
 		lblNewLabel_1.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_1.setBackground(SystemColor.info);
@@ -1829,7 +1829,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		panel.add(lblNewLabel_1, "cell 5 0,grow");
 		
 		JLabel label_Detail_Title = new JLabel("\uC0C1\uD488 \uC0C1\uC138 \uC815\uBCF4");
-		panel.add(label_Detail_Title, "cell 15 0,alignx left,aligny center");
+		panel.add(label_Detail_Title, "cell 11 0,alignx left,aligny center");
 		label_Detail_Title.setFont(new Font("맑은 고딕", Font.BOLD, 12));
 		label_Detail_Title.setHorizontalAlignment(SwingConstants.CENTER);
 		
@@ -1848,15 +1848,15 @@ public class Goods_Manage extends JPanel implements ActionListener {
 					jtab_image_Renew();							
 					break;
 				case 2:
-					jtab_allChange_Renew();
-					break;
-				case 3:
 					jtab_hotkey_Renew();
+					break;
+				case 3:					
+					jtab_allChange_Renew();
 					break;
 				}						
 			}
 		});
-		panel.add(btn_detail_renew, "cell 17 0,alignx center");
+		panel.add(btn_detail_renew, "cell 13 0,alignx center");
 				
     	JPanel panel_goods_detail = new JPanel();
     	//panel_1.add(panel_goods_detail, BorderLayout.EAST);
@@ -2176,7 +2176,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	
     	JPanel panel_jtaballchange = new JPanel();
     	panel_jtaballchange.setBorder(new LineBorder(Color.GRAY));
-    	panel_jtaballchange.setLayout(new MigLayout("", "[][grow]", "[][grow][][grow][][grow][][grow][][85px,grow][60px][50px][grow]"));
+    	panel_jtaballchange.setLayout(new MigLayout("", "[grow][grow]", "[grow][grow][grow][grow][100px,grow][grow][]"));
     	
     	//TODO: 쇼핑몰 연동그룹
     	JPanel panel_5 = new JPanel();
@@ -2184,7 +2184,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	flowLayout.setVgap(0);
     	flowLayout.setHgap(0);
     	panel_5.setBorder(new TitledBorder(null, "\uC1FC\uD551\uBAB0\uC5F0\uB3D9", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-    	panel_jtaballchange.add(panel_5, "cell 0 1 2 1,grow");
+    	panel_jtaballchange.add(panel_5, "cell 0 0 2 1,grow");
     	
     	JRadioButton radio_shopmall = new JRadioButton("\uC120\uD0DD\uC548\uD568");
     	panel_5.add(radio_shopmall);
@@ -2213,7 +2213,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	flowLayout_1.setVgap(0);
     	flowLayout_1.setHgap(0);
     	panel_6.setBorder(new TitledBorder(null, "\uC1FC\uD551\uBAB0\uD310\uB9E4\uC5EC\uBD80", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-    	panel_jtaballchange.add(panel_6, "cell 0 3 2 1,grow");
+    	panel_jtaballchange.add(panel_6, "cell 0 1 2 1,grow");
     	
     	JRadioButton radio_view = new JRadioButton("\uC120\uD0DD\uC548\uD568");
     	panel_6.add(radio_view);
@@ -2242,7 +2242,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	flowLayout_2.setVgap(0);
     	flowLayout_2.setHgap(0);
     	panel_7.setBorder(new TitledBorder(null, "\uC7AC\uACE0\uC0AC\uC6A9\uC5EC\uBD80", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-    	panel_jtaballchange.add(panel_7, "cell 0 5 2 1,grow");
+    	panel_jtaballchange.add(panel_7, "cell 0 2 2 1,grow");
     	
     	JRadioButton radio_stock = new JRadioButton("\uC120\uD0DD\uC548\uD568");
     	panel_7.add(radio_stock);
@@ -2270,7 +2270,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	flowLayout_3.setVgap(0);
     	flowLayout_3.setHgap(0);
     	panel_8.setBorder(new TitledBorder(null, "\uC548\uC804\uC7AC\uACE0\uB4F1\uB85D", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-    	panel_jtaballchange.add(panel_8, "cell 0 7 2 1,grow");
+    	panel_jtaballchange.add(panel_8, "cell 0 3 2 1,grow");
     	
     	JLabel label = new JLabel("\uC218\uB7C9\uB4F1\uB85D  :  ");
     	panel_8.add(label);
@@ -2282,16 +2282,33 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	
     	panel_maincode_title = new JPanel();
     	panel_maincode_title.setBorder(new TitledBorder(null, "\uBA54\uC778\uC0C1\uD488 \uCD9C\uB825\uCF54\uB4DC", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-    	panel_jtaballchange.add(panel_maincode_title, "cell 0 9 2 1,grow");
+    	panel_jtaballchange.add(panel_maincode_title, "cell 0 4 2 1,grow");
     	    	
     	chk_boxs = new ArrayList<JCheckBox>();
     	
     	getMainCode();
     	
+    	btn_Change = new JButton("\uC120\uD0DD \uC635\uC158 \uBCC0\uACBD");
+    	btn_Change.setForeground(Color.RED);
+    	btn_Change.setFont(new Font("맑은 고딕", Font.BOLD, 13));
+    	btn_Change.setBackground(Color.BLUE);
+    	panel_jtaballchange.add(btn_Change, "cell 0 5,grow");
+    	btn_Change.setActionCommand("OK");
+    	btn_Change.addActionListener(this);
+    	
+    	JLabel label_right_info = new JLabel("<html>\r\n\uBCC0\uACBD \uB0B4\uC6A9\uC740 \uC1FC\uD551\uBAB0\uC5D0 \uC989\uC2DC \uC801\uC6A9\uB418\uC9C0 \uC54A\uACE0 <br>\r\n\uC0C1\uD488\uC218\uB7C9\uC5D0 \uB530\uB77C 5~10\uBD84\uC774 \uC18C\uC694\uB429\uB2C8\uB2E4.\r\n</html>");
+    	label_right_info.setForeground(SystemColor.activeCaptionText);
+    	label_right_info.setHorizontalAlignment(SwingConstants.CENTER);
+    	label_right_info.setBackground(SystemColor.info);
+    	label_right_info.setOpaque(true);
+    	label_right_info.setFont(new Font("맑은 고딕", Font.PLAIN, 11));
+    	panel_jtaballchange.add(label_right_info, "cell 1 5,grow");
+    	
     	//폴더선택 여부 그룹
     	JPanel panel_3 = new JPanel();
-    	panel_3.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\uC774\uBBF8\uC9C0\uC5F0\uB3D9 \uBC0F \uC800\uC7A5 \uD3F4\uB354 \uC120\uD0DD", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
-    	panel_jtaballchange.add(panel_3, "cell 0 10 2 1,grow");
+    	panel_3.setBackground(SystemColor.window);
+    	panel_3.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "\uC774\uBBF8\uC9C0 \uC5F0\uB3D9", TitledBorder.LEFT, TitledBorder.TOP, null, new Color(0, 0, 0)));
+    	panel_jtaballchange.add(panel_3, "cell 0 6 2 1,grow");
     	panel_3.setLayout(new MigLayout("", "[grow][]", "[][][15px][16px]"));
     	
     	JPanel panel_9 = new JPanel();
@@ -2339,14 +2356,6 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	label_result.setHorizontalAlignment(SwingConstants.RIGHT);
     	label_result.setFont(new Font("맑은 고딕", Font.PLAIN, 11));
     	panel_3.add(label_result, "cell 0 2,growx,aligny top");
-    	
-    	btn_Change = new JButton("\uC120\uD0DD \uC635\uC158 \uBCC0\uACBD");
-    	btn_Change.setForeground(Color.RED);
-    	btn_Change.setFont(new Font("맑은 고딕", Font.BOLD, 13));
-    	btn_Change.setBackground(Color.BLUE);
-    	panel_jtaballchange.add(btn_Change, "cell 0 11,growy");
-    	btn_Change.setActionCommand("OK");
-    	btn_Change.addActionListener(this);
     	
     	btn_Detail_Save.addActionListener(new ActionListener() {
     		
@@ -2433,15 +2442,14 @@ public class Goods_Manage extends JPanel implements ActionListener {
 							setSearchGoodsName();
 						}
 						break;
-					case 2: //일괄변경
-						
-						break;
-					case 3: //판매메세지
+					case 2: //판매메세지
 						if(btn_jtab_hotkey_listcall.isEnabled()){
 							//목록의 바코드를 찾아서 지정한 곳으로 상품을 저장합니다.
 							//상품 저장 함수
 							setHotKeyListSave();
 						}
+						break;
+					case 3: //일괄변경						
 						break;
 					case 4: //
 						break;
@@ -2696,14 +2704,6 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		panel_jtabgoods_image.add(label_count_total, "cell 3 4");
 		tabPane_detail.addTab("1\uCC28\uC2DD\uD488 \uD310\uAC00\uBCC0\uACBD", jtab_hotkey_sell);
 		tabPane_detail.addTab("\uC0C1\uD488 \uC77C\uAD04\uBCC0\uACBD", panel_jtaballchange);
-		
-		JLabel label_right_info = new JLabel("<html>\r\n\uC120\uD0DD \uC635\uC158 \uBCC0\uACBD \uC801\uC6A9 \uC2DC<br>\r\n\uB9CE\uC740 \uC0C1\uD488\uC744 \uBCC0\uACBD\uD574\uC57C \uD558\uBBC0\uB85C \uC1FC\uD551\uBAB0\uC5D0 \uC989\uC2DC <br>\r\n\uC801\uC6A9\uB418\uC9C0 \uC54A\uACE0 \uC0C1\uD488\uC218\uB7C9\uC5D0 \uB530\uB77C 5~10\uBD84\uC774 \uC18C\uC694\uB429\uB2C8\uB2E4.\r\n</html>");
-		label_right_info.setForeground(SystemColor.activeCaptionText);
-		label_right_info.setHorizontalAlignment(SwingConstants.CENTER);
-		label_right_info.setBackground(SystemColor.info);
-		label_right_info.setOpaque(true);
-		label_right_info.setFont(new Font("맑은 고딕", Font.PLAIN, 11));
-		panel_jtaballchange.add(label_right_info, "cell 1 11,growx");
 		
     }
     
@@ -3199,8 +3199,13 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			int result = ms_connect.connect_update(query_list);
 			switch(result){		
 			case 0:
-				JOptionPane.showMessageDialog(this, "변경 완료 했습니다.");
+				JOptionPane.showMessageDialog(this, "변경 완료 했습니다.");						
 				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				
+				detail_Renew();				
+				//검색하기
+				search_start();
+				
 				break;
 			default:
 				JOptionPane.showMessageDialog(this, "DB 연결에 실패 했습니다.");
@@ -4072,7 +4077,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
     //핫키에 등록된 상품을 불러옵니다.
     public void getHotKeyGoodsList(){
     	
-    	if(!(tabPane_detail.getSelectedIndex() == 3)) return;
+    	System.out.println("상품검색을 시작합니다.");
+    	if(!(tabPane_detail.getSelectedIndex() == 2)) return;
     	
     	//String query = "Select * From Hot_Key A join Goods B On A.H_Barcode=B.Barcode ";
     	
