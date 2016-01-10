@@ -1,9 +1,12 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
+import java.net.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import javax.imageio.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
@@ -12,6 +15,8 @@ import org.json.simple.*;
 
 import com.sun.java.swing.plaf.motif.MotifGraphicsUtils;
 import com.toedter.calendar.*;
+
+import it.sauronsoftware.ftp4j.*;
 import net.miginfocom.swing.*;
 
 public class Event_Manage extends JPanel implements ActionListener {
@@ -151,6 +156,26 @@ public class Event_Manage extends JPanel implements ActionListener {
 	private String state_y = "출력 문자 내용이 잘릴수 있습니다.";
 	private String state_n = "정상출력";
 	private int cut_cnt = 350;
+	private JLabel tranimg_label_msgtitle;
+	private JLabel tranimg_label_imgpath;
+	private JTextField tranimg_text_imgpath;
+	private JButton tran_btn_datadown;
+	private JButton tran_btn_dataup;
+		
+	//이미지 총 수량
+	private int image_total_count=0;
+	//현재 페이지 번호
+	private int image_page_num=0;
+	//총페이지 수량 
+	private int image_page_count=0;
+	//한페이지당 목록 수량
+	private int image_page_listcount = 10;
+		
+	private JLabel tranimg_label_nowpage;
+	private JLabel tranimg_label_sp;
+	private JLabel tranimg_label_totalpage;
+	private JButton btnNewButton;
+	private JButton btnNewButton_1;
 	
 	public Event_Manage() {
 		
@@ -176,6 +201,11 @@ public class Event_Manage extends JPanel implements ActionListener {
 				
 		//목록을 바로 불러 옵니다	
 		getTopSearchStart();
+		
+		//기본 셋팅합니다.
+		tranmsg_text_title.setText(Server_Config.getOFFICENAME());
+		tranimg_text_title.setText(Server_Config.getOFFICENAME());
+		tranevt_text_title.setText(Server_Config.getOFFICENAME());
 				
 	}
 	
@@ -245,7 +275,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		panel_coupontran_1 = new JPanel();
 		panel_coupontran_1.setBorder(new LineBorder(new Color(0, 0, 0)));
 		center_tabbed_coupontran.add(panel_coupontran_1, BorderLayout.WEST);
-		panel_coupontran_1.setLayout(new MigLayout("", "[][grow]", "[30px][][][][][100px][30px][][100px][30px][40px]"));		
+		panel_coupontran_1.setLayout(new MigLayout("", "[][][grow]", "[30px][][][][][80px][30px][][][80px][30px][40px]"));		
 		event_CouponTran();
 		
 		//쿠폰 사용리스트
@@ -767,27 +797,29 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tran_label_title1.setFont(new Font("맑은 고딕", Font.BOLD, 13));
 		tran_label_title1.setBackground(SystemColor.inactiveCaption);
 		tran_label_title1.setOpaque(true);
-		panel_coupontran_1.add(tran_label_title1, "cell 0 0 2 1,grow");
+		panel_coupontran_1.add(tran_label_title1, "cell 0 0 3 1,grow");
 		
 		tran_label_level = new JLabel("\uD68C\uC6D0 \uB4F1\uAE09");
+		tran_label_level.setVisible(false);
 		panel_coupontran_1.add(tran_label_level, "cell 0 1,alignx trailing");
 		
 		tran_combo_level = new JComboBox<String>();
+		tran_combo_level.setVisible(false);
 		tran_combo_level.setModel(new DefaultComboBoxModel<String>(new String[] {"\uC804\uCCB4", "\uBE44\uD68C\uC6D0", "\uC77C\uBC18\uD68C\uC6D0", "\uAC00\uC785\uB300\uAE30\uD68C\uC6D0", "\uD0C8\uD1F4\uD68C\uC6D0"}));
-		panel_coupontran_1.add(tran_combo_level, "cell 1 1,growx");
+		panel_coupontran_1.add(tran_combo_level, "cell 1 1 2 1,growx");
 		
 		tran_label_joinyn = new JLabel("\uD68C\uC6D0\uAC00\uC785\uC5EC\uBD80");
 		panel_coupontran_1.add(tran_label_joinyn, "cell 0 2,alignx trailing");
 		
 		tran_combo_joinyn = new JComboBox<String>();
 		tran_combo_joinyn.setModel(new DefaultComboBoxModel<String>(new String[] {"\uC804\uCCB4", "\uBE44\uD68C\uC6D0", "\uAC00\uC785\uD68C\uC6D0"}));
-		panel_coupontran_1.add(tran_combo_joinyn, "cell 1 2,growx");
+		panel_coupontran_1.add(tran_combo_joinyn, "cell 1 2 2 1,growx");
 		
 		tran_label_memid = new JLabel("\uD68C\uC6D0 \uC544\uC774\uB514");
 		panel_coupontran_1.add(tran_label_memid, "cell 0 3,alignx trailing");
 		
 		tran_text_memid = new JTextField();
-		panel_coupontran_1.add(tran_text_memid, "cell 1 3,growx");
+		panel_coupontran_1.add(tran_text_memid, "cell 1 3 2 1,growx");
 		tran_text_memid.setColumns(10);
 		
 		tran_label_hp = new JLabel("\uD734\uB300\uD3F0\uBC88\uD638");
@@ -795,7 +827,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		tran_text_hp = new JTextField();
 		tran_text_hp.setText("01090077611");
-		panel_coupontran_1.add(tran_text_hp, "cell 1 4,growx");
+		panel_coupontran_1.add(tran_text_hp, "cell 1 4 2 1,growx");
 		tran_text_hp.setColumns(10);
 		
 		tran_label_title2 = new JLabel("2. \uC804\uC1A1 \uBC29\uC2DD \uC120\uD0DD");
@@ -803,14 +835,14 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tran_label_title2.setFont(new Font("맑은 고딕", Font.BOLD, 13));
 		tran_label_title2.setOpaque(true);
 		tran_label_title2.setBackground(SystemColor.inactiveCaption);
-		panel_coupontran_1.add(tran_label_title2, "cell 0 6 2 1,grow");
+		panel_coupontran_1.add(tran_label_title2, "cell 0 6 3 1,grow");
 		
 		tran_label_trandata = new JLabel("\uC804\uC1A1\uBC29\uC2DD");		
 		panel_coupontran_1.add(tran_label_trandata, "cell 0 7,alignx trailing");
 		
 		tran_combo_trandata = new JComboBox<String>();
 		tran_combo_trandata.setModel(new DefaultComboBoxModel<String>(new String[] {"\uBA54\uC138\uC9C0", "\uC774\uBBF8\uC9C0", "\uC774\uBCA4\uD2B8\uCFE0\uD3F0"}));
-		panel_coupontran_1.add(tran_combo_trandata, "cell 1 7,growx");
+		panel_coupontran_1.add(tran_combo_trandata, "cell 1 7 2 1,growx");
 		
 		
 		tran_combo_trandata.addItemListener(new ItemListener() {
@@ -837,17 +869,42 @@ public class Event_Manage extends JPanel implements ActionListener {
 			}
 		});
 		
+		tran_btn_datadown = new JButton("\u25C0");
+		tran_btn_datadown.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+				int cnt = tran_combo_trandata.getSelectedIndex();
+				if(cnt > 0){
+					tran_combo_trandata.setSelectedIndex(cnt-1);
+				}
+			}
+		});
+		tran_btn_datadown.setHorizontalAlignment(SwingConstants.LEFT);
+		panel_coupontran_1.add(tran_btn_datadown, "cell 1 8");
+		
+		tran_btn_dataup = new JButton("\u25B6");
+		tran_btn_dataup.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int cnt = tran_combo_trandata.getSelectedIndex();
+				if(cnt < 2){
+					tran_combo_trandata.setSelectedIndex(cnt+1);
+				}
+			}
+		});
+		tran_btn_dataup.setHorizontalAlignment(SwingConstants.RIGHT);
+		panel_coupontran_1.add(tran_btn_dataup, "cell 2 8,alignx right");
+		
 		
 		tran_label_title3 = new JLabel("3. \uC804\uC1A1\uD558\uAE30");
 		tran_label_title3.setHorizontalAlignment(SwingConstants.CENTER);
 		tran_label_title3.setFont(new Font("맑은 고딕", Font.BOLD, 13));
 		tran_label_title3.setBackground(SystemColor.inactiveCaption);
 		tran_label_title3.setOpaque(true);
-		panel_coupontran_1.add(tran_label_title3, "cell 0 9 2 1,grow");
+		panel_coupontran_1.add(tran_label_title3, "cell 0 10 3 1,grow");
 		
 		tran_btn_submit = new JButton("\uC804\uC1A1");
 		tran_btn_submit.addActionListener(this);
-		panel_coupontran_1.add(tran_btn_submit, "cell 0 10 2 1,grow");
+		panel_coupontran_1.add(tran_btn_submit, "cell 0 11 3 1,grow");
 		
 		panel_coupontran_2 = new JPanel();
 		center_tabbed_coupontran.add(panel_coupontran_2, BorderLayout.CENTER);
@@ -988,54 +1045,98 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tranimg_panel_preview = new JPanel();
 		tranimg_panel_preview.setBorder(new LineBorder(new Color(0, 0, 0)));
 		tran_panel_img.add(tranimg_panel_preview, BorderLayout.WEST);
-		tranimg_panel_preview.setLayout(new MigLayout("", "[][200px,grow]", "[][][]"));
+		tranimg_panel_preview.setLayout(new MigLayout("", "[][200px,grow]", "[][10px][25px][10px][][][][grow]"));
+		
+		tranimg_label_msgtitle = new JLabel("\uBA54\uC138\uC9C0 \uB0B4\uC6A9");
+		tranimg_label_msgtitle.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		tranimg_label_msgtitle.setHorizontalAlignment(SwingConstants.CENTER);
+		tranimg_panel_preview.add(tranimg_label_msgtitle, "cell 0 0 2 1,grow");
 		
 		tranimg_label_title = new JLabel("\uC81C\uBAA9");
-		tranimg_panel_preview.add(tranimg_label_title, "cell 0 0,alignx trailing");
+		tranimg_panel_preview.add(tranimg_label_title, "cell 0 2,alignx trailing");
 		
 		tranimg_text_title = new JTextField();
-		tranimg_panel_preview.add(tranimg_text_title, "cell 1 0,growx");
-		tranimg_text_title.setColumns(30);
+		tranimg_text_title.setAutoscrolls(false);
+		tranimg_panel_preview.add(tranimg_text_title, "cell 1 2,grow");
+		tranimg_text_title.setColumns(35);
 		
 		tranimg_editorPane_img = new JEditorPane();
-		tranimg_editorPane_img.setPreferredSize(new Dimension(300, 500));
+		tranimg_editorPane_img.setContentType("text/html");
+		tranimg_editorPane_img.setPreferredSize(new Dimension(300, 400));
 		tranimg_editorPane_img.setEditable(false);
-		tranimg_panel_preview.add(tranimg_editorPane_img, "cell 0 1 2 1,grow");
+		tranimg_panel_preview.add(tranimg_editorPane_img, "cell 0 4 2 1,grow");
+		
+		tranimg_editorPane_img.setText("<Html><img src='http://14.38.161.45:7080/0000001/1234.jpg' border='0' width='300' height='400' ></Html>");
 		
 		tranimg_label_linkurl = new JLabel("\uB9C1\uD06C URL");
-		tranimg_panel_preview.add(tranimg_label_linkurl, "cell 0 2,alignx trailing");
+		tranimg_panel_preview.add(tranimg_label_linkurl, "cell 0 5,alignx trailing");
 		
 		tranimg_text_linkurl = new JTextField();
-		tranimg_panel_preview.add(tranimg_text_linkurl, "cell 1 2,growx");
-		tranimg_text_linkurl.setColumns(10);
+		tranimg_panel_preview.add(tranimg_text_linkurl, "cell 1 5,growx");
+		tranimg_text_linkurl.setColumns(35);
+		
+		tranimg_label_imgpath = new JLabel("Path");
+		tranimg_panel_preview.add(tranimg_label_imgpath, "cell 0 6,alignx trailing");
+		
+		tranimg_label_imgpath.setText("FTP");
+		
+		tranimg_text_imgpath = new JTextField();
+		tranimg_text_imgpath.setEnabled(false);
+		tranimg_text_imgpath.setEditable(false);
+		tranimg_panel_preview.add(tranimg_text_imgpath, "cell 1 6,growx");
+		tranimg_text_imgpath.setColumns(10);
+		
+		tranimg_text_imgpath.setText("http://14.38.161.45:7080/0000001/1234.jpg");
 		
 		tranimg_panel_imglist = new JPanel();
 		tranimg_panel_imglist.setBorder(new LineBorder(new Color(0, 0, 0)));
 		tran_panel_img.add(tranimg_panel_imglist, BorderLayout.CENTER);
-		tranimg_panel_imglist.setLayout(new MigLayout("", "[grow][grow][]", "[][][][grow]"));
+		tranimg_panel_imglist.setLayout(new MigLayout("", "[][][grow][][][][][][][][grow][]", "[][][][grow]"));
 		
 		tranimg_label_listtitle = new JLabel("\uC774\uBBF8\uC9C0 \uBAA9\uB85D");
-		tranimg_panel_imglist.add(tranimg_label_listtitle, "cell 0 0");
+		tranimg_label_listtitle.setHorizontalAlignment(SwingConstants.CENTER);
+		tranimg_label_listtitle.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		tranimg_panel_imglist.add(tranimg_label_listtitle, "cell 0 0 12 1,grow");
 		
 		tranimg_label_pcpath = new JLabel("PC \uD3F4\uB354");
 		tranimg_panel_imglist.add(tranimg_label_pcpath, "cell 0 1,alignx trailing");
 		
 		tranimg_text_pcpath = new JTextField();
-		tranimg_panel_imglist.add(tranimg_text_pcpath, "cell 1 1,growx");
+		tranimg_text_pcpath.setEditable(false);
+		tranimg_panel_imglist.add(tranimg_text_pcpath, "cell 1 1 10 1,growx");
 		tranimg_text_pcpath.setColumns(10);
 		
 		tranimg_btn_pcpath = new JButton("\uD3F4\uB354\uAC80\uC0C9");
-		tranimg_panel_imglist.add(tranimg_btn_pcpath, "cell 2 1,growx");
+		tranimg_panel_imglist.add(tranimg_btn_pcpath, "cell 11 1,growx");
 		
 		tranimg_label_ftptitle = new JLabel("FTP \uC9C0\uC815\uD3F4\uB354 \uC774\uBBF8\uC9C0 \uAC00\uC838\uC624\uAE30");
-		tranimg_panel_imglist.add(tranimg_label_ftptitle, "cell 1 2");
+		tranimg_label_ftptitle.setHorizontalAlignment(SwingConstants.CENTER);
+		tranimg_panel_imglist.add(tranimg_label_ftptitle, "cell 0 2 2 1,grow");
+		
+		btnNewButton_1 = new JButton("\u25C0");
+		tranimg_panel_imglist.add(btnNewButton_1, "cell 3 2");
+		
+		tranimg_label_nowpage = new JLabel("0");
+		tranimg_panel_imglist.add(tranimg_label_nowpage, "cell 5 2");
+		
+		tranimg_label_sp = new JLabel("/");
+		tranimg_panel_imglist.add(tranimg_label_sp, "cell 6 2");
+		
+		tranimg_label_totalpage = new JLabel("0");
+		tranimg_panel_imglist.add(tranimg_label_totalpage, "cell 7 2");
+		
+		btnNewButton = new JButton("\u25B6");
+		tranimg_panel_imglist.add(btnNewButton, "cell 9 2");
 		
 		tranimg_btn_ftppath = new JButton("FTP\uAC80\uC0C9");
-		tranimg_panel_imglist.add(tranimg_btn_ftppath, "cell 2 2,growx");
+		tranimg_btn_ftppath.addActionListener(this);
+		tranimg_panel_imglist.add(tranimg_btn_ftppath, "cell 11 2,growx");
 		
 		tranimg_scroll_imglist = new JScrollPane();
 		tranimg_scroll_imglist.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		tranimg_panel_imglist.add(tranimg_scroll_imglist, "cell 0 3 3 1,grow");
+		tranimg_panel_imglist.add(tranimg_scroll_imglist, "cell 0 3 12 1,grow");
+		
+		tranimg_scroll_imglist.getVerticalScrollBar().setUnitIncrement(30);
 		
 		tranimg_panel_imgview = new JPanel();
 		tranimg_scroll_imglist.setViewportView(tranimg_panel_imgview);
@@ -1706,9 +1807,6 @@ public class Event_Manage extends JPanel implements ActionListener {
 			dtm_msglist.addRow(v);
 			i++;
 		}		
-		
-		JOptionPane.showMessageDialog(this, "검색 완료");
-		
 	}
 	
 	
@@ -1760,17 +1858,165 @@ public class Event_Manage extends JPanel implements ActionListener {
 	//메세지 전송하기
 	private void pushTranStart(){
 		
-		HashMap<String, Object> push_list = new HashMap<String, Object>();
+		switch(tran_combo_trandata.getSelectedIndex()){			
+		case 0:
+			setPushMessage();
+			break;			
+		case 1:
+			setPushImage();
+			break;
+		case 2:
+			setPushEvent();
+			break;
+		}
 		
-		push_list.put("Title", tranmsg_text_title.getText());
-		push_list.put("Message", tranmsg_textArea_msg.getText());
-		push_list.put("Hp", tran_text_hp.getText());
-		push_list.put("Link", tranmsg_text_linkurl.getText());
-		
-		trans_shopapi.setPushSubimt(push_list);
 	}
 	
+	//푸시 메시지
+	private void setPushMessage(){
+		
+		HashMap<String, Object> push_list = new HashMap<String, Object>();
+		
+		//전송대상 불러오기
+		//가입여부 ALL/Y/N 
+		String mem_only = "";
+		switch(tran_combo_joinyn.getSelectedIndex()){
+		case 0:
+			mem_only = "ALL";
+			break;
+		case 1:
+			mem_only = "N";			
+			break;
+		case 2:
+			mem_only = "Y";
+			break;			
+		}
+		String mem_id = tran_text_memid.getText(); 
+		String mem_hp = tran_text_hp.getText();				
+		
+		//전송할 내용 불러오기
+		String title = tranmsg_text_title.getText();
+		String message = tranmsg_textArea_msg.getText();
+		String img_url = "";
+		String link  = tranmsg_text_linkurl.getText();
+		String event_code = "";
+		
+		//유효성체크
+		if(title.length() <= 0){
+			JOptionPane.showMessageDialog(this, "메세지 제목을 입력해 주세요!!");
+			tranmsg_text_title.requestFocus();
+			return;
+		}
+		
+		if(message.length() <= 0){
+			JOptionPane.showMessageDialog(this, "메세지 내용을 입력해 주세요!!");
+			tranmsg_textArea_msg.requestFocus();
+			return;
+		}
+		
+		push_list.put("Mem_Only", mem_only);
+		push_list.put("Mem_Id", mem_id);
+		push_list.put("Hp", mem_hp);
+		
+		push_list.put("Title", title);
+		push_list.put("Message", message);		
+		push_list.put("Img_Url", img_url);
+		push_list.put("Link", link);
+		push_list.put("Event", event_code);
+		
+		trans_shopapi.setPushSubimt(push_list);		
+	}
 	
+	//푸시 이미지
+	private void setPushImage(){
+		
+		HashMap<String, Object> push_list = new HashMap<String, Object>();
+		
+		//전송대상 불러오기
+		//가입여부 ALL/Y/N 
+		String mem_only = "";
+		switch(tran_combo_joinyn.getSelectedIndex()){
+		case 0:
+			mem_only = "ALL";
+			break;
+		case 1:
+			mem_only = "N";			
+			break;
+		case 2:
+			mem_only = "Y";
+			break;			
+		}
+		String mem_id = tran_text_memid.getText(); 
+		String mem_hp = tran_text_hp.getText();				
+		
+		//전송할 내용 불러오기
+		String title = tranimg_text_title.getText();
+		String message = tranimg_text_title.getText();
+		String img_url = tranimg_text_imgpath.getText();
+		String link  = tranmsg_text_linkurl.getText();
+		String event_code = "";
+		
+		//유효성체크
+		if(title.length() <= 0){
+			JOptionPane.showMessageDialog(this, "메세지 제목을 입력해 주세요!!");
+			tranmsg_text_title.requestFocus();
+			return;
+		}
+			
+		if(img_url.length() <= 0){
+			JOptionPane.showMessageDialog(this, "이미지를 선택해 주세요!!");			
+			return;
+		}
+		
+		if(tranimg_label_imgpath.getText().equals("FTP")){
+			//주소만 불러다가 사용합니다.
+			img_url = "http://14.38.161.45:7080/"+img_url;
+			push_list.put("Img_Url", img_url);
+			System.out.println(img_url);
+		}else{
+			//PC폴더에 있다면 FTP로 UPLoad후 이미지 주소를 불러다 사용합니다.
+			push_list.put("Img_Url", "");
+		}		
+		
+		push_list.put("Mem_Only", mem_only);
+		push_list.put("Mem_Id", mem_id);
+		push_list.put("Hp", mem_hp);
+		
+		push_list.put("Title", title);
+		push_list.put("Message", message);		
+		push_list.put("Img_Url", img_url);
+		push_list.put("Link", link);
+		push_list.put("Event", event_code);
+		
+		trans_shopapi.setPushSubimt(push_list);
+		
+	}
+	
+	//푸시 이벤트
+	private void setPushEvent(){
+		
+		HashMap<String, Object> push_list = new HashMap<String, Object>();
+		
+		//유효성체크를 합니다.		
+		String title = "타이틀";
+		String message = "메세지";
+		String img_url = "";
+		String link = "";
+		String event = "78";	
+		
+		String hp = tran_text_hp.getText();		
+		
+		push_list.put("Title", title);
+		push_list.put("Message", message);
+		push_list.put("Event", event);		
+		push_list.put("Img_Url", img_url);
+		push_list.put("Hp", hp);
+		push_list.put("Link", link);
+		
+		trans_shopapi.setPushSubimt(push_list);
+		
+	}
+		
 	//바이트 단위로 한글을 잘라 냅니다.
     private String setSubString(String str, int cut){
     	int cutByte = cut;
@@ -1791,8 +2037,217 @@ public class Event_Manage extends JPanel implements ActionListener {
        return r_str;    	
     }
 	
-	
-	
+	//FTP폴더에서 이미지를 검색합니다.
+    private void getFTPImage(){
+    	
+    	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    	
+    	//테스트
+    	//String ftp_ip = "14.38.161.45";
+    	//int ftp_port = 8000;
+    	
+    	String ftp_ip = "14.38.161.45";
+    	int ftp_port = 7000;
+    	
+    	String ftp_id = Server_Config.getFTPID();
+    	String ftp_pw = Server_Config.getFTPPW();
+    	String ftp_path = Server_Config.getFTPMARTPATH();
+    	
+    	FTPClient ftpConn = new FTPClient();
+    	
+    	String[] file_list;
+    	try {
+			ftpConn.connect(ftp_ip, ftp_port);			
+			ftpConn.login(ftp_id, ftp_pw);    	
+	    	//테스트 폴더
+			//ftpConn.changeDirectory("image/"+ftp_path);
+	    	ftpConn.changeDirectory(ftp_path);
+			System.out.println(ftpConn.currentDirectory());
+	    	file_list = ftpConn.listNames();
+	    	
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException | FTPDataTransferException | FTPAbortedException | FTPListParseException e) {
+			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(this, e.getMessage());
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));    	
+			return;
+		}
+    	
+    	//판넬 삭제하기
+    	tranimg_panel_imgview.removeAll();    	
+    	
+		if(file_list.length <= 0){
+			
+			tranimg_label_totalpage.setText("0");
+			tranimg_label_nowpage.setText("0");
+			
+			image_total_count = 1;
+			image_page_num = 1;
+			image_page_count = 1;
+			
+			tranimg_panel_imgview.setLayout(new BorderLayout());
+			JLabel label = new JLabel("검색된 이미지가 없습니다.", JLabel.CENTER);
+			tranimg_panel_imgview.add(label, BorderLayout.CENTER);
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			return;
+		}
+		
+		//검색된 이미지를 뿌려줍니다.
+		setImageList(file_list);
+		
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));   	
+		
+    }
+    
+  	//검색된 데이타를 목록으로 변경합니다.
+    private void setImageList(String[] file_list){
+    	
+    	this.repaint();
+    	
+    	Dimension dm = tranimg_scroll_imglist.getSize();    	
+    	int width = (int)dm.getWidth();
+    	int height = (int)dm.getHeight();  	
+    	
+    	System.out.println("W : "+width+" H :"+height);
+    	//수량을 구해 옵니다.
+    	int p = width/150;
+    	int c = height/200*4;    	
+    	System.out.println("W : "+p+" H :"+c);
+    	
+    	tranimg_panel_imgview.setLayout(new GridLayout(0, p));
+    	image_page_listcount = c;    	
+    	
+    	int totalCount = file_list.length;
+    	System.out.println("총 수량 : "+totalCount);
+    	
+    	//총 검색 상품 수량
+    	image_total_count = totalCount;
+    	    	
+    	if(totalCount <= image_page_listcount){
+    		tranimg_label_totalpage.setText(String.valueOf(1));
+    	}else{
+	    	//총 페이지 수량 = 현재수량/한번에 보일 이미지수량
+	    	image_page_count = totalCount/image_page_listcount;
+	    	tranimg_label_totalpage.setText(String.valueOf(image_page_count));    	    	
+    	}
+    	
+    	//한 페이지 10개씩 끊고 나머지 이미지가 있다면 한페이지 더 보이기
+    	if(totalCount%image_page_listcount > 0){
+    		image_page_count++;
+    	}
+    	
+    	//현재페이지 번호
+    	image_page_num = 1;
+    	tranimg_label_nowpage.setText(String.valueOf(image_page_num));   	
+    	    	
+    	int last_number = 0;
+    	
+    	//현재 페이지가 1일때
+    	//현재 페이지가 마지막 페이지 일때 나머지가 있으면 나머지까지만
+    	if(image_page_num == Integer.parseInt(tranimg_label_totalpage.getText())){
+    		//최종 수량을 등록 합니다.
+    		last_number = image_total_count;
+    	}else{
+    		//최종 수량 입니다.
+    		last_number = image_page_num * image_page_listcount;
+    	}
+    	
+    	System.out.println(last_number);
+    	for(int count = (image_page_num * image_page_listcount)-image_page_listcount; count < last_number; count++){
+    		
+    		String file_name = file_list[count].toString();
+    		
+    		String file_path = "";
+    		//수정하기 전입니다. 테스트
+    		//file_path = "http://14.38.161.45:8080/image/"+Server_Config.getFTPMARTPATH()+"/"+file_name; //이미지의 경로
+    		file_path = "http://14.38.161.45:7080/"+Server_Config.getFTPMARTPATH()+"/"+file_name;
+    		System.out.println(file_path);
+    		
+    		//목록리스트를 생성합니다.
+    		tranimg_panel_imgview.add(setImageView("FTP", file_name, file_path));    		
+    		this.repaint();
+    	}
+    }
+        
+    public JPanel setImageView(String gubun, String file_name, String file_path){
+    	    	    	
+    	//이미지 조각을 실행합니다.
+    	//이미지가 보일 조각을 만듭니다.
+    	JPanel panel = new JPanel();
+    	
+    	Box box = Box.createVerticalBox();    	
+    	
+    	JLabel image_show = new JLabel();
+    	box.add(image_show);
+    	
+    	JLabel image_path = new JLabel(setSubString(gubun, 16));
+    	image_path.setFont(new Font("맑은 고딕", Font.BOLD, 12));
+    	box.add(image_path);
+    	
+    	JLabel g_name = new JLabel(setSubString(file_name, 14));
+    	g_name.setFont(new Font("맑은 고딕", Font.BOLD, 11));
+    	box.add(g_name);
+    	
+    	JButton file_choose = new JButton("선택");    	    	
+    	file_choose.addActionListener(new ActionListener() { 
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				//이미지 선택 버튼 바로 써져야 합니다.
+				setImageChoose(gubun, file_name);
+			}
+		});
+    	
+    	JButton file_delete = new JButton("삭제");
+    	file_delete.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				deleteImageChooseFile(gubun, file_path);
+			}
+		});
+    	    	
+    	JPanel jp = new JPanel(new MigLayout("", "[][]", "[]"));
+    	jp.add(file_choose, "cell 0 0, grow");
+    	jp.add(file_delete, "cell 1 0, grow");
+    	
+    	box.add(jp, Box.CENTER_ALIGNMENT);
+      	panel.add(box);
+    	
+    	Image image = null;
+    	try{	    	
+	        URL url = new URL(file_path);
+	        image = ImageIO.read(url);
+        } catch (IOException e) {
+        	JOptionPane.showMessageDialog(this, e.getMessage());
+        	this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        }                
+       	image_show.setIcon(new ImageIcon(image.getScaledInstance(150, 200, Image.SCALE_SMOOTH)));
+       	
+       	return panel;
+    }    
+    
+    
+    //파일 선택 시 미리보기 화면으로 옮기기
+    private void setImageChoose(String gubun, String file_name){    
+    	System.out.println("선택된 곳 : "+gubun+" 선택된 파일명 : "+file_name);
+    	String path = "";
+    	
+    	if(gubun.equals("FTP")){
+    		path = "<Html><img src='http://14.38.161.45:7080/"+Server_Config.getFTPMARTPATH()+"/"+file_name+"' border=0 width='300' height='400' alt=''></html>";
+    	}
+    	
+    	tranimg_editorPane_img.setText(path);
+    	tranimg_text_imgpath.setText(Server_Config.getFTPMARTPATH()+"/"+file_name);
+    }
+        
+    //선택된 파일 FTP폴더에서 삭제 하기
+    private void deleteImageChooseFile(String gubun, String file_path){
+    	
+    	System.out.println("선택된 곳 : "+gubun+" 선택된 파일명 : "+file_path);
+    	
+    }
+    
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
@@ -1822,6 +2277,11 @@ public class Event_Manage extends JPanel implements ActionListener {
 			break;
 		case "메세지검색":
 			getMessageList();			
+			break;
+		case "FTP검색":
+			getFTPImage();
+			break;			
+		case "폴더검색":			
 			break;
 		}
 	}

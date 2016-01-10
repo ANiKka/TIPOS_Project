@@ -605,12 +605,12 @@ public class Trans_ShopAPI {
 		String push_title = (String)push_list.get("Title");
 		String push_msg = (String)push_list.get("Message");
 		String push_link = (String)push_list.get("Link");
-		String push_url = "";
-		String event_idx = "";
+		String push_url = (String)push_list.get("Img_Url");
+		String event_idx = (String)push_list.get("Event");
 		
-		String mem_id = "";
+		String mem_id = (String)push_list.get("Mem_Id");
 		String memlv = "";
-		String mem_only = "ALL";
+		String mem_only = (String)push_list.get("Mem_Only");
 		String hp_num = (String)push_list.get("Hp");
 		
 		
