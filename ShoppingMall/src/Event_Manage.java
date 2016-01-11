@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.SampleModel;
 import java.io.*;
 import java.net.*;
 import java.text.ParseException;
@@ -9,6 +10,8 @@ import java.util.*;
 import javax.imageio.*;
 import javax.swing.*;
 import javax.swing.border.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.*;
 
 import org.json.simple.*;
@@ -18,6 +21,7 @@ import com.toedter.calendar.*;
 
 import it.sauronsoftware.ftp4j.*;
 import net.miginfocom.swing.*;
+import sun.net.smtp.SmtpProtocolException;
 
 public class Event_Manage extends JPanel implements ActionListener {
 		
@@ -162,6 +166,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 	private JButton tran_btn_datadown;
 	private JButton tran_btn_dataup;
 		
+	private String[] tran_strarr_filelist;
 	//이미지 총 수량
 	private int image_total_count=0;
 	//현재 페이지 번호
@@ -174,8 +179,8 @@ public class Event_Manage extends JPanel implements ActionListener {
 	private JLabel tranimg_label_nowpage;
 	private JLabel tranimg_label_sp;
 	private JLabel tranimg_label_totalpage;
-	private JButton btnNewButton;
-	private JButton btnNewButton_1;
+	private JButton tranimg_btn_pageup;
+	private JButton tranimg_btn_pagedown;
 	
 	public Event_Manage() {
 		
@@ -990,7 +995,8 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tranmsg_panel_msg.add(tranmsg_text_linkurl, "cell 1 7 2 1,growx");
 		tranmsg_text_linkurl.setColumns(20);
 		
-		tranmsg_btn_msgsave = new JButton("\uBA54\uC81C\uC9C0 \uC800\uC7A5");
+		tranmsg_btn_msgsave = new JButton("\uBA54\uC138\uC9C0 \uC800\uC7A5");
+		tranmsg_btn_msgsave.addActionListener(this);		
 		tranmsg_panel_msg.add(tranmsg_btn_msgsave, "cell 2 8");
 		
 		tranmsg_label_msginfo = new JLabel("\uC815\uC0C1\uCD9C\uB825");
@@ -1107,14 +1113,28 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tranimg_text_pcpath.setColumns(10);
 		
 		tranimg_btn_pcpath = new JButton("\uD3F4\uB354\uAC80\uC0C9");
+		tranimg_btn_pcpath.addActionListener(this);
 		tranimg_panel_imglist.add(tranimg_btn_pcpath, "cell 11 1,growx");
 		
 		tranimg_label_ftptitle = new JLabel("FTP \uC9C0\uC815\uD3F4\uB354 \uC774\uBBF8\uC9C0 \uAC00\uC838\uC624\uAE30");
 		tranimg_label_ftptitle.setHorizontalAlignment(SwingConstants.CENTER);
 		tranimg_panel_imglist.add(tranimg_label_ftptitle, "cell 0 2 2 1,grow");
 		
-		btnNewButton_1 = new JButton("\u25C0");
-		tranimg_panel_imglist.add(btnNewButton_1, "cell 3 2");
+		tranimg_btn_pagedown = new JButton("\u25C0");
+		tranimg_btn_pagedown.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+		    	System.out.println("페이지다운");
+		    	if(image_page_num > 1){
+		    		image_page_num--;
+		    		tranimg_label_nowpage.setText(String.valueOf(image_page_num));
+		    		setImageList();
+		    	}
+		    	System.out.println(image_page_num);
+			    
+			}
+		});
+		tranimg_panel_imglist.add(tranimg_btn_pagedown, "cell 3 2");
 		
 		tranimg_label_nowpage = new JLabel("0");
 		tranimg_panel_imglist.add(tranimg_label_nowpage, "cell 5 2");
@@ -1125,8 +1145,19 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tranimg_label_totalpage = new JLabel("0");
 		tranimg_panel_imglist.add(tranimg_label_totalpage, "cell 7 2");
 		
-		btnNewButton = new JButton("\u25B6");
-		tranimg_panel_imglist.add(btnNewButton, "cell 9 2");
+		tranimg_btn_pageup = new JButton("\u25B6");
+		tranimg_btn_pageup.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("페이지업" +image_page_num+" "+image_page_count);
+		    	if( image_page_num < image_page_count ){    		
+		    		image_page_num++;		    		
+		    		tranimg_label_nowpage.setText(String.valueOf(image_page_num));
+		    		setImageList();
+		    	}    	
+		    	System.out.println(image_page_num);	
+			}
+		});
+		tranimg_panel_imglist.add(tranimg_btn_pageup, "cell 9 2");
 		
 		tranimg_btn_ftppath = new JButton("FTP\uAC80\uC0C9");
 		tranimg_btn_ftppath.addActionListener(this);
@@ -1795,8 +1826,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		ArrayList<HashMap<String, String>> temp_msg = ms_connect.connection(query);
 		
 		Iterator<HashMap<String, String>> itr_list = temp_msg.iterator();
-		
-		int i = 1;
+				
 		while(itr_list.hasNext()){			
 			HashMap<String, String> map = itr_list.next();
 			Vector<Object> v = new Vector<Object>();			
@@ -1804,12 +1834,46 @@ public class Event_Manage extends JPanel implements ActionListener {
 			v.addElement(map.get("SMS_Memo"));
 			v.addElement(map.get("Write_Date"));
 			
-			dtm_msglist.addRow(v);
-			i++;
+			dtm_msglist.addRow(v);		
 		}		
 	}
 	
-	
+	//보낼메세지를 저장합니다.
+	private void setMessageSave(){
+		
+		//내용이 저장되어 있는지 확인 합니다.
+		String msg = tranmsg_textArea_msg.getText();
+				
+		if(msg.length() <= 0){			
+			JOptionPane.showMessageDialog(this, "메세지 내용을 입력해 주세요!");
+			return;
+		}
+		
+		//순번을 불러옵니다.
+		String query = "Select ISNULL(Max(Sms_Num), 0) Num From Sms_Msg";
+		
+		ms_connect.setMainSetting();
+		HashMap<String, String> map = ms_connect.selectQueryOne(query);
+		
+		int max_num = Integer.parseInt(map.get("Num")) + 1;
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");		
+		String today = sdf.format(new Date());
+		
+		query = "Insert Into SMS_Msg (SMS_Num,SMS_Memo, Write_Date,Edit_Date, Writer,Editor) Values("
+				+max_num+", '"+msg+"', '"+today+"', '"+today+"', 'shop', 'shop')";
+		
+		int result = ms_connect.connect_update(query);
+		
+		switch(result){
+		case 0:
+			JOptionPane.showMessageDialog(this, "등록 완료 했습니다.");
+			break;
+		default:
+			JOptionPane.showMessageDialog(this, "저장 실패");
+			break;						
+		}				
+	}
 	
 	//그룹버튼 불러가기
 	private int getRadioButtonSelect(ButtonGroup btng){
@@ -2036,6 +2100,50 @@ public class Event_Manage extends JPanel implements ActionListener {
 
        return r_str;    	
     }
+    
+    //PC폴더에서 이미지를 검색합니다.
+    private void getPCImage(){
+    	
+    	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    	
+    	JFileChooser jfiledialog = new JFileChooser();		
+		int ret = 0;
+		    	
+		jfiledialog.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("JPG & PNG Images", "jpg", "png");
+		jfiledialog.setFileFilter(filter);
+		
+		//파일선택 창을 띄웁니다.	
+		ret = jfiledialog.showOpenDialog(this);
+		System.out.println("결과 보기 : "+ret);
+		
+		if(ret == JFileChooser.APPROVE_OPTION){
+			
+			File file = jfiledialog.getSelectedFile();
+			if(file.isDirectory()){				
+				System.out.println("디렉토리 입니다. : "+file.getAbsolutePath());
+			}else{
+				System.out.println("파일 입니다. : "+file.getName());
+				
+				//현재의 파일을 바로 설정합니다.
+				tranimg_label_imgpath.setText("PC");
+				tranimg_text_imgpath.setText(file.getAbsolutePath());
+				
+				//Label label.set(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_order.png")));
+				String img_path = "<html><img src='"+file.getAbsolutePath()+"' border=0 width=300 height=400 ></html>";
+				tranimg_editorPane_img.setText(img_path);
+				
+				System.out.println(img_path);
+			}
+			
+		}else{
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			return;
+		}
+		
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));    	    	
+    }
 	
 	//FTP폴더에서 이미지를 검색합니다.
     private void getFTPImage(){
@@ -2054,8 +2162,7 @@ public class Event_Manage extends JPanel implements ActionListener {
     	String ftp_path = Server_Config.getFTPMARTPATH();
     	
     	FTPClient ftpConn = new FTPClient();
-    	
-    	String[] file_list;
+    	    	
     	try {
 			ftpConn.connect(ftp_ip, ftp_port);			
 			ftpConn.login(ftp_id, ftp_pw);    	
@@ -2063,7 +2170,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 			//ftpConn.changeDirectory("image/"+ftp_path);
 	    	ftpConn.changeDirectory(ftp_path);
 			System.out.println(ftpConn.currentDirectory());
-	    	file_list = ftpConn.listNames();
+			tran_strarr_filelist = ftpConn.listNames();
 	    	
 		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException | FTPDataTransferException | FTPAbortedException | FTPListParseException e) {
 			// TODO Auto-generated catch block
@@ -2075,7 +2182,7 @@ public class Event_Manage extends JPanel implements ActionListener {
     	//판넬 삭제하기
     	tranimg_panel_imgview.removeAll();    	
     	
-		if(file_list.length <= 0){
+		if(tran_strarr_filelist.length <= 0){
 			
 			tranimg_label_totalpage.setText("0");
 			tranimg_label_nowpage.setText("0");
@@ -2092,44 +2199,46 @@ public class Event_Manage extends JPanel implements ActionListener {
 		}
 		
 		//검색된 이미지를 뿌려줍니다.
-		setImageList(file_list);
+		tranimg_SetImage();
 		
 		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));   	
 		
     }
     
   	//검색된 데이타를 목록으로 변경합니다.
-    private void setImageList(String[] file_list){
+    private void tranimg_SetImage(){
     	
     	this.repaint();
     	
     	Dimension dm = tranimg_scroll_imglist.getSize();    	
-    	int width = (int)dm.getWidth();
-    	int height = (int)dm.getHeight();  	
+    	int width = (int)dm.getWidth();    	  	
     	
-    	System.out.println("W : "+width+" H :"+height);
+    	System.out.println("W : "+width);
     	//수량을 구해 옵니다.
     	int p = width/150;
-    	int c = height/200*4;    	
+    	int c = p*6;    	
     	System.out.println("W : "+p+" H :"+c);
     	
     	tranimg_panel_imgview.setLayout(new GridLayout(0, p));
     	image_page_listcount = c;    	
     	
-    	int totalCount = file_list.length;
+    	int totalCount = tran_strarr_filelist.length;
     	System.out.println("총 수량 : "+totalCount);
     	
     	//총 검색 상품 수량
     	image_total_count = totalCount;
     	    	
-    	if(totalCount <= image_page_listcount){
+    	/*if(totalCount <= image_page_listcount){
     		tranimg_label_totalpage.setText(String.valueOf(1));
     	}else{
 	    	//총 페이지 수량 = 현재수량/한번에 보일 이미지수량
 	    	image_page_count = totalCount/image_page_listcount;
 	    	tranimg_label_totalpage.setText(String.valueOf(image_page_count));    	    	
-    	}
+    	}*/
     	
+    	//총 페이지 수량
+    	image_page_count = totalCount/image_page_listcount;
+    	    	
     	//한 페이지 10개씩 끊고 나머지 이미지가 있다면 한페이지 더 보이기
     	if(totalCount%image_page_listcount > 0){
     		image_page_count++;
@@ -2137,9 +2246,22 @@ public class Event_Manage extends JPanel implements ActionListener {
     	
     	//현재페이지 번호
     	image_page_num = 1;
-    	tranimg_label_nowpage.setText(String.valueOf(image_page_num));   	
-    	    	
+    	//tranimg_label_nowpage.setText(String.valueOf(image_page_num));   	
+    	
+    	//현재 페이지 및 총페이지 표시
+    	tranimg_label_nowpage.setText(String.valueOf(1));
+    	tranimg_label_totalpage.setText(String.valueOf(image_page_count));
+    	System.out.println("총 페이지 수량 : "+image_page_count);
+    	
+    	setImageList();
+    }
+    	
+    private void setImageList(){
+    	
     	int last_number = 0;
+    	
+    	//판넬 초기화
+    	tranimg_panel_imgview.removeAll();
     	
     	//현재 페이지가 1일때
     	//현재 페이지가 마지막 페이지 일때 나머지가 있으면 나머지까지만
@@ -2154,13 +2276,13 @@ public class Event_Manage extends JPanel implements ActionListener {
     	System.out.println(last_number);
     	for(int count = (image_page_num * image_page_listcount)-image_page_listcount; count < last_number; count++){
     		
-    		String file_name = file_list[count].toString();
+    		String file_name = tran_strarr_filelist[count].toString();
     		
     		String file_path = "";
     		//수정하기 전입니다. 테스트
     		//file_path = "http://14.38.161.45:8080/image/"+Server_Config.getFTPMARTPATH()+"/"+file_name; //이미지의 경로
     		file_path = "http://14.38.161.45:7080/"+Server_Config.getFTPMARTPATH()+"/"+file_name;
-    		System.out.println(file_path);
+    		//System.out.println(file_path);
     		
     		//목록리스트를 생성합니다.
     		tranimg_panel_imgview.add(setImageView("FTP", file_name, file_path));    		
@@ -2251,7 +2373,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
-		String command = e.getActionCommand();
+		String command = e.getActionCommand().trim();
 		
 		switch(command){
 		case "검색":			
@@ -2278,10 +2400,14 @@ public class Event_Manage extends JPanel implements ActionListener {
 		case "메세지검색":
 			getMessageList();			
 			break;
+		case "메세지 저장":
+			setMessageSave();			
+			break;
 		case "FTP검색":
 			getFTPImage();
 			break;			
-		case "폴더검색":			
+		case "폴더검색":	
+			getPCImage();
 			break;
 		}
 	}

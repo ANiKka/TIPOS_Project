@@ -1284,6 +1284,16 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	String path = JOptionPane.showInputDialog("불러올 경로를 입력해 주세요");
     	System.out.println(path);
     	
+    	try{
+    		if(path == null || "".equals(path)) {
+    			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    			return;
+    		}
+    	}catch(NullPointerException e){
+    		e.printStackTrace();
+    		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    		return;
+    	}
     	//서버에서 파일이 존재 하는지 확인 합니다.
     	String query = "Select Barcode From FTP_Image Where Barcode In( ";    	
     	
@@ -3577,8 +3587,10 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	
     	int totalCount =  jtap_image_list.size();
     	System.out.println("총 수량 : "+totalCount);
+    	
     	//총 검색 상품 수량
     	image_total_count = totalCount;
+    	
     	//총 페이지 수량
     	image_page_count = totalCount/image_page_listcount;
     	
