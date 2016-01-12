@@ -1,27 +1,89 @@
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.SampleModel;
-import java.io.*;
-import java.net.*;
+
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.SystemColor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Vector;
 
-import javax.imageio.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.filechooser.FileFilter;
+import javax.imageio.ImageIO;
+import javax.swing.AbstractButton;
+import javax.swing.Box;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 
-import org.json.simple.*;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
-import com.sun.java.swing.plaf.motif.MotifGraphicsUtils;
-import com.toedter.calendar.*;
+import com.toedter.calendar.JDateChooser;
 
-import it.sauronsoftware.ftp4j.*;
-import net.miginfocom.swing.*;
-import sun.net.smtp.SmtpProtocolException;
+import it.sauronsoftware.ftp4j.FTPAbortedException;
+import it.sauronsoftware.ftp4j.FTPClient;
+import it.sauronsoftware.ftp4j.FTPDataTransferException;
+import it.sauronsoftware.ftp4j.FTPException;
+import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
+import it.sauronsoftware.ftp4j.FTPListParseException;
+import net.miginfocom.swing.MigLayout;
+
+
 
 public class Event_Manage extends JPanel implements ActionListener {
 		
@@ -167,6 +229,8 @@ public class Event_Manage extends JPanel implements ActionListener {
 	private JButton tran_btn_dataup;
 		
 	private String[] tran_strarr_filelist;
+	
+	private String GUBUN = "";
 	//이미지 총 수량
 	private int image_total_count=0;
 	//현재 페이지 번호
@@ -181,6 +245,11 @@ public class Event_Manage extends JPanel implements ActionListener {
 	private JLabel tranimg_label_totalpage;
 	private JButton tranimg_btn_pageup;
 	private JButton tranimg_btn_pagedown;
+	private JButton tranimg_btn_msgreset;
+	private JButton tranimg_btn_imgreset;
+	private JButton tranevt_btn_search;
+	
+	private DefaultTableModel dtm_tranevt;
 	
 	public Event_Manage() {
 		
@@ -210,6 +279,14 @@ public class Event_Manage extends JPanel implements ActionListener {
 		//기본 셋팅합니다.
 		tranmsg_text_title.setText(Server_Config.getOFFICENAME());
 		tranimg_text_title.setText(Server_Config.getOFFICENAME());
+		
+		tranimg_btn_imgreset = new JButton("\uC0C8\uB85C\uC785\uB825");
+		tranimg_btn_imgreset.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				msgimg_ReSet();
+			}
+		});
+		tranimg_panel_preview.add(tranimg_btn_imgreset, "cell 2 6");
 		tranevt_text_title.setText(Server_Config.getOFFICENAME());
 				
 	}
@@ -997,6 +1074,14 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		tranmsg_btn_msgsave = new JButton("\uBA54\uC138\uC9C0 \uC800\uC7A5");
 		tranmsg_btn_msgsave.addActionListener(this);		
+		
+		tranimg_btn_msgreset = new JButton("\uC0C8\uB85C\uC785\uB825");
+		tranimg_btn_msgreset.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				msgmsg_ReSet();
+			}
+		});
+		tranmsg_panel_msg.add(tranimg_btn_msgreset, "cell 1 8,aligny top");
 		tranmsg_panel_msg.add(tranmsg_btn_msgsave, "cell 2 8");
 		
 		tranmsg_label_msginfo = new JLabel("\uC815\uC0C1\uCD9C\uB825");
@@ -1051,49 +1136,44 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tranimg_panel_preview = new JPanel();
 		tranimg_panel_preview.setBorder(new LineBorder(new Color(0, 0, 0)));
 		tran_panel_img.add(tranimg_panel_preview, BorderLayout.WEST);
-		tranimg_panel_preview.setLayout(new MigLayout("", "[][200px,grow]", "[][10px][25px][10px][][][][grow]"));
+		tranimg_panel_preview.setLayout(new MigLayout("", "[][200px][grow]", "[][10px][25px][10px][][][][grow]"));
 		
 		tranimg_label_msgtitle = new JLabel("\uBA54\uC138\uC9C0 \uB0B4\uC6A9");
 		tranimg_label_msgtitle.setFont(new Font("맑은 고딕", Font.BOLD, 15));
 		tranimg_label_msgtitle.setHorizontalAlignment(SwingConstants.CENTER);
-		tranimg_panel_preview.add(tranimg_label_msgtitle, "cell 0 0 2 1,grow");
+		tranimg_panel_preview.add(tranimg_label_msgtitle, "cell 0 0 3 1,alignx center,growy");
 		
 		tranimg_label_title = new JLabel("\uC81C\uBAA9");
 		tranimg_panel_preview.add(tranimg_label_title, "cell 0 2,alignx trailing");
 		
 		tranimg_text_title = new JTextField();
 		tranimg_text_title.setAutoscrolls(false);
-		tranimg_panel_preview.add(tranimg_text_title, "cell 1 2,grow");
-		tranimg_text_title.setColumns(35);
+		tranimg_panel_preview.add(tranimg_text_title, "cell 1 2 2 1,grow");
+		tranimg_text_title.setColumns(20);
 		
 		tranimg_editorPane_img = new JEditorPane();
-		tranimg_editorPane_img.setContentType("text/html");
 		tranimg_editorPane_img.setPreferredSize(new Dimension(300, 400));
+		tranimg_editorPane_img.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		tranimg_editorPane_img.setContentType("text/html");
 		tranimg_editorPane_img.setEditable(false);
-		tranimg_panel_preview.add(tranimg_editorPane_img, "cell 0 4 2 1,grow");
-		
-		tranimg_editorPane_img.setText("<Html><img src='http://14.38.161.45:7080/0000001/1234.jpg' border='0' width='300' height='400' ></Html>");
-		
+		tranimg_panel_preview.add(tranimg_editorPane_img, "cell 0 4 3 1,alignx center,growy");
+				
 		tranimg_label_linkurl = new JLabel("\uB9C1\uD06C URL");
 		tranimg_panel_preview.add(tranimg_label_linkurl, "cell 0 5,alignx trailing");
 		
 		tranimg_text_linkurl = new JTextField();
-		tranimg_panel_preview.add(tranimg_text_linkurl, "cell 1 5,growx");
-		tranimg_text_linkurl.setColumns(35);
+		tranimg_panel_preview.add(tranimg_text_linkurl, "cell 1 5 2 1,growx");
+		tranimg_text_linkurl.setColumns(20);
 		
 		tranimg_label_imgpath = new JLabel("Path");
 		tranimg_panel_preview.add(tranimg_label_imgpath, "cell 0 6,alignx trailing");
-		
-		tranimg_label_imgpath.setText("FTP");
 		
 		tranimg_text_imgpath = new JTextField();
 		tranimg_text_imgpath.setEnabled(false);
 		tranimg_text_imgpath.setEditable(false);
 		tranimg_panel_preview.add(tranimg_text_imgpath, "cell 1 6,growx");
 		tranimg_text_imgpath.setColumns(10);
-		
-		tranimg_text_imgpath.setText("http://14.38.161.45:7080/0000001/1234.jpg");
-		
+						
 		tranimg_panel_imglist = new JPanel();
 		tranimg_panel_imglist.setBorder(new LineBorder(new Color(0, 0, 0)));
 		tran_panel_img.add(tranimg_panel_imglist, BorderLayout.CENTER);
@@ -1175,25 +1255,72 @@ public class Event_Manage extends JPanel implements ActionListener {
 		
 		tran_panel_evt = new JPanel();		
 		panel_coupontran_2.add(tran_panel_evt, "event");
-		tran_panel_evt.setLayout(new MigLayout("", "[][grow]", "[][][grow]"));
+		tran_panel_evt.setLayout(new MigLayout("", "[][grow][]", "[][10px][][grow]"));
 		
 		tranevt_label_listtitle = new JLabel("\uD478\uC2DC \uC774\uBCA4\uD2B8 \uBAA9\uB85D");
-		tran_panel_evt.add(tranevt_label_listtitle, "cell 0 0,aligny top");
+		tranevt_label_listtitle.setFont(new Font("맑은 고딕", Font.BOLD, 15));
+		tranevt_label_listtitle.setHorizontalAlignment(SwingConstants.CENTER);
+		tran_panel_evt.add(tranevt_label_listtitle, "cell 0 0 2 1,growx,aligny top");
 		
 		tranevt_label_title = new JLabel("\uC81C\uBAA9");
-		tran_panel_evt.add(tranevt_label_title, "cell 0 1,alignx trailing");
+		tran_panel_evt.add(tranevt_label_title, "cell 0 2,alignx trailing");
 		
 		tranevt_text_title = new JTextField();
-		tran_panel_evt.add(tranevt_text_title, "cell 1 1,growx");
+		tran_panel_evt.add(tranevt_text_title, "cell 1 2,growx");
 		tranevt_text_title.setColumns(10);
 		
-		tranevt_scroll_evtlist = new JScrollPane();
-		tran_panel_evt.add(tranevt_scroll_evtlist, "cell 0 2 2 1,grow");
+		tranevt_btn_search = new JButton("\uAC80\uC0C9");
+		tranevt_btn_search.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				tranevt_EvtCall();
+			}
+		});
+		tran_panel_evt.add(tranevt_btn_search, "cell 2 2");
 		
-		tranevt_table_evtlist = new JTable();
+		tranevt_scroll_evtlist = new JScrollPane();
+		tran_panel_evt.add(tranevt_scroll_evtlist, "cell 0 3 3 1,grow");
+		
+		String[] title = {"고유번호", "제목", "메세지", "형태"}; 
+		dtm_tranevt = new DefaultTableModel(null, title);
+		
+		tranevt_table_evtlist = new JTable(dtm_tranevt);
+		tranevt_table_evtlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tranevt_scroll_evtlist.setViewportView(tranevt_table_evtlist);
 		
-		
+		JTableHeader header_uselist = tranevt_table_evtlist.getTableHeader();
+	    Dimension d_uselist = header_uselist.getPreferredSize();
+	    d_uselist.height = 40;
+	    header_uselist.setPreferredSize(d_uselist);
+	    
+	    DefaultTableCellRenderer celAlignCenter = new DefaultTableCellRenderer();
+		celAlignCenter.setHorizontalAlignment(JLabel.CENTER);
+	    
+	    //쿠폰 리스트헤더 부분 중앙정렬
+	    ((DefaultTableCellRenderer)tranevt_table_evtlist.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(0);
+	    
+	    tranevt_table_evtlist.setRowHeight(25);
+	    tranevt_table_evtlist.getTableHeader().setReorderingAllowed(false);  //이동불가	    
+	    //center_table_couponlist.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);  //가로 스크롤	    
+	    
+	    TableColumnModel tcm_evtlist = tranevt_table_evtlist.getColumnModel();
+
+        //tcm_uselist.getColumn(0).setMaxWidth(Integer.MAX_VALUE);
+	    tcm_evtlist.getColumn(0).setWidth(40);
+	    tcm_evtlist.getColumn(0).setCellRenderer(celAlignCenter);
+	    tcm_evtlist.getColumn(0).setPreferredWidth(40);
+
+	    //tcm_uselist.getColumn(1).setMaxWidth(Integer.MAX_VALUE);
+	    tcm_evtlist.getColumn(1).setWidth(100);	    
+	    tcm_evtlist.getColumn(1).setCellRenderer(celAlignCenter);
+	    tcm_evtlist.getColumn(1).setPreferredWidth(100);
+	    	    
+	    tcm_evtlist.getColumn(2).setWidth(300);	    
+	    tcm_evtlist.getColumn(2).setCellRenderer(celAlignCenter);
+	    tcm_evtlist.getColumn(2).setPreferredWidth(300);
+	    
+	    tcm_evtlist.getColumn(3).setWidth(60);	    
+	    tcm_evtlist.getColumn(3).setCellRenderer(celAlignCenter);
+	    tcm_evtlist.getColumn(3).setPreferredWidth(60);
 		
 	}
 		
@@ -1939,6 +2066,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 	//푸시 메시지
 	private void setPushMessage(){
 		
+		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		HashMap<String, Object> push_list = new HashMap<String, Object>();
 		
 		//전송대상 불러오기
@@ -1969,12 +2097,14 @@ public class Event_Manage extends JPanel implements ActionListener {
 		if(title.length() <= 0){
 			JOptionPane.showMessageDialog(this, "메세지 제목을 입력해 주세요!!");
 			tranmsg_text_title.requestFocus();
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;
 		}
 		
 		if(message.length() <= 0){
 			JOptionPane.showMessageDialog(this, "메세지 내용을 입력해 주세요!!");
 			tranmsg_textArea_msg.requestFocus();
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;
 		}
 		
@@ -1988,12 +2118,17 @@ public class Event_Manage extends JPanel implements ActionListener {
 		push_list.put("Link", link);
 		push_list.put("Event", event_code);
 		
-		trans_shopapi.setPushSubimt(push_list);		
+		JSONObject result = trans_shopapi.setPushSubimt(push_list);
+		
+		String res = "<Html>"+result.get("result_msg")+"<br>"+result.get("result_cnt")+" 건 발송됨</Html>";
+		JOptionPane.showMessageDialog(this, res);
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 	
 	//푸시 이미지
 	private void setPushImage(){
 		
+		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		HashMap<String, Object> push_list = new HashMap<String, Object>();
 		
 		//전송대상 불러오기
@@ -2010,13 +2145,14 @@ public class Event_Manage extends JPanel implements ActionListener {
 			mem_only = "Y";
 			break;			
 		}
+		
 		String mem_id = tran_text_memid.getText(); 
 		String mem_hp = tran_text_hp.getText();				
 		
 		//전송할 내용 불러오기
 		String title = tranimg_text_title.getText();
-		String message = tranimg_text_title.getText();
-		String img_url = tranimg_text_imgpath.getText();
+		String message = tranimg_text_title.getText();		
+		String img_url = tranimg_text_imgpath.getText();		
 		String link  = tranmsg_text_linkurl.getText();
 		String event_code = "";
 		
@@ -2024,22 +2160,68 @@ public class Event_Manage extends JPanel implements ActionListener {
 		if(title.length() <= 0){
 			JOptionPane.showMessageDialog(this, "메세지 제목을 입력해 주세요!!");
 			tranmsg_text_title.requestFocus();
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;
 		}
 			
 		if(img_url.length() <= 0){
 			JOptionPane.showMessageDialog(this, "이미지를 선택해 주세요!!");			
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return;
 		}
 		
+		//선택이미지 구분
 		if(tranimg_label_imgpath.getText().equals("FTP")){
 			//주소만 불러다가 사용합니다.
-			img_url = "http://14.38.161.45:7080/"+img_url;
+			img_url = "http://14.38.161.45:8080/image/"+img_url;
 			push_list.put("Img_Url", img_url);
 			System.out.println(img_url);
 		}else{
+			
 			//PC폴더에 있다면 FTP로 UPLoad후 이미지 주소를 불러다 사용합니다.
+			String img_path = tranimg_text_pcpath.getText();
+			
+			//테스트
+	    	String ftp_ip = "14.38.161.45";
+	    	int ftp_port = 8000;
+	    	
+	    	//String ftp_ip = "14.38.161.45";
+	    	//int ftp_port = 7000;
+	    	
+	    	String ftp_id = Server_Config.getFTPID();
+	    	String ftp_pw = Server_Config.getFTPPW();
+	    	String ftp_path = Server_Config.getFTPMARTPATH();
+	    	
+	    	FTPClient ftpConn = new FTPClient();
+	    	    	
+	    	try {
+				ftpConn.connect(ftp_ip, ftp_port);			
+				ftpConn.login(ftp_id, ftp_pw);    	
+		    	//테스트 폴더
+				ftpConn.changeDirectory("image/"+ftp_path);		    	
+				System.out.println(ftpConn.currentDirectory());
+				
+				String[] file_name = ftpConn.listNames();
+				
+				for(String name:file_name){
+					if(name.equals(img_url)){
+						ftpConn.deleteFile(name);
+					}
+				}
+				File file = new File(img_path, img_url);
+				ftpConn.upload(file);
+		    	
+			} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException | FTPDataTransferException | FTPAbortedException | FTPListParseException e) {
+				// TODO Auto-generated catch block
+				JOptionPane.showMessageDialog(this, e.getMessage());
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));    	
+				return;
+			}
+	    	
+			img_url = "http://14.38.161.45:8080/image/"+Server_Config.getFTPMARTPATH()+"/"+img_url;
 			push_list.put("Img_Url", "");
+			
+			
 		}		
 		
 		push_list.put("Mem_Only", mem_only);
@@ -2047,38 +2229,71 @@ public class Event_Manage extends JPanel implements ActionListener {
 		push_list.put("Hp", mem_hp);
 		
 		push_list.put("Title", title);
-		push_list.put("Message", message);		
+		push_list.put("Message", message);
 		push_list.put("Img_Url", img_url);
 		push_list.put("Link", link);
 		push_list.put("Event", event_code);
 		
-		trans_shopapi.setPushSubimt(push_list);
+		JSONObject result = trans_shopapi.setPushSubimt(push_list);		
+		String res = "<Html>"+result.get("result_msg")+"<br>"+result.get("result_cnt")+" 건 발송됨</Html>";
+		JOptionPane.showMessageDialog(this, res);
 		
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 	
 	//푸시 이벤트
 	private void setPushEvent(){
 		
-		HashMap<String, Object> push_list = new HashMap<String, Object>();
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		
-		//유효성체크를 합니다.		
-		String title = "타이틀";
-		String message = "메세지";
+		int row = tranevt_table_evtlist.getSelectedRow();
+		
+		if(row < 0){
+			JOptionPane.showMessageDialog(this, "전송할 이벤트를 선택해 주세요!!");
+			return;
+		}
+		
+		HashMap<String, Object> push_list = new HashMap<String, Object>();		
+		
+		//전송대상 불러오기
+		//가입여부 ALL/Y/N 
+		String mem_only = "";
+		switch(tran_combo_joinyn.getSelectedIndex()){
+		case 0:
+			mem_only = "ALL";
+			break;
+		case 1:
+			mem_only = "N";
+			break;
+		case 2:
+			mem_only = "Y";
+			break;
+		}
+		
+		String mem_id = tran_text_memid.getText(); 
+		String mem_hp = tran_text_hp.getText();				
+		
+		//유효성체크를 합니다.	
+		String title = (String)dtm_tranevt.getValueAt(row, 1);
+		String message = (String)dtm_tranevt.getValueAt(row, 2);
 		String img_url = "";
 		String link = "";
-		String event = "78";	
+		String event_code = (String)dtm_tranevt.getValueAt(row, 0);	
 		
-		String hp = tran_text_hp.getText();		
+		push_list.put("Mem_Only", mem_only);
+		push_list.put("Mem_Id", mem_id);
+		push_list.put("Hp", mem_hp);
 		
 		push_list.put("Title", title);
 		push_list.put("Message", message);
-		push_list.put("Event", event);		
 		push_list.put("Img_Url", img_url);
-		push_list.put("Hp", hp);
 		push_list.put("Link", link);
+		push_list.put("Event", event_code);
 		
-		trans_shopapi.setPushSubimt(push_list);
-		
+		JSONObject result = trans_shopapi.setPushSubimt(push_list);		
+		String res = "<Html>"+result.get("result_msg")+"<br>"+result.get("result_cnt")+" 건 발송됨</Html>";
+		JOptionPane.showMessageDialog(this, res);
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));	
 	}
 		
 	//바이트 단위로 한글을 잘라 냅니다.
@@ -2105,13 +2320,19 @@ public class Event_Manage extends JPanel implements ActionListener {
     private void getPCImage(){
     	
     	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    	GUBUN = "PC";
+    	String pcpath = tranimg_text_pcpath.getText();
     	
     	JFileChooser jfiledialog = new JFileChooser();		
 		int ret = 0;
 		    	
 		jfiledialog.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("JPG & PNG Images", "jpg", "png");
+		if(!(pcpath == null || "".equals(pcpath))){			
+			jfiledialog.setCurrentDirectory(new File(pcpath).getParentFile());
+		}
+		
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("JPG & PNG Images", "jpg", "png", "gif");
 		jfiledialog.setFileFilter(filter);
 		
 		//파일선택 창을 띄웁니다.	
@@ -2123,18 +2344,58 @@ public class Event_Manage extends JPanel implements ActionListener {
 			File file = jfiledialog.getSelectedFile();
 			if(file.isDirectory()){				
 				System.out.println("디렉토리 입니다. : "+file.getAbsolutePath());
+				FilenameFilter fil = new FilenameFilter() {
+					private final String[] okfile = new String[] {"jpg", "png", "gif"};
+					
+					@Override
+					public boolean accept(File dir, String name) {
+						// TODO Auto-generated method stub
+						
+						for(String ok: okfile){
+							if(name.toLowerCase().endsWith(ok)){
+								return true;
+							}
+						}
+						
+						return false;
+					}
+				};
+				
+				tran_strarr_filelist = file.list(fil);
+				
+				//판넬 삭제하기
+		    	tranimg_panel_imgview.removeAll();    	
+		    	
+				if(tran_strarr_filelist.length <= 0){
+					
+					tranimg_label_totalpage.setText("0");
+					tranimg_label_nowpage.setText("0");
+					
+					image_total_count = 1;
+					image_page_num = 1;
+					image_page_count = 1;
+					
+					tranimg_panel_imgview.setLayout(new BorderLayout());
+					JLabel label = new JLabel("검색된 이미지가 없습니다.", JLabel.CENTER);
+					tranimg_panel_imgview.add(label, BorderLayout.CENTER);
+					this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+					return;
+				}
+				
+				//검색된 이미지를 뿌려줍니다.
+				tranimg_text_pcpath.setText(file.getPath());
+				tranimg_SetImage();				
+				
 			}else{
 				System.out.println("파일 입니다. : "+file.getName());
 				
 				//현재의 파일을 바로 설정합니다.
 				tranimg_label_imgpath.setText("PC");
-				tranimg_text_imgpath.setText(file.getAbsolutePath());
+				tranimg_text_imgpath.setText(file.getName());
+				tranimg_text_pcpath.setText(file.getParent());
+				String str = "<html><img src='file:"+file.getAbsolutePath()+"' width=300 height=400 alt='' border=0 ></html>";
 				
-				//Label label.set(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_order.png")));
-				String img_path = "<html><img src='"+file.getAbsolutePath()+"' border=0 width=300 height=400 ></html>";
-				tranimg_editorPane_img.setText(img_path);
-				
-				System.out.println(img_path);
+				tranimg_editorPane_img.setText(str);
 			}
 			
 		}else{
@@ -2150,12 +2411,13 @@ public class Event_Manage extends JPanel implements ActionListener {
     	
     	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     	
+    	GUBUN = "FTP";
     	//테스트
-    	//String ftp_ip = "14.38.161.45";
-    	//int ftp_port = 8000;
-    	
     	String ftp_ip = "14.38.161.45";
-    	int ftp_port = 7000;
+    	int ftp_port = 8000;
+    	
+    	//String ftp_ip = "14.38.161.45";
+    	//int ftp_port = 7000;
     	
     	String ftp_id = Server_Config.getFTPID();
     	String ftp_pw = Server_Config.getFTPPW();
@@ -2167,8 +2429,8 @@ public class Event_Manage extends JPanel implements ActionListener {
 			ftpConn.connect(ftp_ip, ftp_port);			
 			ftpConn.login(ftp_id, ftp_pw);    	
 	    	//테스트 폴더
-			//ftpConn.changeDirectory("image/"+ftp_path);
-	    	ftpConn.changeDirectory(ftp_path);
+			ftpConn.changeDirectory("image/"+ftp_path);
+	    	//ftpConn.changeDirectory(ftp_path);
 			System.out.println(ftpConn.currentDirectory());
 			tran_strarr_filelist = ftpConn.listNames();
 	    	
@@ -2209,21 +2471,22 @@ public class Event_Manage extends JPanel implements ActionListener {
     private void tranimg_SetImage(){
     	
     	this.repaint();
+    	msgimg_ReSet();
     	
     	Dimension dm = tranimg_scroll_imglist.getSize();    	
     	int width = (int)dm.getWidth();    	  	
     	
-    	System.out.println("W : "+width);
+    	//System.out.println("W : "+width);
     	//수량을 구해 옵니다.
     	int p = width/150;
     	int c = p*6;    	
-    	System.out.println("W : "+p+" H :"+c);
+    	//System.out.println("W : "+p+" H :"+c);
     	
     	tranimg_panel_imgview.setLayout(new GridLayout(0, p));
     	image_page_listcount = c;    	
     	
     	int totalCount = tran_strarr_filelist.length;
-    	System.out.println("총 수량 : "+totalCount);
+    	//System.out.println("총 수량 : "+totalCount);
     	
     	//총 검색 상품 수량
     	image_total_count = totalCount;
@@ -2251,7 +2514,7 @@ public class Event_Manage extends JPanel implements ActionListener {
     	//현재 페이지 및 총페이지 표시
     	tranimg_label_nowpage.setText(String.valueOf(1));
     	tranimg_label_totalpage.setText(String.valueOf(image_page_count));
-    	System.out.println("총 페이지 수량 : "+image_page_count);
+    	//System.out.println("총 페이지 수량 : "+image_page_count);
     	
     	setImageList();
     }
@@ -2273,7 +2536,7 @@ public class Event_Manage extends JPanel implements ActionListener {
     		last_number = image_page_num * image_page_listcount;
     	}
     	
-    	System.out.println(last_number);
+    	//System.out.println(last_number);
     	for(int count = (image_page_num * image_page_listcount)-image_page_listcount; count < last_number; count++){
     		
     		String file_name = tran_strarr_filelist[count].toString();
@@ -2281,16 +2544,23 @@ public class Event_Manage extends JPanel implements ActionListener {
     		String file_path = "";
     		//수정하기 전입니다. 테스트
     		//file_path = "http://14.38.161.45:8080/image/"+Server_Config.getFTPMARTPATH()+"/"+file_name; //이미지의 경로
-    		file_path = "http://14.38.161.45:7080/"+Server_Config.getFTPMARTPATH()+"/"+file_name;
+    		
+    		if(GUBUN.equals("FTP")){
+    			file_path = "http://14.38.161.45:8080/image/"+Server_Config.getFTPMARTPATH()+"/"+file_name;
+    		}else{
+    			file_path = tranimg_text_pcpath.getText()+"/"+file_name;
+    			//System.out.println("파일이름 : "+file_path);
+    		}
+    		
     		//System.out.println(file_path);
     		
     		//목록리스트를 생성합니다.
-    		tranimg_panel_imgview.add(setImageView("FTP", file_name, file_path));    		
+    		tranimg_panel_imgview.add(setImageView(file_name, file_path));    		
     		this.repaint();
     	}
     }
         
-    public JPanel setImageView(String gubun, String file_name, String file_path){
+    public JPanel setImageView(String file_name, String file_path){
     	    	    	
     	//이미지 조각을 실행합니다.
     	//이미지가 보일 조각을 만듭니다.
@@ -2301,11 +2571,11 @@ public class Event_Manage extends JPanel implements ActionListener {
     	JLabel image_show = new JLabel();
     	box.add(image_show);
     	
-    	JLabel image_path = new JLabel(setSubString(gubun, 16));
+    	JLabel image_path = new JLabel(GUBUN);
     	image_path.setFont(new Font("맑은 고딕", Font.BOLD, 12));
     	box.add(image_path);
     	
-    	JLabel g_name = new JLabel(setSubString(file_name, 14));
+    	JLabel g_name = new JLabel(setSubString(file_name, 22));
     	g_name.setFont(new Font("맑은 고딕", Font.BOLD, 11));
     	box.add(g_name);
     	
@@ -2315,7 +2585,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				//이미지 선택 버튼 바로 써져야 합니다.
-				setImageChoose(gubun, file_name);
+				setImageChoose(file_name);
 			}
 		});
     	
@@ -2325,7 +2595,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				deleteImageChooseFile(gubun, file_path);
+				deleteImageChooseFile(file_name);
 			}
 		});
     	    	
@@ -2338,8 +2608,15 @@ public class Event_Manage extends JPanel implements ActionListener {
     	
     	Image image = null;
     	try{	    	
-	        URL url = new URL(file_path);
-	        image = ImageIO.read(url);
+    		
+    		if(GUBUN.equals("FTP")){
+    			URL url = new URL(file_path);
+    	        image = ImageIO.read(url);
+        	}else{
+        		File file = new File(file_path);
+        		image = ImageIO.read(file);
+        	}         
+	        
         } catch (IOException e) {
         	JOptionPane.showMessageDialog(this, e.getMessage());
         	this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -2351,24 +2628,135 @@ public class Event_Manage extends JPanel implements ActionListener {
     
     
     //파일 선택 시 미리보기 화면으로 옮기기
-    private void setImageChoose(String gubun, String file_name){    
-    	System.out.println("선택된 곳 : "+gubun+" 선택된 파일명 : "+file_name);
+    private void setImageChoose(String file_name){    
+    	System.out.println("선택된 곳 : "+GUBUN+" 선택된 파일명 : "+file_name);
     	String path = "";
+    	String img_path = "";
     	
-    	if(gubun.equals("FTP")){
-    		path = "<Html><img src='http://14.38.161.45:7080/"+Server_Config.getFTPMARTPATH()+"/"+file_name+"' border=0 width='300' height='400' alt=''></html>";
+    	if(GUBUN.equals("FTP")){
+    		path = "<Html><img src='http://14.38.161.45:8080/image/"+Server_Config.getFTPMARTPATH()+"/"+file_name+"' border=0 width='300' height='400' alt=''></html>";
+    		img_path = Server_Config.getFTPMARTPATH()+"/"+file_name;
+    	}else{			
+			path = "<html><img src='file:"+tranimg_text_pcpath.getText()+"/"+file_name+"' width=300 height=400 alt='' border=0 ></html>";
+			img_path = file_name;			
     	}
     	
+    	tranimg_label_imgpath.setText(GUBUN);
     	tranimg_editorPane_img.setText(path);
-    	tranimg_text_imgpath.setText(Server_Config.getFTPMARTPATH()+"/"+file_name);
+    	tranimg_text_imgpath.setText(img_path);
     }
         
     //선택된 파일 FTP폴더에서 삭제 하기
-    private void deleteImageChooseFile(String gubun, String file_path){
+    private void deleteImageChooseFile(String file_name){
     	
-    	System.out.println("선택된 곳 : "+gubun+" 선택된 파일명 : "+file_path);
+    	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    	boolean result = false;
+    	//System.out.println("선택된 곳 : "+GUBUN+" 선택된 파일명 : "+file_name);
+    	if(GUBUN.equals("FTP")){
+        	
+        	//테스트
+        	String ftp_ip = "14.38.161.45";
+        	int ftp_port = 8000;
+        	
+        	String ftp_id = Server_Config.getFTPID();
+        	String ftp_pw = Server_Config.getFTPPW();
+        	String ftp_path = Server_Config.getFTPMARTPATH();
+        	
+        	FTPClient ftpConn = new FTPClient();
+        	    	
+        	try {
+    			ftpConn.connect(ftp_ip, ftp_port);			
+    			ftpConn.login(ftp_id, ftp_pw);    	
+    	    	    			
+    			ftpConn.changeDirectory("image/"+ftp_path);    	    	
+    			System.out.println(ftpConn.currentDirectory());
+    			
+    			String[] file_str = ftpConn.listNames();
+    			for(String name:file_str){
+    				if(name.equals(file_name)){
+    					ftpConn.deleteFile(file_name);
+    					result = true;
+    				}
+    			}    			
+    		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException | FTPDataTransferException | FTPAbortedException | FTPListParseException e) {
+    			// TODO Auto-generated catch block
+    			JOptionPane.showMessageDialog(this, e.getMessage());
+    			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));    	
+    			return;
+    		}
+    	}else{
+    		
+    		//매장 이미지 삭제하기
+    		String file_path = tranimg_text_pcpath.getText();
+    		File file = new File(file_path, file_name);		
+    		if(file.exists()){
+    			file.delete();
+    			result = true;
+    		}    		
+    	}
+    	
+    	if(result){    		
+    		JOptionPane.showMessageDialog(this, "파일을 삭제 했습니다."); 
+    		final List<String> list = new ArrayList<String>();
+    		Collections.addAll(list, tran_strarr_filelist);
+    		list.remove(file_name);
+    		
+    		tran_strarr_filelist = list.toArray(new String[list.size()]);
+    		tranimg_SetImage();
+    		
+    	}
+    	
+    	this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }
+        
+    
+    //이벤트 코드 내용 불러오기
+    private void tranevt_EvtCall(){   	
+    	    		
+		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		//목록을 호출합니다.
+		JSONArray temp_event = trans_shopapi.getPushEventList();
+				
+		dtm_tranevt.setRowCount(0);
+		
+		if(temp_event.size() <= 0){			
+			JOptionPane.showMessageDialog(this, "이벤트 목록 검색에 실패 했습니다.");
+			return;
+		}				
+		
+		for(int i = 0; i < temp_event.size(); i++){
+			JSONObject temp_map = (JSONObject)temp_event.get(i);
+			Vector<Object> v = new Vector<Object>();
+			v.addElement(temp_map.get("idx"));
+			v.addElement(temp_map.get("subject"));
+			v.addElement(temp_map.get("push_msg"));
+			v.addElement(temp_map.get("push_type"));
+			dtm_tranevt.addRow(v);						
+		}		
+		    
+	    this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));		
+    	    	
+    }
+    
+    //이미지 메제지 전송을 리셋합니다.
+    private void msgimg_ReSet(){
+    	    	
+    	tranimg_text_title.setText(Server_Config.getOFFICENAME());
+    	tranimg_editorPane_img.setText("");
+    	tranimg_text_linkurl.setText("");
+    	tranimg_label_imgpath.setText("Path");
+    	tranimg_text_imgpath.setText("");
     	
     }
+    
+    //메세지 전송 리셋
+    private void msgmsg_ReSet(){    	
+    	tranimg_text_title.setText(Server_Config.getOFFICENAME());
+    	tranmsg_textArea_msg.setText("");
+    	tranmsg_text_linkurl.setText("");
+    	tranmsg_label_msginfo.setText(state_y);
+    }
+    
     
 	@Override
 	public void actionPerformed(ActionEvent e) {

@@ -592,7 +592,7 @@ public class Trans_ShopAPI {
 	+ "&push_link=/main&push_img_url=".urlencode('http://sskshop1.anybuild.com/thum_img/sskshop1/goods_img2/85b6f89b41cae26786ac72365fff771b_water_3afcaf174b6d740dcc3f8f859871184e_c1_w320_h320.jpg').""
 	+ "&memlv=&mem_only=ALL&platform=&devicename=&devicemodel=&deviceversion=&hp_num=");*/
 	String push_submit = "https://ssl.anybuild.co.kr/API/app/push_submit.php";
-	public JSONArray setPushSubimt(HashMap<String, Object> push_list){
+	public JSONObject setPushSubimt(HashMap<String, Object> push_list){
 		
 		//환경설정
 		String shop_key = Server_Config.getSHOPKEY();
@@ -617,9 +617,12 @@ public class Trans_ShopAPI {
 		String shop_data = "";
 		try {
 			shop_data = "api_key="+shop_key;
-			shop_data +="&push_title="+URLEncoder.encode(push_title, "UTF-8")+"&push_msg="+URLEncoder.encode(push_msg, "UTF-8")+"&push_link="+URLEncoder.encode(push_link, "UTF-8")
-					+"&push_img_url="+URLEncoder.encode(push_url, "UTF-8")+"&mem_id="+URLEncoder.encode(mem_id, "UTF-8")				
-					+"&memlv="+memlv+"&mem_only="+mem_only+"&platform=&devicename=&devicemodel=&deviceversion=&hp_num="+hp_num+"&event_idx="+event_idx;
+			/*shop_data +="&push_title="+URLEncoder.encode(push_title, "UTF-8")+"&push_msg="+URLEncoder.encode(push_msg, "UTF-8")+"&push_link="+URLEncoder.encode(push_link, "UTF-8")
+					+"&push_img_url="+URLEncoder.encode(push_url, "UTF-8")+"&mem_id="+URLEncoder.encode(mem_id, "UTF-8")
+					+"&memlv="+memlv+"&mem_only="+mem_only+"&platform=&devicename=&devicemodel=&deviceversion=&hp_num="+hp_num+"&event_idx="+event_idx;*/
+			shop_data +="&push_title="+push_title+"&push_msg="+URLEncoder.encode(push_msg, "UTF-8")+"&push_link="+URLEncoder.encode(push_link, "UTF-8")
+			+"&push_img_url="+URLEncoder.encode(push_url, "UTF-8")+"&mem_id="+mem_id
+			+"&memlv="+memlv+"&mem_only="+mem_only+"&platform=&devicename=&devicemodel=&deviceversion=&hp_num="+hp_num+"&event_idx="+event_idx;
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -642,7 +645,7 @@ public class Trans_ShopAPI {
 			}
 		}
 		
-		JSONArray data = new JSONArray();
+		JSONObject object = new JSONObject();;
 		
 		//결과를 전송 합니다.
 		//전송폼을 생성합니다.
@@ -652,7 +655,7 @@ public class Trans_ShopAPI {
 			HttpURLConnection shop_url = (HttpURLConnection)url.openConnection();
 			
 			shop_url.setRequestMethod("POST");					
-			shop_url.setRequestProperty("Accept-Language", "ko-kr,ko;q=0.8,en-us;q=0.5,en;q=0.3");
+			//shop_url.setRequestProperty("Accept-Language", "ko-kr,ko;q=0.8,en-us;q=0.5,en;q=0.3");
 			
 			shop_url.setDoInput(true);
 			shop_url.setDoOutput(true);
@@ -669,20 +672,13 @@ public class Trans_ShopAPI {
 
 			//전송 결과 수신
 			InputStreamReader isr = new InputStreamReader(shop_url.getInputStream(), "UTF-8");	
-			JSONObject object = (JSONObject)JSONValue.parseWithException(isr);							
+			object = (JSONObject)JSONValue.parseWithException(isr);							
 						
 			isr.close();
 			
-			if(object.get("result_code").equals("OK")){		
-				//System.out.println(object.toJSONString());
-				//data = (JSONArray)object.get("result_data");
-				//System.out.println(data.toJSONString());
-			}
-			
 			//결과출력
 			System.out.println(object.toString());
-			
-			
+						
 			SimpleDateFormat formatter = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss", Locale.KOREA );
 			Date currentTime = new Date ( );
 			String dTime = formatter.format ( currentTime );
@@ -717,7 +713,7 @@ public class Trans_ShopAPI {
 			e.printStackTrace();			
 		}
 		
-		return data;
+		return object;
 	}	
 	
 	
