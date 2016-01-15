@@ -908,7 +908,6 @@ public class Event_Manage extends JPanel implements ActionListener {
 		panel_coupontran_1.add(tran_label_hp, "cell 0 4,alignx trailing");
 		
 		tran_text_hp = new JTextField();
-		tran_text_hp.setText("01090077611");
 		panel_coupontran_1.add(tran_text_hp, "cell 1 4 2 1,growx");
 		tran_text_hp.setColumns(10);
 		

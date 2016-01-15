@@ -35,6 +35,7 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.Channel;
+import java.util.Properties;
 
 import javax.swing.JButton;
 import javax.swing.JList;
@@ -46,18 +47,21 @@ public class MainProgram implements ActionListener{
 	
 	//소켓통신용
 	//public ServerSocket serverSocket;
-	public ServerSocket receivSocket;
-	public ServerSocket sendSocket;
-	public ServerSocket shopSocket;
+	public ServerSocket receivSocket;  //핸드폰 리시브 소켓
+	public ServerSocket sendSocket;   //핸드폰 센드 소켓
+	private ServerSocket appSocket;  //쇼핑몰 리시브 소켓
+	
 	public Socket socket;	
-	BufferedOutputStream bos = null;
-	BufferedInputStream bis = null;
-	DataInputStream dis = null;
-	DataOutputStream dos = null;	
-	int fileTransferCount = 0;
-	long fileTransferSize = 0;	
-	File copyFile = null;
-	Thread th, th1; 
+	private BufferedOutputStream bos = null;
+	private BufferedInputStream bis = null;
+	private DataInputStream dis = null;
+	private DataOutputStream dos = null;	
+	private int fileTransferCount = 0;
+	private long fileTransferSize = 0;	
+	private File copyFile = null;
+	public Thread th, th1, app_thread; 
+	
+	private Properties config_file;
 	
 	public JFrame frame;
 	
@@ -94,22 +98,11 @@ public class MainProgram implements ActionListener{
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-	
-		/*// 기본 포트 8681 대기중
-		try {
-			serverSocket = new ServerSocket(8681);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		System.out.println("서버가 시작되었습니다.");*/
-        
+	    
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {	
-					MainProgram window = new MainProgram("TIPOS 핸드터미널 Ver 1.2");
-					//window.frame.setVisible(true);
-					//TrayIconApp tia = new TrayIconApp("TIPOS 핸드터미널 Ver 1.2", window);
+					new MainProgram("TIPOS 소켓프로그램 Ver 1.0.4");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -121,10 +114,8 @@ public class MainProgram implements ActionListener{
 	 * Create the application.
 	 */
 	public MainProgram(String strTrayTitle) {
-		m_strTrayTitle = strTrayTitle; 
-		System.out.println("진입점");
+		m_strTrayTitle = strTrayTitle;
 		initialize();
-		System.out.println("시작점");
 		init();				
 	}
 	
@@ -136,18 +127,16 @@ public class MainProgram implements ActionListener{
 	 * */	
 	public void init(){	
 		
-
 		try {
 		    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) { 
 		    System.err.println("Cannot set look and feel:" + e.getMessage()); 
-		}		
+		}
 		
+		//환경설정 파일
 		File file = new File("Config.dat");
-		//String[] filepath = new String[3];
 		
-		if(!file.isFile()){
-			//show_help_info("종료", "\r\n 환경설정(Config.dat) 파일을 \r\n 찾을수가 없습니다." );
+		if(!file.exists()){
 			//환경설정
 			startOption();			
 			return;
@@ -158,8 +147,17 @@ public class MainProgram implements ActionListener{
 		listModel_2.clear();
 		
 		//데이타 파일을 찾아서 나눕니다.
-		try {
-			FileInputStream fis = new FileInputStream(file.getPath());
+		try {			
+			
+			config_file = new Properties();
+			config_file.load(new FileInputStream(file));
+			
+			label_master.setText(config_file.getProperty("Master_Path")); //master path
+			filePath[0] = config_file.getProperty("Master_Path");
+			label_data.setText(config_file.getProperty("Data_Path")); //data_path
+			filePath[1] = config_file.getProperty("Data_Path");
+			
+			/*FileInputStream fis = new FileInputStream(file.getPath());
 			BufferedReader bufferReader = new BufferedReader(new InputStreamReader(fis, "euc-kr"));
 			String temp="";						
 				int i = 0;
@@ -168,19 +166,20 @@ public class MainProgram implements ActionListener{
 					i++;
 				}					
 			bufferReader.close();
-			fis.close();
+			fis.close();*/
 		} catch (Exception e) {
 				e.printStackTrace();
 		}		
 		
-		try{		
+		/*try{
 			for(String a : filePath ){
 				if(a.equals("")){				
 					//환경설정
-					startOption();	
+					startOption();
 					return;
 				}
-			}			
+			}
+			
 			label_master.setText(filePath[0].toString()); //master path
 			label_data.setText(filePath[1].toString());
 			
@@ -189,29 +188,30 @@ public class MainProgram implements ActionListener{
 			//환경설정
 			startOption();			
 			return;
-		}		
+		}		*/
 		
 		/*
 		 *  경로에 접속해서 파일을 불러와서 
 		 *  텍스트 필드에 뿌려줍니다.
 		 *  
 		 * */
-		for(int i = 0 ; i < filePath.length; i++){
-			String[] gubun = {"Master", "Data", "HP"};
+		String[] gubun = {"Master", "Data"};
+		for(int i = 0 ; i < 2; i++){			
 			//검색시 폴더가 없으면 contentEnable(true) 를 실행해서 막습니다.
-			fileDirList(filePath[i].toString(), gubun[i]);			
-		}	
-		
-		System.out.println("실행");
-		initTray();
-		System.out.println("완료");
+			System.out.println(filePath[i].toString());
+			fileDirList(filePath[i].toString(), gubun[i]);
+		}		
+		initTray();		
 		
 	}	
 
 	//환경설정
 	private void startOption(){		
-		ConfigFilePath cf = new ConfigFilePath();
-		cf.setVisible(true);
+		//ConfigFilePath cf = new ConfigFilePath();
+		//cf.setVisible(true);
+		System.out.println("환경설정을 실행합니다.");
+		JFrame config = new ConfigFilePath();
+		config.setVisible(true);
 	}
 	
 	//파일 검색기
@@ -235,12 +235,11 @@ public class MainProgram implements ActionListener{
 						listModel.addElement(file.getName());						
 					}else if(gubun.equals("Data")){
 						listModel_1.addElement(file.getName());
-					}					
+					}
 				}else if(file.isDirectory()){
 					System.out.println("디렉토리 이름 = " + file.getName());					
 				}				
-			}
-			
+			}			
 		}catch(Exception e){		
 			show_Dialog("오류", "파일및 경로를 찾을수가 없습니다.");			
 		}
@@ -274,13 +273,6 @@ public class MainProgram implements ActionListener{
 		frame.setUndecorated(true); 
 		frame.setTitle("파일전송");
 		ImageIcon im = new ImageIcon(getClass().getClassLoader().getResource("tiposH_logo.png"));		
-		//System.out.println(im.getDescription());
-		//ImageIcon im = new ImageIcon(System.getProperty("user.dir") + "\\tiposH_logo.png");
-		//ImageIcon im = new ImageIcon("tiposH_logo.png");
-		//System.out.println(System.getProperty("user.dir")+ "\\tiposH_logo.png");
-		
-		//Toolkit tk = Toolkit.getDefaultToolkit();
-		//Image im = tk.getImage(System.getProperty("user.dir") + "\\tips_logo.ico");
 		
         frame.setIconImage(im.getImage());
 			
@@ -388,9 +380,7 @@ public class MainProgram implements ActionListener{
 		
 	// 트레이 아이콘의 초기설정을 해줍니다.
     private void initTray()  {
-    // 트레이 아이콘의 아이콘 역할을 할 이미지 입니다. 
-    //getClass().getClassLoader().getResource("tiposH_logo.png")
-    //Image image = Toolkit.getDefaultToolkit().getImage("tiposH_logo.png");
+    	
     ImageIcon im = new ImageIcon(getClass().getClassLoader().getResource("tiposH_logo.png"));	
     Image image = im.getImage();
     	
@@ -488,25 +478,56 @@ public class MainProgram implements ActionListener{
 	
 	public void rsServer(){
 		
-		try {
-			//serverSocket = new ServerSocket(8681);
-			//receivSocket = new ServerSocket(8681);
-			sendSocket = new ServerSocket(8682);
-			shopSocket = new ServerSocket(8681);
+		try {			
+			receivSocket = new ServerSocket(8681);
+			sendSocket = new ServerSocket(8682);			
+			appSocket = new ServerSocket(8683);			
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			show_Dialog("송수신", " 현재 송수신 대기 중입니다. ");
-		}	
+		}
 		
-		th = new Thread(new Runnable() {
+		app_thread = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {				
+				
+				try {		        	
+					while(!Thread.currentThread().isInterrupted()){
+						Socket app_Socket = appSocket.accept();					
+						System.out.println("ShoppingMall Data Tran Client Connected!! ");
+		            	
+						if(app_Socket.isConnected()){
+							ShopReceiveData srd = new ShopReceiveData(app_Socket);
+							srd.start();			
+						}						
+					}
+					
+				} catch (IOException e) {
+		            e.printStackTrace();
+		        }finally{
+		        	try {						
+						appSocket.close();	
+						System.out.println("ShoppingMall Data Tran Socket Close");
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+		        }
+			}
+		});
+		app_thread.start();
+		
+		
+		/*th = new Thread(new Runnable() {
 			
 			@Override
 			public void run() {
 				
 				// TODO Auto-generated method stub
-				/*ReceiveServer rs = new ReceiveServer();
-				rs.main(args);*/
+				//ReceiveServer rs = new ReceiveServer();
+				//rs.main(args);
 				try {
 		            // 리스너 소켓 생성 후 대기
 					//ServerSocket serverSocket = new ServerSocket();
@@ -517,29 +538,23 @@ public class MainProgram implements ActionListener{
 					// 연결되면 통신용 소켓 생성
 					
 					while(!Thread.currentThread().isInterrupted()){
-						//Socket socket = receivSocket.accept();
-						Socket shop_socket = shopSocket.accept();
+						Socket socket = receivSocket.accept();
+						
 						System.out.println("클라이언트와 연결되었습니다.");
 		            		            
-			            /*if(socket.isConnected()){
+			            if(socket.isConnected()){
 				            // 파일 수신 작업 시작
 				            ReceiveFile rf = new ReceiveFile(socket);
 				            rf.start();
 				            listModel_2.addElement( "파일 수신완료");
-			            }*/
-			            
-						if(shop_socket.isConnected()){
-							ShopReceiveData srd = new ShopReceiveData(shop_socket);
-							srd.start();							
-						}					
-			            
+			            }	
 					}
 					
 				} catch (IOException e) {
 		            e.printStackTrace();
 		        }finally{
 		        	try {
-						receivSocket.close();
+						receivSocket.close();						
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -547,9 +562,8 @@ public class MainProgram implements ActionListener{
 		        }
 			}
 		});
-		th.start();
-		
-		
+		th.start();	*/	
+		/*
 		File[] file = new File[listModel.getSize()];
 		
 		for (int i =0; i < listModel.getSize(); i++){
@@ -571,8 +585,8 @@ public class MainProgram implements ActionListener{
 					//ServerSocket serverSocket = new ServerSocket();
 					//if(serverSocket != null) serverSocket.close();
 					//serverSocket = new ServerSocket(8681);			
-					/*listModel_2.addElement(" 전송 대기중... ");
-					listModel_2.addElement( " 휴대폰의 수신 버튼을 눌러주세요 " );*/
+					listModel_2.addElement(" 전송 대기중... ");
+					listModel_2.addElement( " 휴대폰의 수신 버튼을 눌러주세요 " );
 					while(!Thread.currentThread().isInterrupted()){
 					for(File f : file){
 					//int i = 0;
@@ -604,7 +618,7 @@ public class MainProgram implements ActionListener{
 		        }
 			}
 		});
-		th1.start();	
+		th1.start();	*/
 		
 	}
 	
@@ -719,6 +733,4 @@ public class MainProgram implements ActionListener{
         
         return popupMenu;
     }
-	
-	
 }	//end

@@ -1,2 +1,9 @@
-C:\Handy\Master
-C:\Handy\Data
+#\uD658\uACBD\uC124\uC815 \uC800\uC7A5
+#Fri Jan 15 18:43:45 KST 2016
+DBIP=Localhost
+DBPORT=16000
+Master_Path=c\:\\handy\\master
+RETIME=10
+CONNECT=1
+MEMNUM=10
+Data_Path=c\:\\handy\\data

@@ -11,8 +11,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.swing.JOptionPane;
-
 public class Ms_Connect {
 	
 	int errCode =0;
@@ -21,36 +19,18 @@ public class Ms_Connect {
     ResultSet rs = null;
     private ArrayList<HashMap<String, String>> json;
     private HashMap<String, String> json_one;
-    private String ip;
-    private String port;
-	private String dbname;
-	private String dbid;
-	private String dbpw;	
+    private String ip = "localhost";
+    private String port = "16000";
+	private String dbname = "tips";
+	private String dbid = "sa";
+	private String dbpw ="tips";	
 	private String query;
 	//private JSONArray json;
 	
 	/*
 	 * 서버정보를 셋팅 합니다.
 	 * 
-	 */
-	public void setImageSetting(){
-		ip = Server_Config.getIMAGE_IP();		
-		port = Server_Config.getIMAGE_PORT();
-		dbname = Server_Config.getIMAGE_DBNAME();
-		dbid = Server_Config.getIMAGE_DBID();
-		dbpw = Server_Config.getIMAGE_DBPW();		
-	}
-	
-		
-	public void setMainSetting(){
-		
-		ip = Server_Config.getSERVER_IP();		
-		port = Server_Config.getSERVER_PORT();
-		dbname = Server_Config.getSERVER_DBNAME();
-		dbid = Server_Config.getSERVER_DBID();
-		dbpw = Server_Config.getSERVER_DBPW();
-	}
-	
+	 */	
 	public ArrayList<HashMap<String, String>> connection(String query) {
 		
 		this.query = query;

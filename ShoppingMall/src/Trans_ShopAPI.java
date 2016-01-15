@@ -54,7 +54,7 @@ public class Trans_ShopAPI {
 			shop_url.setDoOutput(true);
 						
 			System.out.println("전송상태 출력");			
-			System.out.println(" URL : "+shop_url.getURL());			
+			System.out.println(" URL : "+shop_url.getURL());	
 
 			OutputStreamWriter output = new OutputStreamWriter(shop_url.getOutputStream());
 			

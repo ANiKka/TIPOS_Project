@@ -10,10 +10,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 
+import javax.swing.UIManager;
 
-public class TrayIconApp implements ActionListener
+
+public class TrayIconApp //implements ActionListener
 {
-     // SystemTray클래스를 얻어옵니다.
+   /*  // SystemTray클래스를 얻어옵니다.
      private SystemTray m_tray = SystemTray.getSystemTray();
      
     //아이콘 입니다. 
@@ -21,6 +23,7 @@ public class TrayIconApp implements ActionListener
     
     //메인프로그램 객체 받기
     private MainProgram mp;
+    
     //트레이 아이콘 타이틀이구요     
     String m_strTrayTitle;
     
@@ -33,7 +36,14 @@ public class TrayIconApp implements ActionListener
     
     // 트레이 아이콘의 초기설정을 해줍니다.
     private void initTray()  {
-     // 트레이 아이콘의 아이콘 역할을 할 이미지 입니다. 
+     
+    	try {
+		    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) { 
+		    System.err.println("Cannot set look and feel:" + e.getMessage()); 
+		}
+    	
+    	// 트레이 아이콘의 아이콘 역할을 할 이미지 입니다. 
     //getClass().getClassLoader().getResource("tiposH_logo.png")
      Image image = Toolkit.getDefaultToolkit().getImage("tiposH_logo.png");
      
@@ -41,13 +51,13 @@ public class TrayIconApp implements ActionListener
      m_ti = new TrayIcon(image, m_strTrayTitle, createPopupMenu());
      
      m_ti.setImageAutoSize(true);
-    /* m_ti.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+    // m_ti.addActionListener(new ActionListener() {
+     //       public void actionPerformed(ActionEvent e) {
             	            	
-            	mp.frame.setVisible(true);
+      //      	mp.frame.setVisible(true);
                 // 트레이 아이콘 자체를 클릭했을때 일어날 이벤트에 대한 동작을 구현합니다. 
-            }
-     });*/
+      //      }
+     //});
      m_ti.addMouseListener(new java.awt.event.MouseAdapter()
      {
          public void mousePressed(java.awt.event.MouseEvent evt)
@@ -136,5 +146,5 @@ public class TrayIconApp implements ActionListener
      }else if(e.getActionCommand() == "종료"){
     	 System.exit(0);
      }     
-    }
+    }*/
 }

@@ -183,7 +183,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 		btn_member.setFocusable(false);
 		btn_member.addActionListener(this);
 		menuBar.add(btn_member);
-		
+		btn_member.setVisible(false);
 		JButton btn_message = new JButton(Msg_Manager);
 		btn_message.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_message.png")));
 		btn_message.setIconTextGap(10);
