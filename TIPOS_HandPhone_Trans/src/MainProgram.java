@@ -1,44 +1,40 @@
 import java.awt.AWTException;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
-
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.DefaultListModel;
-import javax.swing.JDialog;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JLabel;
-
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.channels.Channel;
 import java.util.Properties;
 
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 
@@ -51,15 +47,8 @@ public class MainProgram implements ActionListener{
 	public ServerSocket sendSocket;   //핸드폰 센드 소켓
 	private ServerSocket appSocket;  //쇼핑몰 리시브 소켓
 	
-	public Socket socket;	
-	private BufferedOutputStream bos = null;
-	private BufferedInputStream bis = null;
-	private DataInputStream dis = null;
-	private DataOutputStream dos = null;	
-	private int fileTransferCount = 0;
-	private long fileTransferSize = 0;	
-	private File copyFile = null;
-	public Thread th, th1, app_thread; 
+	//public Socket socket;	
+	public Thread masterFile_TranThread, dataFile_TranThread, app_thread; 
 	
 	private Properties config_file;
 	
@@ -68,19 +57,19 @@ public class MainProgram implements ActionListener{
 	// ***** 파일 패스 설정 *****
 	private String[] filePath = new String[2];
 		
-	DefaultListModel<String> listModel = new DefaultListModel<String>();			//마스트파일	
-	DefaultListModel<String> listModel_1 = new DefaultListModel<String>();		//데이타파일
-	DefaultListModel<String> listModel_2 = new DefaultListModel<String>();		//전송상태
+	DefaultListModel<String> listModel_handy_master = new DefaultListModel<String>();			//마스트파일	
+	DefaultListModel<String> listModel_handy_data = new DefaultListModel<String>();		//데이타파일
+	DefaultListModel<String> listModel_handy_log = new DefaultListModel<String>();		//전송상태
 	
 	JButton btnNewButton; 		//pc목록 새로고침	
 	
-	JLabel label_master; 			//master 경로
-	JLabel label_data; 				//data 경로	
+	JLabel lblChandymaster; 			//master 경로
+	JLabel lblChandydata; 				//data 경로	
 	JLabel label_state;				//전송상태
 	
-	JList list; 							//master 파일목록	
-	JList list_1; 						//data 파일목록
-	JList list_2; 						//휴대폰 파일목록	
+	JList<String> list_handy_master; 							//master 파일목록	
+	JList<String> list_handy_data; 						//data 파일목록
+	JList<String> list_handy_log; 						//휴대폰 파일목록	
 	
 	// ***** 다이얼 로그 띄우기 *****
 	private JDialog dlg_help_info;	
@@ -93,6 +82,7 @@ public class MainProgram implements ActionListener{
     
     //트레이 아이콘 타이틀이구요     
     String m_strTrayTitle;
+    private JTextArea textArea_shop_log;
 	
 	/**
 	 * Launch the application.
@@ -114,9 +104,17 @@ public class MainProgram implements ActionListener{
 	 * Create the application.
 	 */
 	public MainProgram(String strTrayTitle) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) { 
+		    System.err.println("Cannot set look and feel:" + e.getMessage()); 
+		}
 		m_strTrayTitle = strTrayTitle;
 		initialize();
-		init();				
+		init();			
+		
+		//송수신 시작 
+	 	rsServer();
 	}
 	
 	/*
@@ -127,12 +125,6 @@ public class MainProgram implements ActionListener{
 	 * */	
 	public void init(){	
 		
-		try {
-		    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (Exception e) { 
-		    System.err.println("Cannot set look and feel:" + e.getMessage()); 
-		}
-		
 		//환경설정 파일
 		File file = new File("Config.dat");
 		
@@ -142,9 +134,9 @@ public class MainProgram implements ActionListener{
 			return;
 		}				
 		
-		listModel.clear();
-		listModel_1.clear();
-		listModel_2.clear();
+		listModel_handy_master.clear();
+		listModel_handy_data.clear();
+		listModel_handy_log.clear();
 		
 		//데이타 파일을 찾아서 나눕니다.
 		try {			
@@ -152,43 +144,14 @@ public class MainProgram implements ActionListener{
 			config_file = new Properties();
 			config_file.load(new FileInputStream(file));
 			
-			label_master.setText(config_file.getProperty("Master_Path")); //master path
+			lblChandymaster.setText("c:\\handy\\master"); //master path
 			filePath[0] = config_file.getProperty("Master_Path");
-			label_data.setText(config_file.getProperty("Data_Path")); //data_path
+			lblChandydata.setText("c:\\handy\\data"); //data_path
 			filePath[1] = config_file.getProperty("Data_Path");
-			
-			/*FileInputStream fis = new FileInputStream(file.getPath());
-			BufferedReader bufferReader = new BufferedReader(new InputStreamReader(fis, "euc-kr"));
-			String temp="";						
-				int i = 0;
-				while( (temp = bufferReader.readLine()) != null ) {
-					filePath[i] = temp.toString();
-					i++;
-				}					
-			bufferReader.close();
-			fis.close();*/
+						
 		} catch (Exception e) {
 				e.printStackTrace();
-		}		
-		
-		/*try{
-			for(String a : filePath ){
-				if(a.equals("")){				
-					//환경설정
-					startOption();
-					return;
-				}
-			}
-			
-			label_master.setText(filePath[0].toString()); //master path
-			label_data.setText(filePath[1].toString());
-			
-		}catch(Exception e){			
-			//show_Dialog("오류", "환경설정을 해주세요.");		
-			//환경설정
-			startOption();			
-			return;
-		}		*/
+		}
 		
 		/*
 		 *  경로에 접속해서 파일을 불러와서 
@@ -201,7 +164,7 @@ public class MainProgram implements ActionListener{
 			System.out.println(filePath[i].toString());
 			fileDirList(filePath[i].toString(), gubun[i]);
 		}		
-		initTray();		
+		initTray();
 		
 	}	
 
@@ -232,9 +195,9 @@ public class MainProgram implements ActionListener{
 				if(file.isFile() && fileNameCheck(file)){
 					//파일이 있다면 파일 이름 출력
 					if(gubun.equals("Master")){									
-						listModel.addElement(file.getName());						
+						listModel_handy_master.addElement(file.getName());						
 					}else if(gubun.equals("Data")){
-						listModel_1.addElement(file.getName());
+						listModel_handy_data.addElement(file.getName());
 					}
 				}else if(file.isDirectory()){
 					System.out.println("디렉토리 이름 = " + file.getName());					
@@ -291,77 +254,94 @@ public class MainProgram implements ActionListener{
 		frame.setLocation(xpos, ypos);
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(null);
+		frame.getContentPane().setLayout(new BorderLayout(0, 0));
+		
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		frame.getContentPane().add(tabbedPane);
+		
+		JPanel panel_shoppingmall = new JPanel();
+		tabbedPane.addTab("\uC1FC\uD551\uBAB0", null, panel_shoppingmall, null);
+		panel_shoppingmall.setLayout(new BorderLayout(0, 0));
+		
+		JLabel label_shop_log = new JLabel("\uC1FC\uD551\uBAB0 \uD68C\uC6D0\uAC00\uC785 / \uC571\uC124\uCE58 / \uC8FC\uBB38 \uB85C\uADF8\uAE30\uB85D");
+		panel_shoppingmall.add(label_shop_log, BorderLayout.NORTH);
+		
+		textArea_shop_log = new JTextArea();
+		panel_shoppingmall.add(textArea_shop_log, BorderLayout.CENTER);
+		
+		JPanel panel_handphone = new JPanel();
+		tabbedPane.addTab("\uD578\uB4DC\uD3F0", null, panel_handphone, null);
+		panel_handphone.setLayout(null);
 		
 		JLabel lblNewLabel_1 = new JLabel("PC 파일목록");
+		lblNewLabel_1.setBounds(10, 10, 81, 15);
+		panel_handphone.add(lblNewLabel_1);
 		lblNewLabel_1.setFont(new Font("맑은 고딕", Font.BOLD, 12));
-		lblNewLabel_1.setBounds(13, 14, 81, 15);
-		frame.getContentPane().add(lblNewLabel_1);
 		
 		btnNewButton = new JButton("새로고침");
+		btnNewButton.setBounds(112, 6, 86, 23);
+		panel_handphone.add(btnNewButton);
 		btnNewButton.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
-		//btnNewButton.setEnabled(false);
-		btnNewButton.setBounds(116, 10, 86, 23);
 		btnNewButton.addActionListener(this);
-		frame.getContentPane().add(btnNewButton);
-				
+		
 		JLabel lblNewLabel_2 = new JLabel("\uC804\uC1A1 \uC0C1\uD0DC \uD45C\uC2DC");
+		lblNewLabel_2.setBounds(223, 10, 97, 15);
+		panel_handphone.add(lblNewLabel_2);
 		lblNewLabel_2.setFont(new Font("맑은 고딕", Font.BOLD, 12));
-		lblNewLabel_2.setBounds(227, 14, 97, 15);
-		frame.getContentPane().add(lblNewLabel_2);
 		
-		label_master = new JLabel("Master path");
-		label_master.setBounds(13, 38, 188, 15);
-		frame.getContentPane().add(label_master);
+		lblChandymaster = new JLabel("Master path");
+		lblChandymaster.setBounds(10, 36, 188, 15);
+		panel_handphone.add(lblChandymaster);
 		
-		list = new JList(listModel);
-		list.setEnabled(false);
-		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
-		list.setBounds(12, 54, 190, 53);
-		frame.getContentPane().add(list);
+		list_handy_master = new JList<String>(listModel_handy_master);
+		list_handy_master.setBounds(10, 55, 190, 53);
+		panel_handphone.add(list_handy_master);
+		list_handy_master.setEnabled(false);
+		list_handy_master.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list_handy_master.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
 		
-		label_data = new JLabel("Data Path");
-		label_data.setBounds(12, 111, 190, 15);
-		frame.getContentPane().add(label_data);
+		lblChandydata = new JLabel("Data Path");
+		lblChandydata.setBounds(10, 129, 190, 15);
+		panel_handphone.add(lblChandydata);
 		
-		list_1 = new JList(listModel_1);
-		list_1.setEnabled(false);
-		list_1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list_1.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
-		list_1.setBounds(12, 129, 190, 53);
-		frame.getContentPane().add(list_1);
+		list_handy_data = new JList<String>(listModel_handy_data);
+		list_handy_data.setBounds(10, 144, 190, 53);
+		panel_handphone.add(list_handy_data);
+		list_handy_data.setEnabled(false);
+		list_handy_data.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list_handy_data.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
 		
-		list_2 = new JList(listModel_2);
-		list_2.setEnabled(false);
-		list_2.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
-		list_2.setBounds(227, 54, 190, 128);
-		frame.getContentPane().add(list_2);
+		list_handy_log = new JList<String>(listModel_handy_log);
+		list_handy_log.setBounds(223, 55, 190, 142);
+		panel_handphone.add(list_handy_log);
+		list_handy_log.setEnabled(false);
+		list_handy_log.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
+		
+		JButton button_clear = new JButton("지우기");
+		button_clear.addActionListener(this);
+		button_clear.setBounds(344, 5, 69, 25);
+		panel_handphone.add(button_clear);
+		button_clear.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
+		
+		label_state = new JLabel("파일송수신 목록");
+		label_state.setBounds(225, 35, 188, 15);
+		panel_handphone.add(label_state);
+		label_state.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
+		
+		JPanel panel_main_bottom = new JPanel();
+		frame.getContentPane().add(panel_main_bottom, BorderLayout.SOUTH);
 		
 		JButton button_rs = new JButton("송수신");
-		button_rs.setBounds(12, 192, 97, 62);
-		frame.getContentPane().add(button_rs);
+		panel_main_bottom.add(button_rs);
 		button_rs.addActionListener(this);
 		
 		JButton button_rsExit = new JButton("연결종료");
-		button_rsExit.setBounds(167, 192, 97, 62);
-		frame.getContentPane().add(button_rsExit);
-		button_rsExit.addActionListener(this);
+		panel_main_bottom.add(button_rsExit);
 		
 		JButton button_exit = new JButton("닫기");
-		button_exit.setBounds(320, 192, 97, 62);
-		frame.getContentPane().add(button_exit);
-		
-		label_state = new JLabel("파일송수신 목록");
-		label_state.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
-		label_state.setBounds(229, 39, 188, 15);
-		frame.getContentPane().add(label_state);
-		
-		JButton button_clear = new JButton("지우기");
-		button_clear.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
-		button_clear.setBounds(331, 10, 86, 23);
-		frame.getContentPane().add(button_clear);
+		panel_main_bottom.add(button_exit);
 		button_exit.addActionListener(this);
+		button_rsExit.addActionListener(this);
 		
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
@@ -384,18 +364,9 @@ public class MainProgram implements ActionListener{
     ImageIcon im = new ImageIcon(getClass().getClassLoader().getResource("tiposH_logo.png"));	
     Image image = im.getImage();
     	
-    	
      // TrayIcon을 생성합니다.
-     m_ti = new TrayIcon(image, m_strTrayTitle, createPopupMenu());
-     
-     m_ti.setImageAutoSize(true);
-    /* m_ti.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-            	            	
-            	mp.frame.setVisible(true);
-                // 트레이 아이콘 자체를 클릭했을때 일어날 이벤트에 대한 동작을 구현합니다. 
-            }
-     });*/
+     m_ti = new TrayIcon(image, m_strTrayTitle, createPopupMenu());     
+     m_ti.setImageAutoSize(true);   
      m_ti.addMouseListener(new java.awt.event.MouseAdapter()
      {
          public void mousePressed(java.awt.event.MouseEvent evt)
@@ -404,8 +375,7 @@ public class MainProgram implements ActionListener{
         		 frame.setVisible(true);
         	 }
          }
-     });
-     
+     });     
         
      // 위에서 얻어온 SystemTray에 방금 막 생성한 TrayIcon의 인스턴스를 인자로 넣어줍니다.
      try{
@@ -413,11 +383,40 @@ public class MainProgram implements ActionListener{
 	  	} catch(AWTException e1){	
 	  		e1.printStackTrace();
 	  	}
-     
-    //송수신 시작 
- 	rsServer();     
     }
 		
+    //소켓을 재실행 합니다.
+    private void resetSocket(){
+    	
+    	listModel_handy_log.clear();
+		
+		if(masterFile_TranThread.isAlive()){
+			masterFile_TranThread.interrupt();
+			listModel_handy_log.addElement( "송신 연결종료");
+		}
+				
+		if(dataFile_TranThread.isAlive()){
+			dataFile_TranThread.interrupt();
+			listModel_handy_log.addElement( "수신 연결종료");
+		}
+		
+		if(app_thread.isAlive()){
+			app_thread.interrupt();				
+		}
+		
+		try {
+			receivSocket.close();
+			sendSocket.close();
+			appSocket.close();
+			//socket.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}			
+    	
+    }
+    
+    
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
@@ -428,38 +427,19 @@ public class MainProgram implements ActionListener{
 			frame.setVisible(true);
 			break;
 		case "송수신":
+			resetSocket();
 			rsServer();
 			break;		
 		case "연결종료":
 				
-			listModel_2.clear();
-			
-			if(th.isAlive()){
-				th.interrupt();
-				listModel_2.addElement( "송신 연결종료");
-			}
-					
-			if(th1.isAlive()){
-				th1.interrupt();
-				listModel_2.addElement( "수신 연결종료");
-			}
-			
-			try {
-				receivSocket.close();
-				sendSocket.close();
-				socket.close();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}			
-			
+			resetSocket();			
 			//sendFileTransfer();
 			break;
-		case "새로고침":						
+		case "새로고침":	
 			init();
 			break;			
-		case "목록지우기":
-			listModel_2.clear();
+		case "지우기":
+			listModel_handy_log.clear();
 			break;
 		case "환경설정":
 			ConfigFilePath cf = new ConfigFilePath();
@@ -471,7 +451,7 @@ public class MainProgram implements ActionListener{
 		case "종료":
 			System.exit(0);
 			break;
-		}		
+		}
 		
 	}
 		
@@ -482,32 +462,35 @@ public class MainProgram implements ActionListener{
 			receivSocket = new ServerSocket(8681);
 			sendSocket = new ServerSocket(8682);			
 			appSocket = new ServerSocket(8683);			
-		} catch (IOException e1) {
+		}catch(BindException e){
+			JOptionPane.showConfirmDialog(null, "프로그램이 이미 실행중입니다.", "쇼핑몰 데몬", JOptionPane.CLOSED_OPTION);
+			System.exit(0);
+		}catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			show_Dialog("송수신", " 현재 송수신 대기 중입니다. ");
 		}
 		
 		app_thread = new Thread(new Runnable() {
-			
 			@Override
-			public void run() {				
+			public void run() {
 				
-				try {		        	
+				try { 	
 					while(!Thread.currentThread().isInterrupted()){
 						Socket app_Socket = appSocket.accept();					
 						System.out.println("ShoppingMall Data Tran Client Connected!! ");
-		            	
+		            	textArea_shop_log.append("쇼핑몰 연결 되었습니다. \r\n");
 						if(app_Socket.isConnected()){
 							ShopReceiveData srd = new ShopReceiveData(app_Socket);
 							srd.start();			
-						}						
+							textArea_shop_log.append("자료수신 완료 \r\n");							
+						}
 					}
 					
 				} catch (IOException e) {
 		            e.printStackTrace();
 		        }finally{
-		        	try {						
+		        	try {
 						appSocket.close();	
 						System.out.println("ShoppingMall Data Tran Socket Close");
 					} catch (IOException e) {
@@ -519,8 +502,8 @@ public class MainProgram implements ActionListener{
 		});
 		app_thread.start();
 		
-		
-		/*th = new Thread(new Runnable() {
+		//파일전송 대기중입니다.
+		masterFile_TranThread = new Thread(new Runnable() {
 			
 			@Override
 			public void run() {
@@ -533,8 +516,8 @@ public class MainProgram implements ActionListener{
 					//ServerSocket serverSocket = new ServerSocket();
 					//if(serverSocket != null) serverSocket.close();
 					
-					listModel_2.clear();
-					listModel_2.addElement( "파일 송수신 대기중입니다.");					
+					listModel_handy_log.clear();
+					listModel_handy_log.addElement( "파일 송수신 대기중입니다.");					
 					// 연결되면 통신용 소켓 생성
 					
 					while(!Thread.currentThread().isInterrupted()){
@@ -546,7 +529,7 @@ public class MainProgram implements ActionListener{
 				            // 파일 수신 작업 시작
 				            ReceiveFile rf = new ReceiveFile(socket);
 				            rf.start();
-				            listModel_2.addElement( "파일 수신완료");
+				            listModel_handy_log.addElement( "파일 수신완료");
 			            }	
 					}
 					
@@ -562,46 +545,38 @@ public class MainProgram implements ActionListener{
 		        }
 			}
 		});
-		th.start();	*/	
-		/*
-		File[] file = new File[listModel.getSize()];
+		masterFile_TranThread.start();		
 		
-		for (int i =0; i < listModel.getSize(); i++){
-			file[i] = new File( label_master.getText(), listModel.get(i));
+		//파일전송 대기중		
+		File[] file = new File[listModel_handy_master.getSize()];
+		
+		for (int i =0; i < listModel_handy_master.getSize(); i++){
+			file[i] = new File( lblChandymaster.getText(), listModel_handy_master.get(i));
 		}
-		listModel_2.clear();
-		listModel_2.addElement( listModel.getSize() + " 개 의 파일을 전송 합니다.");
+		listModel_handy_log.clear();
+		listModel_handy_log.addElement( listModel_handy_master.getSize() + " 개 의 파일을 전송 합니다.");
 		
-		th1 = new Thread(new Runnable() {
+		dataFile_TranThread = new Thread(new Runnable() {
 			
 			@Override
-			public void run() {				
-				
+			public void run() {								
 				// TODO Auto-generated method stub
-				//ReceiveServer rs = new ReceiveServer();
-				//rs.main(args);
+				
 				try {
 		            // 리스너 소켓 생성 후 대기
-					//ServerSocket serverSocket = new ServerSocket();
-					//if(serverSocket != null) serverSocket.close();
-					//serverSocket = new ServerSocket(8681);			
-					listModel_2.addElement(" 전송 대기중... ");
-					listModel_2.addElement( " 휴대폰의 수신 버튼을 눌러주세요 " );
+					listModel_handy_log.addElement(" 전송 대기중... ");
+					listModel_handy_log.addElement( " 휴대폰의 수신 버튼을 눌러주세요 " );
 					while(!Thread.currentThread().isInterrupted()){
 					for(File f : file){
-					//int i = 0;
-					//while(true){
-					// 연결되면 통신용 소켓 생성						
-					//Socket socket = serverSocket.accept();
-					socket = sendSocket.accept();
-		            System.out.println("클라이언트와 연결되었습니다.");
+					Socket socket = sendSocket.accept();
+				    System.out.println("클라이언트와 연결되었습니다.");
 		            		            
 		            // 파일 전송 작업 시작
 		            SendFile sf = new SendFile(socket, f);
 					sf.start();		
 					//i++;
 					}
-					listModel_2.addElement( listModel.getSize() + " 개 파일 전송완료");
+					listModel_handy_log.addElement( listModel_handy_master.getSize() + " 개 파일 전송완료");
 					}
 				}catch(IOException e) {
 		            e.printStackTrace();
@@ -618,7 +593,7 @@ public class MainProgram implements ActionListener{
 		        }
 			}
 		});
-		th1.start();	*/
+		dataFile_TranThread.start();
 		
 	}
 	
@@ -697,7 +672,7 @@ public class MainProgram implements ActionListener{
         btn_info_exit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//종료합니다.
-				//System.exit(0);				
+				//System.exit(0);
 				dlg_help_info.dispose();
 			}
 		}); 

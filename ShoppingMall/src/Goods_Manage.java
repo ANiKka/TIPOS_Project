@@ -40,9 +40,11 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
@@ -60,6 +62,8 @@ import javax.swing.table.TableRowSorter;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import com.sun.java.swing.plaf.windows.resources.windows;
 
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
@@ -225,6 +229,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 	private JButton btn_jtab_hotkey_listup;
 	private JButton btn_jtab_hotkey_listcall;
 	private JButton btn_jtab_hotkey_save;
+	private JTextField text_realsto_up;
 	
 	/**
 	 * Create the panel.
@@ -720,6 +725,13 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		cb_shoppingmall_use.setToolTipText("\uB9E4\uC7A5\uC0C1\uD488\uC744 \uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9\uC5EC\uBD80\uB97C \uC120\uD0DD\uD569\uB2C8\uB2E4.");
 		cb_shoppingmall_use.setModel(new DefaultComboBoxModel<String>(new String[] {"\uC804\uCCB4", "\uC5F0\uB3D9\uD568", "\uC5F0\uB3D9\uC548\uD568"}));
 		
+		JLabel lb_realsto_up = new JLabel("\uC7AC\uACE0");
+		panel_2.add(lb_realsto_up, "cell 2 0,alignx trailing");
+		
+		text_realsto_up = new JTextField();
+		panel_2.add(text_realsto_up, "cell 3 0,growx");
+		text_realsto_up.setColumns(2);
+		
 		JLabel lb_shoppingmall = new JLabel(" \uC1FC\uD551\uBAB0 ");
 		panel_2.add(lb_shoppingmall, "cell 5 0,alignx center");
 		lb_shoppingmall.setToolTipText("\uB9E4\uC7A5 \uC0C1\uD488\uC774 \uC1FC\uD551\uBAB0\uACFC \uC5F0\uB3D9 \uC911\uC778\uC9C0 \uC5EC\uBD80\uB97C \uD655\uC778 \uD569\uB2C8\uB2E4.");
@@ -780,7 +792,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 				getEventCodeCall();
 			}
 		});
-		panel_2.add(btn_top_salenum, "cell 2 1");
+		panel_2.add(btn_top_salenum, "cell 2 1 2 1");
 		
 		JLabel label_Goods_Gubun = new JLabel("\uC0C1\uD488\uAD6C\uBD84");
 		panel_2.add(label_Goods_Gubun, "cell 5 1");
@@ -976,6 +988,11 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			
 		default:					
 			break;
+		}
+		
+		//재고가 입력수량보다 크다면
+		if(text_realsto_up.getText().trim().length() > 0){
+			query_goods += "and Real_Sto >= "+text_realsto_up.getText();
 		}
 		
 		//이미지관리폴더설정
@@ -1791,11 +1808,11 @@ public class Goods_Manage extends JPanel implements ActionListener {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				ftp_Connect();
+				// TODO Auto-generated method stub				
+				setImageServerUploadFTP();			
 			}
 		});		
-		bt_ftp_connect.setVisible(false);
+		bt_ftp_connect.setVisible(true);
 		
 		JLabel lblNewLabel_4 = new JLabel("\uC0C1\uD488 \uAC80\uC0C9 \uBAA9\uB85D");
 		panel.add(lblNewLabel_4, "cell 3 0,alignx left,aligny center");
@@ -4617,6 +4634,54 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		//검색하기
 		search_start();	
 		
+    }
+    
+    //공용서버에 이미지 저장을 합니다. 패스워드를 확인후 합니다.
+    private void setImageServerUploadFTP(){
+    	
+    	JPanel panel = new JPanel();		
+		JLabel label = new JLabel("비밀번호 : ");
+		JPasswordField pass = new JPasswordField(10);
+		pass.addKeyListener(new KeyListener() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					pass.transferFocus();						
+				}
+			}
+		});
+		
+		panel.add(label);
+		panel.add(pass);
+		
+		String[] options = new String[]{"확인", "취소"};			
+		int option = JOptionPane.showOptionDialog(this, panel, "서버에 이미지 파일 업로드",
+		                         JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,
+		                         null, options, pass);
+		if(option == 0) // pressing OK button
+		{
+		    char[] password = pass.getPassword();
+		    if(new String(password).equals("tips0945")){
+		    	ftp_Connect();
+		    }else{
+		    	JOptionPane.showMessageDialog(this, "비밀번호를 잘못 입력 하셨습니다.", "비밀번호 불일치", JOptionPane.CLOSED_OPTION);
+		    	return;
+		    }
+		}    	
     }
     
     

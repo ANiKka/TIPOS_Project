@@ -56,10 +56,12 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 	private JTextField text_shop_dbip;
 	private JTextField text_shop_memnum;
 	private JTextField text_shop_dbport;
-	private JTextField text_shop_retime;
 	private JCheckBox chkbox_shop_connect;
 	
 	private Properties config_file;
+	private JTextField text_event_newcode;
+	private JTextField text_event_failcode;
+	private JTextField text_event_okcode;
 	/**
 	 * Create the frame.
 	 */
@@ -111,7 +113,7 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		
 		JPanel panel_center_shop = new JPanel();
 		tabbedPane.addTab("\uC1FC\uD551\uBAB0 \uC635\uC158", null, panel_center_shop, null);
-		panel_center_shop.setLayout(new MigLayout("", "[][grow][][grow][][]", "[][][][][][][grow]"));
+		panel_center_shop.setLayout(new MigLayout("", "[][grow][][grow][][]", "[][][grow][][][][49.00][-31.00][][][grow]"));
 		
 		JLabel label_shop_dbip = new JLabel("DB IP");
 		label_shop_dbip.setFont(new Font("맑은 고딕", Font.BOLD, 12));
@@ -144,21 +146,36 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		JLabel label_shop_memnum_info = new JLabel("\uC2E0\uADDC\uACE0\uAC1D \uACE0\uAC1D\uCE74\uB4DC \uC694\uCCAD \uC2DC \uC0DD\uC131 \uC2DC\uC791\uBC88\uD638");
 		panel_center_shop.add(label_shop_memnum_info, "cell 3 1 3 1,alignx center");
 		
-		JLabel label_shop_retime = new JLabel("\uC571/\uD68C\uC6D0 \uAC31\uC2E0");
-		label_shop_retime.setFont(new Font("맑은 고딕", Font.BOLD, 12));
-		panel_center_shop.add(label_shop_retime, "cell 0 2,alignx trailing");
+		JLabel label_shop_eventcode = new JLabel("\uC774\uBCA4\uD2B8\uCF54\uB4DC \uC124\uC815");
+		label_shop_eventcode.setFont(new Font("맑은 고딕", Font.BOLD, 12));
+		panel_center_shop.add(label_shop_eventcode, "cell 0 2,alignx trailing");
 		
-		text_shop_retime = new JTextField();
-		text_shop_retime.setText("20");
-		text_shop_retime.setHorizontalAlignment(SwingConstants.CENTER);
-		panel_center_shop.add(text_shop_retime, "cell 1 2");
-		text_shop_retime.setColumns(3);
+		JLabel label_event_info = new JLabel("\uD68C\uC6D0\uC5F0\uB3D9 \uC694\uCCAD \uC2DC \uC804\uC1A1\uD560 \uC774\uBCA4\uD2B8");
+		panel_center_shop.add(label_event_info, "cell 3 2 3 1,alignx center");
 		
-		JLabel label_shop_retimem = new JLabel("\uBD84");
-		panel_center_shop.add(label_shop_retimem, "cell 2 2");
+		JPanel panel_shop_event = new JPanel();
+		panel_center_shop.add(panel_shop_event, "cell 0 3 6 1,grow");
 		
-		JLabel label_shop_retime_info = new JLabel("\uB9E4\uCE6D\uB41C \uD68C\uC6D0/\uC571\uC124\uCE58 \uC815\uBCF4 \uAC31\uC2E0 \uC2DC\uAC04\uC124\uC815");
-		panel_center_shop.add(label_shop_retime_info, "cell 3 2 3 1,alignx right");
+		JLabel label_event_newcode = new JLabel("\uC2E0\uADDC\uAC00\uC785");
+		panel_shop_event.add(label_event_newcode);
+		
+		text_event_newcode = new JTextField();
+		panel_shop_event.add(text_event_newcode);
+		text_event_newcode.setColumns(3);
+		
+		JLabel label_event_failcode = new JLabel("\uC5F0\uB3D9\uC131\uACF5");
+		panel_shop_event.add(label_event_failcode);
+		
+		text_event_failcode = new JTextField();
+		panel_shop_event.add(text_event_failcode);
+		text_event_failcode.setColumns(3);
+		
+		JLabel label_event_okcode = new JLabel("\uC5F0\uB3D9\uC2E4\uD328");
+		panel_shop_event.add(label_event_okcode);
+		
+		text_event_okcode = new JTextField();
+		panel_shop_event.add(text_event_okcode);
+		text_event_okcode.setColumns(3);
 		
 		JLabel label_shop_con = new JLabel("\uD68C\uC6D0\uC790\uB3D9\uC5F0\uB3D9 \uC635\uC158");
 		label_shop_con.setFont(new Font("맑은 고딕", Font.BOLD, 12));
@@ -168,11 +185,11 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		chkbox_shop_connect.setSelected(true);
 		panel_center_shop.add(chkbox_shop_connect, "cell 1 4 5 1,alignx left");
 		
-		JLabel label_connect_info = new JLabel("<html>\uC1FC\uD551\uBAB0 \uC5F0\uB3D9\uC5D0 \uD544\uC694\uD55C \uC678\uBD80\uB0B4\uBD80 \uD3EC\uD2B8\uB294 8683\uBC88 \uC785\uB2C8\uB2E4.<br>\r\n\uC1FC\uD551\uBAB0\uAD00\uB9AC\uC790 \uD398\uC774\uC9C0 > API \uAC1C\uBC1C\uC13C\uD130 > API URI \uC124\uC815\uC5D0\uC11C <br>\r\n\uC11C\uBC84\uC678\uBD80 \uC544\uC774\uD53C \uB610\uB294 DDNS \uC8FC\uC18C\uB97C \uC785\uB825\uD574\uC8FC\uC138\uC694<br>\r\n\uC608) tips000.iptime.org:8683/appinstall.php <- \uC774\uB807\uAC8C \uC785\uB825\uD574\uC8FC\uC138\uC694<br>\r\ntips000.iptime.org:8683/member.php<br>\r\ntips000.iptime.org:8683/order.php<br>\r\n</html>");
+		JLabel label_connect_info = new JLabel("<html>\uC1FC\uD551\uBAB0 \uC5F0\uB3D9\uC5D0 \uD544\uC694\uD55C \uC678\uBD80\uB0B4\uBD80 \uD3EC\uD2B8\uB294 8683\uBC88 \uC785\uB2C8\uB2E4.<br>\r\n\uC1FC\uD551\uBAB0\uAD00\uB9AC\uC790 \uD398\uC774\uC9C0 > API \uAC1C\uBC1C\uC13C\uD130 > API URL \uC124\uC815\uC5D0\uC11C <br>\r\n\uC11C\uBC84\uC678\uBD80 \uC544\uC774\uD53C \uB610\uB294 DDNS \uC8FC\uC18C\uB97C \uC785\uB825\uD574\uC8FC\uC138\uC694<br>\r\n\uC608) tips000.iptime.org:8683/appinstall <- \uC774\uB807\uAC8C \uC785\uB825\uD574\uC8FC\uC138\uC694<br>\r\ntips000.iptime.org:8683/member<br>\r\ntips000.iptime.org:8683/order<br>\r\n</html>");
 		label_connect_info.setHorizontalAlignment(SwingConstants.CENTER);
 		label_connect_info.setBackground(SystemColor.info);
 		label_connect_info.setOpaque(true);
-		panel_center_shop.add(label_connect_info, "cell 0 6 6 1,grow");
+		panel_center_shop.add(label_connect_info, "cell 0 5 6 1,grow");
 		
 		JPanel panel_center_handy = new JPanel();
 		tabbedPane.addTab("\uD578\uB4DC\uD3F0 \uD1B5\uC2E0\uC124\uC815", null, panel_center_handy, null);
@@ -300,8 +317,11 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 				config_file.setProperty("DBIP", "Localhost"); //DBIP				
 				config_file.setProperty("DBPORT", "1433"); //DDPORT
 				config_file.setProperty("MEMNUM", "10"); //MEMNUM
-				config_file.setProperty("RETIME", "10"); //RETIME
+				//config_file.setProperty("RETIME", "10"); //RETIME
 				config_file.setProperty("CONNECT", "1"); //CONNECT
+				config_file.setProperty("NEWCODE", ""); //신규가입회원전송코드
+				config_file.setProperty("FAILCODE", ""); //실패회원전송코드
+				config_file.setProperty("OKCODE", ""); //성공회원전송코드
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -320,8 +340,11 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 			text_shop_dbip.setText(config_file.getProperty("DBIP"));
 			text_shop_dbport.setText(config_file.getProperty("DBPORT"));
 			text_shop_memnum.setText(config_file.getProperty("MEMNUM"));
-			text_shop_retime.setText(config_file.getProperty("RETIME"));
 			
+			text_event_newcode.setText(config_file.getProperty("NEWCODE"));
+			text_event_okcode.setText(config_file.getProperty("OKCODE"));
+			text_event_failcode.setText(config_file.getProperty("FAILCODE"));
+						
 			if(config_file.getProperty("CONNECT").equals("0")){
 				chkbox_shop_connect.setSelected(false);
 			}else{
@@ -386,7 +409,10 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		config_file.setProperty("DBIP", text_shop_dbip.getText()); //DBIP				
 		config_file.setProperty("DBPORT", text_shop_dbport.getText()); //DDPORT
 		config_file.setProperty("MEMNUM", text_shop_memnum.getText()); //MEMNUM
-		config_file.setProperty("RETIME", text_shop_retime.getText()); //RETIME
+		
+		config_file.setProperty("NEWCODE", text_event_newcode.getText()); //newcode
+		config_file.setProperty("OKCODE", text_event_okcode.getText()); //okcdoe
+		config_file.setProperty("FAILCODE", text_event_failcode.getText()); //failcode
 		
 		String con = "0";
 		if(chkbox_shop_connect.isSelected()){
@@ -439,7 +465,7 @@ public class ConfigFilePath extends JFrame implements ActionListener {
         btn_info_exit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//종료합니다.
-				//System.exit(0);				
+				//System.exit(0);	
 				dlg_help_info.dispose();				
 			}
 		}); 

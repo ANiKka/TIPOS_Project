@@ -1,3 +1,5 @@
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -10,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
 
 public class Ms_Connect {
 	
@@ -26,6 +29,23 @@ public class Ms_Connect {
 	private String dbpw ="tips";	
 	private String query;
 	//private JSONArray json;
+	
+	
+	public Ms_Connect(){
+		
+		
+		Properties config = new Properties();
+		try {
+			config.load(new FileInputStream(new File("config.dat")));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		ip = config.getProperty("DBIP");
+		port = config.getProperty("DBPORT");
+		
+	}
+	
 	
 	/*
 	 * 서버정보를 셋팅 합니다.

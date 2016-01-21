@@ -9,11 +9,11 @@ import org.json.simple.parser.ParseException;
 public class Trans_ShopAPI {
 
 	//환경설정
-	private String shop_key = Server_Config.getSHOPKEY();
-	Ms_Connect ms_connect = new Ms_Connect();
+	/*private String shop_key = Server_Config.getSHOPKEY();
+	Ms_Connect ms_connect = new Ms_Connect();*/
 		
 	//상품등록
-	public void goods_Insert(JSONArray json_data, String query){
+	/*public void goods_Insert(JSONArray json_data, String query){
 		
 		//주소등록
 		String goods_reg = "https://ssl.anybuild.co.kr/API/goods/goods_insert.php";
@@ -95,7 +95,7 @@ public class Trans_ShopAPI {
 			
 			//전송 결과를 확인 합니다. 
 			if(object.get("result_code").equals("OK")){
-				ms_connect.setMainSetting();
+				//ms_connect.setMainSetting();
 				int result = ms_connect.connect_update(query);
 				switch(result){			
 				case 0:
@@ -115,15 +115,15 @@ public class Trans_ShopAPI {
 		}		
 		
 		
-	}
+	}*/
 	
 	//상품 메인출력 코드 불러오기 API
 	//쇼핑몰 메인코드를 불러 옵니다.
-	public JSONArray getMainCode(String code){
+	/*public JSONArray getMainCode(String code){
 		
 		//code <- 조회위치 입니다.
 		//환경설정
-		String shop_key = Server_Config.getSHOPKEY();
+		//String shop_key = Server_Config.getSHOPKEY();
 		
 		//접속 쇼핑몰정보 정의하기
 		String shop_address = "https://ssl.anybuild.co.kr/API/goods/main_code.php";	
@@ -203,11 +203,11 @@ public class Trans_ShopAPI {
 		}
 		
 		return data;
-	}
+	}*/
 	
 	/*	주문검색 하려면 아래 변수를 뒤쪽에 추가하시면 됩니다. 아래 주문조건을 입력하지 않는 경우 최근 주문서 20개를 가져오게 됩니다.
 	&order_idx=주문번호&mem_id=회원아이디&j_name=주문자명&s_name=수신자명&order_date=2015-05-05 	*/	
-	public void order_Info(String data){	
+	/*public void order_Info(String data){	
 		String order_list = "https://ssl.anybuild.co.kr/API/shopping/order_info.php";
 		System.out.println(order_list);		
 		
@@ -293,7 +293,7 @@ public class Trans_ShopAPI {
 		}		
 		
 		
-	}
+	}*/
 	
 	
 	
@@ -339,16 +339,111 @@ public class Trans_ShopAPI {
 	$post_str .= "&add7=추가필드값";
 	$post_str .= "&add8=추가필드값";
 	$post_str .= "&add9=추가필드값";
-	$post_str .= "&add10=추가필드값";*/	
-	String mem_edit = "https://ssl.anybuild.co.kr/API/member/mem_edit.php";
+	$post_str .= "&add10=추가필드값";*/
+public void setMember_Update(String data, String shop_key){
+		
+		//주소등록
+		String mem_edit = "https://ssl.anybuild.co.kr/API/member/mem_edit.php";
+		System.out.println(" 동기화를 시작합니다. 접속 주소 --> " + mem_edit);
+		
+		String shop_data = data;
+		/*try {
+			shop_data = "api_key="+shop_key+"&mem_id="+URLEncoder.encode(data.toString(), "UTF-8");
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}*/
+		
+		System.out.println(shop_data);
+		
+		//기록을 남길 파일을 생성합니다.
+		File file = new File("result.log");
+				
+		if(!file.isFile()){
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+				
+		//결과를 전송 합니다.
+		//전송폼을 생성합니다.
+		try {
+			
+			URL url = new URL(mem_edit);
+			HttpURLConnection shop_url = (HttpURLConnection)url.openConnection();
+			
+			shop_url.setRequestMethod("POST");					
+			shop_url.setRequestProperty("Accept-Language", "ko-kr,ko;q=0.8,en-us;q=0.5,en;q=0.3");
+			shop_url.setDoInput(true);
+			shop_url.setDoOutput(true);
+						
+			System.out.println("전송상태 출력");			
+			System.out.println(" URL : "+shop_url.getURL());	
+
+			OutputStreamWriter output = new OutputStreamWriter(shop_url.getOutputStream());
+			
+			output.write(shop_data);				
+			
+			output.flush();			
+			output.close();			
+			
+			//전송 결과 수신
+			InputStreamReader isr = new InputStreamReader(shop_url.getInputStream(), "UTF-8");	
+			JSONObject object = (JSONObject)JSONValue.parseWithException(isr);							
+						
+			isr.close();
+						
+			SimpleDateFormat formatter = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss", Locale.KOREA );
+			Date currentTime = new Date ( );
+			String dTime = formatter.format ( currentTime );
+			
+			String sb = "전송 시간 : " + dTime + "결과 \r\n" ;
+					sb += object.toJSONString();
+			
+			char[] paser = sb.toCharArray();
+			
+			//로그파일을 작성합니다.
+			OutputStreamWriter bos = new OutputStreamWriter(new FileOutputStream(file, true), "euc-kr");					
+			StringBuffer result_str = new StringBuffer();
+			for(char str : paser){				
+				bos.write(str);
+				result_str.append(str);
+			}
+			System.out.println(result_str);
+			
+			bos.write('\r');
+			bos.write('\n');	
+			
+			bos.close();
+			System.out.println("전송이 완료 되었습니다.");
+			
+			//전송 결과를 확인 합니다. 
+			if(object.get("result_code").equals("OK")){
+								
+			}						
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();		
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		
+		
+	}
+	
+	
 	
 	//회원 정보 조회
 	String mem_info = "https://ssl.anybuild.co.kr/API/member/mem_info.php";
 	
-	public JSONArray getMemberManage(String hp, String mem_id){
+	/*public JSONArray getMemberManage(String hp, String mem_id){
 				
 		//환경설정
-		String shop_key = Server_Config.getSHOPKEY();
+		//String shop_key = Server_Config.getSHOPKEY();
 		
 		//접속 쇼핑몰정보 정의하기
 		String shop_address = "https://ssl.anybuild.co.kr/API/member/mem_info.php";	
@@ -455,7 +550,7 @@ public class Trans_ShopAPI {
 		
 		return data;
 	}	
-	
+	*/
 	
 	
 	/*$post_str = "api_key=333d4794fbf4b1a9d2b4e26b0091df59";
@@ -474,10 +569,10 @@ public class Trans_ShopAPI {
 	&mem_only=(ALL:전체 선택,Y:회원가입한회원만 선택,N:비회원만 선택)&platform=플랫폼&devicename=제조사명&devicemodel=제조사 모델명&deviceversion=플랫폼 버젼&hp_num=핸드폰번호
 	?api_key=333d4794fbf4b1a9d2b4e26b0091df59 */
 	String device_list = "https://ssl.anybuild.co.kr/API/app/device_list.php";	
-	public JSONArray getDeviceList(){
+	/*public JSONArray getDeviceList(){
 				
 		//환경설정
-		String shop_key = Server_Config.getSHOPKEY();
+		//String shop_key = Server_Config.getSHOPKEY();
 		
 		//접속 쇼핑몰정보 정의하기
 		String shop_address = "https://ssl.anybuild.co.kr/API/app/device_list.php";	
@@ -583,7 +678,7 @@ public class Trans_ShopAPI {
 		}
 		
 		return data;
-	}	
+	}	*/
 	
 	
 	/* 검색 하려면 아래 변수를 뒤쪽에 추가하시면 됩니다. 아래 검색조건을 입력하지 않는 경우 모든 APP 설치 고객에게 메세지 전송되므로 주의 하시기 바랍니다.
@@ -592,10 +687,10 @@ public class Trans_ShopAPI {
 	+ "&push_link=/main&push_img_url=".urlencode('http://sskshop1.anybuild.com/thum_img/sskshop1/goods_img2/85b6f89b41cae26786ac72365fff771b_water_3afcaf174b6d740dcc3f8f859871184e_c1_w320_h320.jpg').""
 	+ "&memlv=&mem_only=ALL&platform=&devicename=&devicemodel=&deviceversion=&hp_num=");*/
 	String push_submit = "https://ssl.anybuild.co.kr/API/app/push_submit.php";
-	public JSONObject setPushSubimt(HashMap<String, Object> push_list){
+	public JSONObject setPushSubimt(HashMap<String, Object> push_list,String shop_key){
 		
 		//환경설정
-		String shop_key = Server_Config.getSHOPKEY();
+		//String shop_key = Server_Config.getSHOPKEY();
 		
 		//접속 쇼핑몰정보 정의하기
 		String shop_address = "https://ssl.anybuild.co.kr/API/app/push_submit.php";	
@@ -612,8 +707,7 @@ public class Trans_ShopAPI {
 		String memlv = "";
 		String mem_only = (String)push_list.get("Mem_Only");
 		String hp_num = (String)push_list.get("Hp");
-		
-		
+				
 		String shop_data = "";
 		try {
 			shop_data = "api_key="+shop_key;
@@ -718,10 +812,10 @@ public class Trans_ShopAPI {
 	
 	
 	//푸시 이벤트 목록 불러오기
-	public JSONArray getPushEventList(){
+	/*public JSONArray getPushEventList(){
 		
 			//환경설정
-			String shop_key = Server_Config.getSHOPKEY();
+			//String shop_key = Server_Config.getSHOPKEY();
 			
 			//접속 쇼핑몰정보 정의하기
 			String shop_address = "https://ssl.anybuild.co.kr/API/app/push_event_list.php?api_key="+shop_key;	
@@ -780,7 +874,7 @@ public class Trans_ShopAPI {
 			
 			return data;
 	}
-	
+	*/
 	
 	
 	//api key 정의 하기	

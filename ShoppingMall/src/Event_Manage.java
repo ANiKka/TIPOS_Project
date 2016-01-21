@@ -1178,7 +1178,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		tran_panel_img.add(tranimg_panel_imglist, BorderLayout.CENTER);
 		tranimg_panel_imglist.setLayout(new MigLayout("", "[][][grow][][][][][][][][grow][]", "[][][][grow]"));
 		
-		tranimg_label_listtitle = new JLabel("\uC774\uBBF8\uC9C0 \uBAA9\uB85D");
+		tranimg_label_listtitle = new JLabel("\uC774\uBBF8\uC9C0 \uBAA9\uB85D( \uD30C\uC77C\uBA85\uC5D0 \uD55C\uAE00\uD3EC\uD568\uC2DC \uC804\uC1A1\uC548\uB428 )");
 		tranimg_label_listtitle.setHorizontalAlignment(SwingConstants.CENTER);
 		tranimg_label_listtitle.setFont(new Font("맑은 고딕", Font.BOLD, 15));
 		tranimg_panel_imglist.add(tranimg_label_listtitle, "cell 0 0 12 1,grow");
@@ -2151,7 +2151,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		//전송할 내용 불러오기
 		String title = tranimg_text_title.getText();
 		String message = tranimg_text_title.getText();		
-		String img_url = tranimg_text_imgpath.getText();		
+		String img_url = tranimg_text_imgpath.getText();
 		String link  = tranmsg_text_linkurl.getText();
 		String event_code = "";
 		
@@ -2173,7 +2173,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		if(tranimg_label_imgpath.getText().equals("FTP")){
 			//주소만 불러다가 사용합니다.
 			img_url = "http://14.38.161.45:8080/image/"+img_url;
-			push_list.put("Img_Url", img_url);
+			//push_list.put("Img_Url", img_url);
 			System.out.println(img_url);
 		}else{
 			
@@ -2207,6 +2207,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 						ftpConn.deleteFile(name);
 					}
 				}
+				
 				File file = new File(img_path, img_url);
 				ftpConn.upload(file);
 		    	
@@ -2218,9 +2219,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 			}
 	    	
 			img_url = "http://14.38.161.45:8080/image/"+Server_Config.getFTPMARTPATH()+"/"+img_url;
-			push_list.put("Img_Url", "");
-			
-			
+			//push_list.put("Img_Url", "");			
 		}		
 		
 		push_list.put("Mem_Only", mem_only);

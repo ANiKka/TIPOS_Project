@@ -1,188 +1,260 @@
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.StringTokenizer;
-
-import javax.net.ssl.HttpsURLConnection;
+import java.util.Properties;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-public class ShopReceiveData extends Thread{
+public class ShopReceiveData extends Thread {
 
-	Socket socket;
-    DataInputStream dis;
-    FileOutputStream fos;
-    BufferedOutputStream bos;
-     
-    String app = "appinstall.php";
-    String mem = "member.php";
-    String ord = "order.php";
+	private Socket socket;
+	
+    private String app = "appinstall";
+    private String mem = "member";
+    private String ord = "order";
     
-    String gubun = "";
-    String result_data = "";
+    private String gubun = "";       //수신구분  멤버,주문,앱설치        
+    private Ms_Connect mscon;
+    
+    private String cus_code = "";
+	private String connect_add5 = "0";
+	private String phone_number="";
+	private String mem_id = "";  
+	private String result_str = "";  //전송로그기록		
+	private String memStartNum;
+	private Properties config;
     public ShopReceiveData(Socket socket) {
         this.socket = socket;
+        mscon = new Ms_Connect();        
+        config = new Properties();
+        try {
+			config.load(new FileInputStream(new File("config.dat")));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		memStartNum = config.getProperty("MEMNUM");
+		
     }
  
     @Override
     public void run() {
        
-        	//기록을 남길 파일을 생성합니다.
-    		File file = new File("result.log");
-    				
-    		if(!file.isFile()){
-    			try {
-    				file.createNewFile();
-    			} catch (IOException e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
-    			}
-    		}
-    		
-            System.out.println("파일 수신 작업을 시작합니다.");            
-            ArrayList<String> list = new ArrayList<String>();
+    	//로그파일을 생성합니다. shop_log 폴더 생성합니다. 
+		Date today = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+		String date = sdf.format(today);
+				
+		File file_dir = new File("Shop_Log");
+		if(!file_dir.exists()){
+			//디렉토리 생성
+			file_dir.mkdir();
+		}
+		
+    	//기록을 남길 파일을 생성합니다.
+		File file = new File("Shop_Log/shop_"+date+".log");	
+		if(!file.exists()){
+			try {				
+				file.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		sdf.applyPattern( "yyyy-MM-dd HH:mm:ss");		
+		result_str = "쇼핑몰 데이터 수신 "+sdf.format(today)+"\r\n";
+									
+		Properties result_data = new Properties();    	
             
-    		//결과를 전송 합니다.
-    		//전송폼을 생성합니다.
-    		try {
-    			DataInputStream dis = new DataInputStream(socket.getInputStream());
-    			BufferedReader in = new BufferedReader(new InputStreamReader(dis));
-    			
-    			DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-    			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(dos));
-    			
-    			String inputline;    			
-    			int contentLength = 0;
-    			
-    			while((inputline = in.readLine()) != null){
-    						
-        			if( inputline.contains("GET")){		
-        				System.out.println("전송합니다.");
-        				out.write("{\"result_code\":\"OK\", \"result_msg\":\"정상처리\" }");
-                		out.flush();
-        				
-        				dis.close();
-        				dos.close();
-        				socket.close();
-        				return;
-        			}        	
-        			
-        			if( inputline.startsWith("POST")){        				
-        				if(inputline.contains(app)){
-        					gubun=app;
-        				}else if(inputline.contains(mem)){
-        					gubun=mem;
-        				}else if(inputline.contains(ord)){
-        					gubun=ord;
-        				}
-        				System.out.println(gubun);
-        				continue;
-        			}
-        			
-                    if (inputline.startsWith("Content-Length: ")) {  
-                        contentLength = Integer.parseInt(inputline.substring(16));   //Content-Length 값 할당
-                        System.out.println(contentLength);
-                        continue;  
-                    }
-                      
-                    //웹페이지 정보에서 <body> 정보를  Parsing  
-                    if (inputline.startsWith("json_data=")) {                       //body 내용이 시작 될 때  
-                        /*for(int i=0; i<contentLength;i++){     //Content-Length 만큼 정보를 가져옴  
-                            char ch = (char)in.read();  
-                            result_data += String.valueOf(ch);       //data 값에 String 혛 변환 후 할당  
-                        }*/
-                    	result_data = inputline;//.substring(inputline.indexOf("json_data="), contentLength);                    	
-                        System.out.println(result_data);
-                        break;
-                    }
-                }  
-    			    			    			
-    			boolean result = true; 
-    			//DB에 저장 합니다.
-    			if(gubun.contains(app)){    				
-    				System.out.println("앱설치현황 저장합니다.");
-					if(!resultCodeSave(result_data)){
-        				result = false;
-        			}
-    			}else if(gubun.contains(mem)){
-    				System.out.println("멤버 저장합니다.");    				
-					if(!resultMemberSave(result_data)){
-        				result = false;
-        			}
-    			}else if(gubun.contains(ord)){
-    				System.out.println("주문저장합니다.");
-					if(!resultOrderSave(result_data)){
-						result = false;       				        				
-        			}
-    			}			
-        		    			
-        		//결과 전송합니다.
-    			if(result){
-    				out.write("{\"result_code\":\"OK\", \"result_msg\":\""+URLEncoder.encode("정상처리", "UTF-8")+"\" }");    				
-            		out.flush();
-            		System.out.println("정상처리 완료");
-    			}else{
-    				out.write("{\"result_code\":\"FAIL\", \"result_msg\":\""+URLEncoder.encode("처리오류", "UTF-8")+"\" }");
-            		out.flush();
-            		System.out.println("처리 오류발생");
-    			}
-        		
-        		dis.close();
-        		dos.close();
-        		socket.close();
-    		} catch (IOException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    		}
+    	//결과를 전송 합니다.
+    	//전송폼을 생성합니다. 전송내용을 수신합니다.
+		try {
+			
+			String data ="OK";			
+	        System.err.println("client connect");
+
+	        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+	        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
+	         
+	        out.write("HTTP/1.0 200 OK\r\n");
+	        out.write("Content-Type: text/html\r\n");
+	        out.write("Content-Length: "+data.length()+"\r\n");
+	        out.write("\r\n");
+
+	        out.write(data);
+	        out.flush();
+	        	        
+	        result_data.load(in);
+	        System.out.println(result_data.toString());	        
+	        result_str += result_data.getProperty("json_data")+"\r\n";
+	        
+	        out.close();
+	        in.close();
+	        socket.close();
+	        
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//어디서 전송되었는지 확인 합니다.
+		gubun = result_data.getProperty("POST");
+		String tran_data = result_data.getProperty("json_data"); 
+		
+		boolean result = true;
+		//DB에 저장 합니다.
+		if(gubun.contains(app)){    				
+			System.out.println("앱설치현황 저장합니다.");
+			result_str += "앱설치현황 저장합니다.\r\n";
+			if(!resultCodeSave(tran_data)){
+				result	= false;
+			}
+		}else if(gubun.contains(mem)){
+			System.out.println("멤버 저장합니다.");
+			result_str += "멤버 저장합니다.\r\n";
+			if(!resultMemberSave(tran_data)){
+				result = false;
+			}
+		}else if(gubun.contains(ord)){
+			System.out.println("주문저장합니다.");
+			result_str += "주문저장합니다.\r\n";
+			if(!resultOrderSave(tran_data)){
+				result = false;       				        				
+			}
+		}
+		
+		result_str += "서버저장 : ";
+		if(result){
+			result_str += "성공\r\n";
+		}else{
+			result_str += "실패\r\n";
+		}
+		
+		if(cus_code != null && !"".equals(cus_code)){			
+			
+			String query = "";
+			//매장에 접속 정보를 저장합니다.
+			switch(gubun){
+			
+			case "appinstall":
+				query = "Update Customer_Info Set e_AppInstall_YN='1', e_PhoneNumber='"+phone_number+"' Where Cus_Code='"+cus_code+"' ";
+				mscon.connect_update(query);
+				break;
+				
+			case "member":    				
+				query = "Select Online_Key from office_user ";					
+				HashMap<String, String> map = mscon.selectQueryOne(query); 
+				String key = map.get("Online_Key");
+				System.out.println(key);
+				String data="";
+				try {
+					data = "api_key="+key.toString()+"&mem_id="+mem_id+"&add2="+cus_code+"&add4="+URLEncoder.encode("연동중", "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				//결과전송 쇼핑몰회원정보 수정
+				new Trans_ShopAPI().setMember_Update(data, key);
+				
+				//결과전송 앱설치 회원 결과 보고
+				HashMap<String, Object> push_list = new HashMap<String, Object>();
+				
+				push_list.get("회원연동이 정상적으로이루어 졌습니다.");
+				push_list.get("회원연동이 정상적으로이루어 졌습니다.");
+				push_list.get("/maypage");
+				push_list.get("");
+				push_list.get(config.get("NEWCODE"));
+				
+				push_list.get(mem_id);
+				push_list.get("ALL");
+				
+				
+				new Trans_ShopAPI().setPushSubimt(push_list, key);				
+				break;
+				
+			case "order":	
+				break;
+			
+			}
+			//쇼핑몰에 연동 정보를 수정합니다.    			
+		}else{			
+			
+		}
+    		
+    	/*try {
+			socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+    	           	    	
+		System.out.println("===> 파일 수신 작업을 완료합니다.");
+		result_str += "===> 파일 수신 작업을 완료합니다.";
+		//로그파일을 작성합니다.
+		OutputStreamWriter bos;
+		try {
+			bos = new OutputStreamWriter(new FileOutputStream(file, true), "euc-kr");
+			char[] paser = result_str.toCharArray();
+			for(char str : paser){
+				bos.write(str);
+			}
+			bos.write("\r\n");
+			bos.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 	
     //결과 저장합니다.
     public boolean resultCodeSave(String data){
     	
-    	JSONObject json = new JSONObject();		
-		String p_data = data.substring(10, data.length());
+    	JSONObject json = new JSONObject();
+    	//Properties temp = new Properties();
+    	
 		try {
-			json = (JSONObject)JSONValue.parseWithException(p_data);			 
+			json = (JSONObject)JSONValue.parseWithException(data);			 
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		    	
+		
+		//기존 앱설치내용이 있는지 먼저 확인 합니다.
 		String query = "Select * From e_AppInstall Where idx='"+json.get("idx")+"' ";
-		String query_result = "";
-		Ms_Connect mscon = new Ms_Connect();
+		String query_result = "";		
 		HashMap<String, String> map = mscon.selectQueryOne(query);
 		
-		if(map.size() <= 0){
+		if(map.size() <= 0){ //앱신규설치회원
 						
 			//매장회원을 검색 해서 매칭합니다.
 			query = "Select * From Customer_Info Where replace(cus_mobile, '-', '')='"+json.get("hp_num")+"' or replace(cus_tel, '-', '')='"+json.get("hp_num")+"' Order by Edit_Date DESC";
 			ArrayList<HashMap<String, String>> map_cuscode = mscon.connection(query);
-			String cus_code = "";
-			String connect_add5 = "0";
+			
 			System.out.println(map_cuscode.size());
 			switch(map_cuscode.size()){
 			case 0:  //매칭안됨
 				break;
 			case 1:
 				cus_code = map_cuscode.get(0).get("Cus_Code");
+				phone_number = json.get("hp_num").toString();
 				connect_add5 = "1"; //매칭완료
 				break;	
 			default:
@@ -199,25 +271,24 @@ public class ShopReceiveData extends Thread{
 			}else{
 				return false;
 			}
-		}else{
+		}else{ //기존설치회원
 			if(map.get("idx").equals(json.get("idx"))){
 				
 				//매장회원을 검색 해서 매칭합니다.
 				query = "Select * From Customer_Info Where replace(cus_mobile, '-', '')='"+json.get("hp_num")+"' or replace(cus_tel, '-', '')='"+json.get("hp_num")+"' Order by Edit_Date DESC";
 				ArrayList<HashMap<String, String>> map_cuscode = mscon.connection(query);
-				String cus_code = "";
-				String connect_add5 = "";
+				
 				System.out.println(map_cuscode.size());
 				switch(map_cuscode.size()){
 				case 0:  //매칭안됨
-					connect_add5 = ", conect_yn='0' "; //중복발생
+					connect_add5 = ", connect_yn='0' "; //매칭안됨
 					break;
 				case 1:
 					cus_code = ", cus_code='"+map_cuscode.get(0).get("Cus_Code")+"' ";
-					connect_add5 = ", conect_yn='1' "; //매칭완료
+					connect_add5 = ", connect_yn='1' "; //매칭완료
 					break;	
 				default:
-					connect_add5 = ", conect_yn='2' "; //중복발생					
+					connect_add5 = ", connect_yn='2' "; //중복발생					
 					break;
 				}
 								
@@ -227,6 +298,19 @@ public class ShopReceiveData extends Thread{
 						+"Where idx='"+json.get("idx")+"' ";			
 				int result = mscon.connect_update(query_result);
 				if(result == 0){
+					
+					switch(map_cuscode.size()){
+					case 0:  //매칭안됨
+						connect_add5 = "0"; //매칭안됨
+						break;
+					case 1:
+						cus_code = map_cuscode.get(0).get("Cus_Code");
+						connect_add5 = "1"; //매칭완료
+						break;	
+					default:
+						connect_add5 = "2"; //중복발생					
+						break;
+					}
 					return true;
 				}else{
 					return false;
@@ -241,10 +325,10 @@ public class ShopReceiveData extends Thread{
     //결과를 저장합니다.
     public boolean resultMemberSave(String data){
     	
-    	JSONObject json = new JSONObject();		
-		String p_data = data.substring(10, data.length());
+    	JSONObject json = new JSONObject();	
+		
 		try {
-			json = (JSONObject)JSONValue.parseWithException(p_data);			 
+			json = (JSONObject)JSONValue.parseWithException(data);			 
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -254,17 +338,18 @@ public class ShopReceiveData extends Thread{
 		
 		String query = "Select * From e_Member Where mem_id='"+json.get("mem_id")+"' ";
 		String query_result = "";
-		Ms_Connect mscon = new Ms_Connect();
+		mem_id = json.get("mem_id").toString();
+		
 		HashMap<String, String> map = mscon.selectQueryOne(query);
 		//임시로 테이블 생성합니다.
-		if(map.size() <= 0){
+		if(map.size() <= 0){ // 신규온라인회원
 			
 			//매장회원을 검색 해서 매칭합니다.
-			String cus_code = "";
-			String connect_add5 = "0";
+			//String cus_code = "";
+			//String connect_add5 = "0";
 			switch(json.get("add1").toString().trim()){
-			case "신규회원신청":
-				query = "Select ISNull(max(cus_code), '23000000')+1 as cus_code From Customer_Info Where LEN(Cus_Code) = 8 and Left(Cus_Code, 2)='23' ";
+			case "신규회원신청":				
+				query = "Select ISNull(max(cus_code), '"+memStartNum+"000000')+1 as cus_code From Customer_Info Where LEN(Cus_Code) = 8 and Left(Cus_Code, 2)='"+memStartNum.trim()+"' ";
 				HashMap<String, String> map_newmem = mscon.selectQueryOne(query);
 				if(map_newmem.size() > 0){
 					String[] query_won = new String[2]; 
@@ -272,16 +357,17 @@ public class ShopReceiveData extends Thread{
 							+ "Cus_BirDay,Cus_RealDay,Pur_Pri,Cus_TPoint,Cus_Point,Cus_UsePoint,Dec_Pri,Vis_Count,Gift_Count,Edit_Check,"
 							+ "Zip_Code,Address1,Address2,Bigo,Cus_Date,Vis_Date,Write_Date,Edit_Date,Writer,EDitor,HPSend_YN,"
 							+ "Office_Name,Office_Num,Owner_Name,Uptae,JongMok,Address,Credit_YN,Cus_Use,Tax_Use,cPoint_Use,"
-							+ "TaxBill_YN,Email,TAX_Print_Use,TAX_AUTO_USE,TAX_Gubun,TAX_Number)" 
-							+ "Values ('"+map_newmem.get("cus_code")+"', '"+json.get("name")+"', '정회원','1','"+json.get("tel")+"','"+json.get("hp")+"','1','','','0','0','0','0','0','0','0','1',"
+							+ "TaxBill_YN,Email,TAX_Print_Use,TAX_AUTO_USE,TAX_Gubun,TAX_Number, e_AppInstall_YN, e_Member_YN, e_PushSMS_YN, e_PhoneNumber)" 
+							+ " Values('"+map_newmem.get("cus_code")+"', '"+json.get("name")+"', '정회원','1','"+json.get("tel")+"','"+json.get("hp")+"','1','','','0','0','0','0','0','0','0','1',"
 							+ "'"+json.get("zipcode")+"','"+json.get("addr1")+"','"+json.get("addr2")+"','',"
-							+ "'2016-01-14','','2016-01-14','2016-01-14','tips','tips','1','','','','','','','1','1','1','1','0','','0','0', '0','' ) ";
+							+ "'2016-01-14','','2016-01-14','2016-01-14','tips','tips','1','','','','','','','1','1','1','1','0','','0','0', '0', '', '', '1', '1', '') ";
 					query_won[0] = query;
 					query_won[1] = "Insert Into Customer_History(Regdate,q_sql,gubun)"
-										+"Values(convert(datetime,getdate(),120), '"+query+"',' 쇼핑몰관리')";					
+										+"Values(convert(datetime,getdate(),120), '"+query.replace("'", "`")+"', '쇼핑몰관리')";					
 					mscon.connect_update(query_won);		
 					cus_code = map_newmem.get("cus_code");
 					connect_add5 = "1";
+					
 				}
 				break;
 			case "기존회원연동":
@@ -304,7 +390,7 @@ public class ShopReceiveData extends Thread{
 			}
 			
 			query_result = "Insert into e_Member values("
-					+"'', '"+json.get("mem_id")+"', '"+json.get("pwd")+"', '"+json.get("name")+"', '"+json.get("memlv")+"', '"+json.get("hp")+"',"
+					+"'"+json.get("mem_idx")+"', '"+json.get("mem_id")+"', '"+json.get("pwd")+"', '"+json.get("name")+"', '"+json.get("memlv")+"', '"+json.get("hp")+"',"
 					+ " '"+json.get("tel")+"', '"+json.get("fax")+"', '"+json.get("nickname")+"', '"+json.get("sex")+"', '"+json.get("age")+"', '"+json.get("email")+"', '"+json.get("zipcode")+"',"
 					+ " '"+json.get("addr1")+"', '"+json.get("addr2")+"', '"+json.get("birthday")+"', '"+json.get("birthday_type")+"', '"+json.get("marry_yn")+"', '"+json.get("biz_num")+"', '"+json.get("sangho")+"',"
 					+ " '"+json.get("homepage")+"', '"+json.get("add1")+"', '"+json.get("add2")+"', '"+json.get("add3")+"', '"+json.get("add4")+"', '"+json.get("add5")+"', '"+json.get("add6")+"',"
@@ -315,43 +401,120 @@ public class ShopReceiveData extends Thread{
 			}else{
 				return false;
 			}			
-		}else{
-			if(map.get("mem_id").equals(json.get("mem_id"))){
-				query_result = "Update e_Member Set pwd='"+json.get("pwd")+"', name='"+json.get("name")+"', memlv='"+json.get("memlv")+"', hp='"+json.get("hp")
-						+"', tel='"+json.get("tel")+"', fax='"+json.get("fax")+"', nickname='"+json.get("nickname")+"', sex='"+json.get("sex")+"', age='"+json.get("age")
-						+"', email='"+json.get("email")+"', zipcode='"+json.get("zipcode")+"', addr1='"+json.get("addr1")+"', addr2='"+json.get("addr2")+"', birthday='"+json.get("birthday")
-						+"', birthday_type='"+json.get("birthday_type")+"', marry_yn='"+json.get("marry_yn")+"', biz_num='"+json.get("biz_num")+"', sangho='"+json.get("sangho")
-						+"', homepage='"+json.get("homepage")+"', add1='"+json.get("add1")+"', add2='"+json.get("add2")+"', add3='"+json.get("add3")+"', add4='"+json.get("add4")
-						+"', add5='"+json.get("add5")+"', add6='"+json.get("add6")+"', add7='"+json.get("add7")+"', add8='"+json.get("add8")+"', add9='"+json.get("add9")
-						+"', add10='"+json.get("add10")+"' Where mem_id='"+json.get("mem_id")+"' ";			
-								
-				int result = mscon.connect_update(query_result);
-				if(result == 0){
-					return true;
-				}else{
-					return false;
-				}
+		}else{ //기존온라인회원
+			
+			query_result = "Update e_Member Set pwd='"+json.get("pwd")+"', name='"+json.get("name")+"', memlv='"+json.get("memlv")+"', hp='"+json.get("hp")
+					+"', tel='"+json.get("tel")+"', fax='"+json.get("fax")+"', nickname='"+json.get("nickname")+"', sex='"+json.get("sex")+"', age='"+json.get("age")
+					+"', email='"+json.get("email")+"', zipcode='"+json.get("zipcode")+"', addr1='"+json.get("addr1")+"', addr2='"+json.get("addr2")+"', birthday='"+json.get("birthday")
+					+"', birthday_type='"+json.get("birthday_type")+"', marry_yn='"+json.get("marry_yn")+"', biz_num='"+json.get("biz_num")+"', sangho='"+json.get("sangho")
+					+"', homepage='"+json.get("homepage")+"', add1='"+json.get("add1")+"', add2='"+json.get("add2")+"', add3='"+json.get("add3")+"', add4='"+json.get("add4")
+					+"', add5='"+json.get("add5")+"', add6='"+json.get("add6")+"', add7='"+json.get("add7")+"', add8='"+json.get("add8")+"', add9='"+json.get("add9")
+					+"', add10='"+json.get("add10")+"' Where mem_id='"+json.get("mem_id")+"' ";			
+							
+			int result = mscon.connect_update(query_result);
+			if(result == 0){
+				return true;
 			}else{
 				return false;
-			}
-		}
-    	
+			}			
+		}    	
     }
     
     
   //결과를 저장합니다.
     public boolean resultOrderSave(String data){
     	
-    	JSONObject json = new JSONObject();		
-		String p_data = data.substring(10, data.length());
+    	ArrayList<String> orderquery_list = new ArrayList<String>();  //쿼리 리스트 입니다.
+    	JSONObject json = new JSONObject();
 		try {
-			json = (JSONObject)JSONValue.parseWithException(p_data);			 
+			json = (JSONObject)JSONValue.parseWithException(data);	 
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		    	
-		System.out.println(json.toString());
+		//System.out.println(json.toString());
+		
+		//기존 주문인지 확인 합니다.
+		String order_idx = (String)json.get("order_idx");
+		
+		String query = "Select * From e_OrderList Where idx='"+order_idx+"' ";
+		
+		HashMap<String, String> map = mscon.selectQueryOne(query);
+		if(map.size() > 0){ // 주문서 수정입니다.
+			
+			
+			
+		}else{  //신규등록입니다.
+			
+			//주문서 리스트 저장하기
+			String query_list = "Insert Into e_OrderList (";
+			String query_value = "Values(";
+			
+			for(Object keymap:json.keySet()){			
+				if(!keymap.toString().equals("goods_info")){
+					query_list += keymap.toString()+", ";
+					try{
+						query_value += " '"+json.get(keymap).toString()+"', ";
+					}catch(NullPointerException e){
+						query_value += " '', ";
+					}
+				}
+			}
+			query_list = query_list.substring(0, query_list.length()-2)+") ";
+			query_value = query_value.substring(0, query_value.length()-2)+") ";
+			
+			//주문서 저장(orderList) 목록
+			orderquery_list.add(query_list+query_value);
+			
+			//JSONArray goods_info = (JSONArray)json.get("goods_info");
+			//JSONArray goods_info = new JSONArray(json.get("goods_info").toString());		
+			JSONArray goods_info = new JSONArray();
+			try {
+				goods_info = (JSONArray)JSONValue.parseWithException(json.get("goods_info").toString());	 
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}		
+			System.out.println(query_list+query_value+" Count --> "+ goods_info.size());		
+			
+			String egoods_key = "Insert Into e_OrderGoods ( ";
+			String egoods_value =  " Values( ";
+			for(int i=0; i < goods_info.size(); i++){			
+				try {
+					JSONObject temp = (JSONObject)JSONValue.parseWithException(goods_info.get(i).toString());
+					for(Object keymap:temp.keySet()){			
+						if(!keymap.toString().equals("goods_info")){
+							egoods_key += keymap.toString()+", ";
+							try{
+								egoods_value += " '"+json.get(keymap).toString()+"', ";
+							}catch(NullPointerException e){
+								egoods_value += " '', ";
+							}
+						}
+					}
+					
+					egoods_key = egoods_key.substring(0, egoods_key.length()-2)+") ";
+					egoods_value = egoods_value.substring(0, egoods_value.length()-2)+") ";
+					
+					orderquery_list.add(egoods_key+egoods_value);
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}			
+			}
+			
+			//전체 내용을 저장합니다.
+			int result = mscon.connect_update(orderquery_list);
+			switch(result){
+			case 0:
+				return true;			
+			default:				
+				break;
+			}
+			
+		}
+		
 		return false;
     }
 }
