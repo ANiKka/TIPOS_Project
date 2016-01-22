@@ -62,6 +62,7 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 	private JTextField text_event_newcode;
 	private JTextField text_event_failcode;
 	private JTextField text_event_okcode;
+	private JCheckBox chkbox_shop_eventcode;
 	/**
 	 * Create the frame.
 	 */
@@ -150,8 +151,8 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		label_shop_eventcode.setFont(new Font("맑은 고딕", Font.BOLD, 12));
 		panel_center_shop.add(label_shop_eventcode, "cell 0 2,alignx trailing");
 		
-		JLabel label_event_info = new JLabel("\uD68C\uC6D0\uC5F0\uB3D9 \uC694\uCCAD \uC2DC \uC804\uC1A1\uD560 \uC774\uBCA4\uD2B8");
-		panel_center_shop.add(label_event_info, "cell 3 2 3 1,alignx center");
+		chkbox_shop_eventcode = new JCheckBox("\uD68C\uC6D0 \uC5F0\uB3D9 \uC2DC \uC774\uBCA4\uD2B8\uD478\uC26C \uC804\uC1A1 \uC635\uC158");
+		panel_center_shop.add(chkbox_shop_eventcode, "cell 1 2 5 1");
 		
 		JPanel panel_shop_event = new JPanel();
 		panel_center_shop.add(panel_shop_event, "cell 0 3 6 1,grow");
@@ -319,6 +320,9 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 				config_file.setProperty("MEMNUM", "10"); //MEMNUM
 				//config_file.setProperty("RETIME", "10"); //RETIME
 				config_file.setProperty("CONNECT", "1"); //CONNECT
+				
+				config_file.setProperty("EVENTCODE", "0"); //이벤트 푸쉬 사용여부
+				
 				config_file.setProperty("NEWCODE", ""); //신규가입회원전송코드
 				config_file.setProperty("FAILCODE", ""); //실패회원전송코드
 				config_file.setProperty("OKCODE", ""); //성공회원전송코드
@@ -341,6 +345,12 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 			text_shop_dbport.setText(config_file.getProperty("DBPORT"));
 			text_shop_memnum.setText(config_file.getProperty("MEMNUM"));
 			
+			if(config_file.getProperty("EVENTCODE").equals("0")){
+				chkbox_shop_eventcode.setSelected(false);
+			}else{
+				chkbox_shop_eventcode.setSelected(true);
+			}
+			
 			text_event_newcode.setText(config_file.getProperty("NEWCODE"));
 			text_event_okcode.setText(config_file.getProperty("OKCODE"));
 			text_event_failcode.setText(config_file.getProperty("FAILCODE"));
@@ -350,23 +360,7 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 			}else{
 				chkbox_shop_connect.setSelected(true);
 			}
-			
-			/*FileInputStream fis = new FileInputStream(file.getPath());
-			BufferedReader bufferReader = new BufferedReader(new InputStreamReader(fis, "euc-kr"));
-			String temp="";						
-				int i = 0;
-				while( (temp = bufferReader.readLine()) != null ) {				
-					if(i==0){					
-						text_handy_masterpath.setText(temp.toString());
-					}else if( i == 1 ){
-						text_handy_datapath.setText(temp.toString());
-					}else if( i == 2 ){
-						textField_2.setText(temp.toString());
-					}
-					i++;
-				}					
-			bufferReader.close();
-			fis.close();*/
+						
 		} catch (Exception e) {
 				e.printStackTrace();
 		}		
@@ -409,6 +403,12 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		config_file.setProperty("DBIP", text_shop_dbip.getText()); //DBIP				
 		config_file.setProperty("DBPORT", text_shop_dbport.getText()); //DDPORT
 		config_file.setProperty("MEMNUM", text_shop_memnum.getText()); //MEMNUM
+		
+		String evt = "0"; //이벤트 코드 사용 여부
+		if(chkbox_shop_eventcode.isSelected()){
+			evt = "1";
+		}
+		config_file.setProperty("EVENTCODE", evt);
 		
 		config_file.setProperty("NEWCODE", text_event_newcode.getText()); //newcode
 		config_file.setProperty("OKCODE", text_event_okcode.getText()); //okcdoe

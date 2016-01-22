@@ -33,13 +33,20 @@ public class ShopReceiveData extends Thread {
     private String gubun = "";       //수신구분  멤버,주문,앱설치        
     private Ms_Connect mscon;
     
-    private String cus_code = "";
-	private String connect_add5 = "0";
-	private String phone_number="";
-	private String mem_id = "";  
-	private String result_str = "";  //전송로그기록		
+    //회원 저장용 값
+    private String cus_code = "";  //회원코드
+	private String connect_add5 = "0";  //연동여부
+	private String phone_number="";  //회원 전화번호
+	private String mem_id = "";  //회원 아이디  
+	private String result_str = "";  //전송로그기록	
+		
+	//환경설정 정보
 	private String memStartNum;
-	private Properties config;
+	private Properties config;	
+	
+	//앱키
+	private String shop_key = "";
+	
     public ShopReceiveData(Socket socket) {
         this.socket = socket;
         mscon = new Ms_Connect();        
@@ -51,6 +58,11 @@ public class ShopReceiveData extends Thread {
 			e.printStackTrace();
 		}
 		memStartNum = config.getProperty("MEMNUM");
+		
+		String query = "Select Online_Key from office_user ";
+		HashMap<String, String> map = mscon.selectQueryOne(query); 
+		shop_key = map.get("Online_Key");
+		System.out.println(shop_key);
 		
     }
  
@@ -147,65 +159,7 @@ public class ShopReceiveData extends Thread {
 		}else{
 			result_str += "실패\r\n";
 		}
-		
-		if(cus_code != null && !"".equals(cus_code)){			
-			
-			String query = "";
-			//매장에 접속 정보를 저장합니다.
-			switch(gubun){
-			
-			case "appinstall":
-				query = "Update Customer_Info Set e_AppInstall_YN='1', e_PhoneNumber='"+phone_number+"' Where Cus_Code='"+cus_code+"' ";
-				mscon.connect_update(query);
-				break;
-				
-			case "member":    				
-				query = "Select Online_Key from office_user ";					
-				HashMap<String, String> map = mscon.selectQueryOne(query); 
-				String key = map.get("Online_Key");
-				System.out.println(key);
-				String data="";
-				try {
-					data = "api_key="+key.toString()+"&mem_id="+mem_id+"&add2="+cus_code+"&add4="+URLEncoder.encode("연동중", "UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				//결과전송 쇼핑몰회원정보 수정
-				new Trans_ShopAPI().setMember_Update(data, key);
-				
-				//결과전송 앱설치 회원 결과 보고
-				HashMap<String, Object> push_list = new HashMap<String, Object>();
-				
-				push_list.get("회원연동이 정상적으로이루어 졌습니다.");
-				push_list.get("회원연동이 정상적으로이루어 졌습니다.");
-				push_list.get("/maypage");
-				push_list.get("");
-				push_list.get(config.get("NEWCODE"));
-				
-				push_list.get(mem_id);
-				push_list.get("ALL");
-				
-				
-				new Trans_ShopAPI().setPushSubimt(push_list, key);				
-				break;
-				
-			case "order":	
-				break;
-			
-			}
-			//쇼핑몰에 연동 정보를 수정합니다.    			
-		}else{			
-			
-		}
-    		
-    	/*try {
-			socket.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-    	           	    	
+		    	    	           	    	
 		System.out.println("===> 파일 수신 작업을 완료합니다.");
 		result_str += "===> 파일 수신 작업을 완료합니다.";
 		//로그파일을 작성합니다.
@@ -237,25 +191,34 @@ public class ShopReceiveData extends Thread {
 			e.printStackTrace();
 		}
 		
+		ArrayList<String> query_list = new ArrayList<String>();  //쿼리 모음		
+		String query_result =  "";
+		
 		//기존 앱설치내용이 있는지 먼저 확인 합니다.
-		String query = "Select * From e_AppInstall Where idx='"+json.get("idx")+"' ";
-		String query_result = "";		
+		String query = "Select * From e_AppInstall Where idx='"+json.get("idx")+"' ";		
 		HashMap<String, String> map = mscon.selectQueryOne(query);
 		
 		if(map.size() <= 0){ //앱신규설치회원
 						
-			//매장회원을 검색 해서 매칭합니다.
-			query = "Select * From Customer_Info Where replace(cus_mobile, '-', '')='"+json.get("hp_num")+"' or replace(cus_tel, '-', '')='"+json.get("hp_num")+"' Order by Edit_Date DESC";
-			ArrayList<HashMap<String, String>> map_cuscode = mscon.connection(query);
+			ArrayList<HashMap<String, String>> map_cuscode = new ArrayList<HashMap<String, String>>();			
+			if(config.getProperty("CONNECT").equals("1")){ //회원연동 옵션 사용 시 				
+				//매장회원을 검색 해서 매칭합니다.
+				query = "Select * From Customer_Info Where replace(cus_mobile, '-', '')='"+json.get("hp_num")+"' or replace(cus_tel, '-', '')='"+json.get("hp_num")+"' Order by Edit_Date DESC";
+				map_cuscode = mscon.connection(query);
+			}
 			
 			System.out.println(map_cuscode.size());
 			switch(map_cuscode.size()){
 			case 0:  //매칭안됨
+				connect_add5 = "0"; //매칭안됨
 				break;
 			case 1:
 				cus_code = map_cuscode.get(0).get("Cus_Code");
 				phone_number = json.get("hp_num").toString();
 				connect_add5 = "1"; //매칭완료
+
+				query_result = "Update Customer_Info Set e_AppInstall_YN='1', e_PhoneNumber='"+phone_number+"' Where Cus_Code='"+cus_code+"' ";
+				query_list.add(query_result);
 				break;	
 			default:
 				connect_add5 = "2";  //중복발생
@@ -265,6 +228,9 @@ public class ShopReceiveData extends Thread {
 			query_result = "Insert into e_AppInstall (idx, mem_id, platform, devicetoken, deviceuid, devicename, devicemodel, deviceversion, hp_num, reg_time, cus_code, connect_yn) values("
 					+"'"+json.get("idx")+"', '"+json.get("mem_id")+"', '"+json.get("platform")+"', '"+json.get("devicetoken")+"', '"+json.get("deviceuid")+"', '"+json.get("devicename")
 					+"', '"+json.get("devicemodel")+"', '"+json.get("deviceversion")+"', '"+json.get("hp_num")+"', '"+json.get("reg_time")+"', '"+cus_code+"', '"+connect_add5+"')";
+			query_list.add(query_result);
+			
+						
 			int result = mscon.connect_update(query_result);
 			if(result == 0){
 				return true;
@@ -272,11 +238,16 @@ public class ShopReceiveData extends Thread {
 				return false;
 			}
 		}else{ //기존설치회원
+			
 			if(map.get("idx").equals(json.get("idx"))){
 				
-				//매장회원을 검색 해서 매칭합니다.
-				query = "Select * From Customer_Info Where replace(cus_mobile, '-', '')='"+json.get("hp_num")+"' or replace(cus_tel, '-', '')='"+json.get("hp_num")+"' Order by Edit_Date DESC";
-				ArrayList<HashMap<String, String>> map_cuscode = mscon.connection(query);
+				//기존 설치회원의 경우 재다시 매칭 확인 안합니다.
+				/*ArrayList<HashMap<String, String>> map_cuscode = new ArrayList<HashMap<String, String>>();
+				if(config.getProperty("CONNECT").equals("1")){
+					//매장회원을 검색 해서 매칭합니다.
+					query = "Select * From Customer_Info Where replace(cus_mobile, '-', '')='"+json.get("hp_num")+"' or replace(cus_tel, '-', '')='"+json.get("hp_num")+"' Order by Edit_Date DESC";
+					map_cuscode = mscon.connection(query);
+				}
 				
 				System.out.println(map_cuscode.size());
 				switch(map_cuscode.size()){
@@ -290,31 +261,22 @@ public class ShopReceiveData extends Thread {
 				default:
 					connect_add5 = ", connect_yn='2' "; //중복발생					
 					break;
-				}
+				}*/
 								
 				query_result = "Update e_AppInstall Set mem_id='"+json.get("mem_id")+"', platform='"+json.get("platform")+"', devicetoken='"+json.get("devicetoken")
 						+"', deviceuid='"+json.get("deviceuid")+"', devicename='"+json.get("devicename")+"', devicemodel='"+json.get("devicemodel")
-						+"', deviceversion='"+json.get("deviceversion")+"', hp_num='"+json.get("hp_num")+"', reg_time='"+json.get("reg_time")+"' "+cus_code+connect_add5
-						+"Where idx='"+json.get("idx")+"' ";			
-				int result = mscon.connect_update(query_result);
-				if(result == 0){
-					
-					switch(map_cuscode.size()){
-					case 0:  //매칭안됨
-						connect_add5 = "0"; //매칭안됨
-						break;
-					case 1:
-						cus_code = map_cuscode.get(0).get("Cus_Code");
-						connect_add5 = "1"; //매칭완료
-						break;	
-					default:
-						connect_add5 = "2"; //중복발생					
-						break;
-					}
-					return true;
+						+"', deviceversion='"+json.get("deviceversion")+"', hp_num='"+json.get("hp_num")+"', reg_time='"+json.get("reg_time")+"' "
+						+"Where idx='"+json.get("idx")+"' ";	
+				
+				int result = mscon.connect_update(query_result);				
+				if(result == 0){				
+					//저장 성공
+					return true;					
 				}else{
+					//저장 실패
 					return false;
 				}
+				
 			}else{
 				return false;
 			}
@@ -325,7 +287,8 @@ public class ShopReceiveData extends Thread {
     //결과를 저장합니다.
     public boolean resultMemberSave(String data){
     	
-    	JSONObject json = new JSONObject();	
+    	JSONObject json = new JSONObject();
+    	HashMap<String, Object> push_list = new HashMap<String, Object>();   //푸쉬 내용 저장
 		
 		try {
 			json = (JSONObject)JSONValue.parseWithException(data);			 
@@ -344,50 +307,117 @@ public class ShopReceiveData extends Thread {
 		//임시로 테이블 생성합니다.
 		if(map.size() <= 0){ // 신규온라인회원
 			
-			//매장회원을 검색 해서 매칭합니다.
-			//String cus_code = "";
-			//String connect_add5 = "0";
-			switch(json.get("add1").toString().trim()){
-			case "신규회원신청":				
-				query = "Select ISNull(max(cus_code), '"+memStartNum+"000000')+1 as cus_code From Customer_Info Where LEN(Cus_Code) = 8 and Left(Cus_Code, 2)='"+memStartNum.trim()+"' ";
-				HashMap<String, String> map_newmem = mscon.selectQueryOne(query);
-				if(map_newmem.size() > 0){
-					String[] query_won = new String[2]; 
-					query = "Insert Into Customer_Info (Cus_Code,Cus_Name,Cus_Gubun,Cus_Class,Cus_Tel,Cus_Mobile,Cus_BirYN,"
-							+ "Cus_BirDay,Cus_RealDay,Pur_Pri,Cus_TPoint,Cus_Point,Cus_UsePoint,Dec_Pri,Vis_Count,Gift_Count,Edit_Check,"
-							+ "Zip_Code,Address1,Address2,Bigo,Cus_Date,Vis_Date,Write_Date,Edit_Date,Writer,EDitor,HPSend_YN,"
-							+ "Office_Name,Office_Num,Owner_Name,Uptae,JongMok,Address,Credit_YN,Cus_Use,Tax_Use,cPoint_Use,"
-							+ "TaxBill_YN,Email,TAX_Print_Use,TAX_AUTO_USE,TAX_Gubun,TAX_Number, e_AppInstall_YN, e_Member_YN, e_PushSMS_YN, e_PhoneNumber)" 
-							+ " Values('"+map_newmem.get("cus_code")+"', '"+json.get("name")+"', '정회원','1','"+json.get("tel")+"','"+json.get("hp")+"','1','','','0','0','0','0','0','0','0','1',"
-							+ "'"+json.get("zipcode")+"','"+json.get("addr1")+"','"+json.get("addr2")+"','',"
-							+ "'2016-01-14','','2016-01-14','2016-01-14','tips','tips','1','','','','','','','1','1','1','1','0','','0','0', '0', '', '', '1', '1', '') ";
-					query_won[0] = query;
-					query_won[1] = "Insert Into Customer_History(Regdate,q_sql,gubun)"
-										+"Values(convert(datetime,getdate(),120), '"+query.replace("'", "`")+"', '쇼핑몰관리')";					
-					mscon.connect_update(query_won);		
-					cus_code = map_newmem.get("cus_code");
-					connect_add5 = "1";
+			if(config.getProperty("CONNECT").equals("1")){  //옵션적용
+				//매장회원을 검색 해서 매칭합니다.
+				//String cus_code = "";
+				//String connect_add5 = "0";
+				switch(json.get("add1").toString().trim()){
+				case "신규발급신청":
+					//번호 생성합니다. 환경설정에서 지정된 번호를 호출 후 그번호의 마지막 번호 뒤를 이어서 저장합니다.
+					query = "Select ISNull(max(cus_code), '"+memStartNum+"000000')+1 as cus_code From Customer_Info Where LEN(Cus_Code) = 8 and Left(Cus_Code, 2)='"+memStartNum.trim()+"' ";
+					HashMap<String, String> map_newmem = mscon.selectQueryOne(query);
 					
-				}
-				break;
-			case "기존회원연동":
-				query = "Select * From Customer_Info Where replace(cus_mobile, '-', '')='"+json.get("hp").toString().replace("-", "")+"' or replace(cus_tel, '-', '')='"+json.get("hp").toString().replace("-", "")+"' Order by Edit_Date";
-				ArrayList<HashMap<String, String>> map_cuscode = mscon.connection(query);		
-				switch(map_cuscode.size()){
-				case 0:  //매칭안됨
+					if(map_newmem.size() > 0){
+						String[] query_won = new String[2];
+						query = "Insert Into Customer_Info (Cus_Code,Cus_Name,Cus_Gubun,Cus_Class,Cus_Tel,Cus_Mobile,Cus_BirYN,"
+								+ "Cus_BirDay,Cus_RealDay,Pur_Pri,Cus_TPoint,Cus_Point,Cus_UsePoint,Dec_Pri,Vis_Count,Gift_Count,Edit_Check,"
+								+ "Zip_Code,Address1,Address2,Bigo,Cus_Date,Vis_Date,Write_Date,Edit_Date,Writer,EDitor,HPSend_YN,"
+								+ "Office_Name,Office_Num,Owner_Name,Uptae,JongMok,Address,Credit_YN,Cus_Use,Tax_Use,cPoint_Use,"
+								+ "TaxBill_YN,Email,TAX_Print_Use,TAX_AUTO_USE,TAX_Gubun,TAX_Number, e_AppInstall_YN, e_Member_YN, e_PushSMS_YN, e_PhoneNumber)" 
+								+ " Values('"+map_newmem.get("cus_code")+"', '"+json.get("name")+"', '정회원','1','"+json.get("tel")+"','"+json.get("hp")+"','1','','','0','0','0','0','0','0','0','1',"
+								+ "'"+json.get("zipcode")+"','"+json.get("addr1")+"','"+json.get("addr2")+"','',"
+								+ "'2016-01-14','','2016-01-14','2016-01-14','tips','tips','1','','','','','','','1','1','1','1','0','','0','0', '0', '', '', '1', '1', '') ";
+						query_won[0] = query;
+					
+						query_won[1] = "Insert Into Customer_History(Regdate,q_sql,gubun)"
+											+"Values(convert(datetime,getdate(),120), '"+query.replace("'", "`")+"', '쇼핑몰관리')";					
+						
+						mscon.connect_update(query_won);						
+						cus_code = map_newmem.get("cus_code");
+						connect_add5 = "1";						
+					}
+								
+					if(config.getProperty("EVENTCODE").equals("1")){
+						//환경설정의 옵션 체크시에만 푸시가 전송 됩니다.
+						String result_data = "";
+						try {
+							result_data = "api_key="+shop_key.toString()+"&mem_id="+mem_id+"&add2="+cus_code+"&add4="+URLEncoder.encode("연동중", "UTF-8");
+						} catch (UnsupportedEncodingException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}				
+						
+						//신규회원 등록 정보를 쇼핑몰에 올립니다.
+						new Trans_ShopAPI().setMember_Update(result_data, shop_key);							
+						
+						//결과전송 앱설치 회원 결과 보고
+						push_list.put("Title", "신규회원이 정상 등록 되었습니다. ");
+						push_list.put("Message", "신규회원이 정상 등록 되었습니다. ");
+						push_list.put("Link", "");
+						push_list.put("Img_Url", "");
+						push_list.put("Event", config.get("NEWCODE"));
+						
+						push_list.put("Mem_Id", "");
+						push_list.put("Mem_Only", "ALL");
+						push_list.put("Hp", json.get("hp").toString().replace("-", ""));
+						
+						//완료 내역을 회원에게 푸시 전송합니다.
+						new Trans_ShopAPI().setPushSubimt(push_list, shop_key);
+					}
+					
 					break;
-				case 1:
-					cus_code = map_cuscode.get(0).get("Cus_Code");
-					connect_add5 = "1"; //매칭완료
-					break;	
-				default:
-					connect_add5 = "2";  //중복발생
+				case "기존회원연동":	
+					query = "Select * From Customer_Info Where replace(cus_mobile, '-', '')='"+json.get("hp").toString().replace("-", "")+"' or replace(cus_tel, '-', '')='"+json.get("hp").toString().replace("-", "")+"' Order by Edit_Date";
+					ArrayList<HashMap<String, String>> map_cuscode = mscon.connection(query);		
+					String str = config.getProperty("FAILCODE");
+					switch(map_cuscode.size()){
+					case 0:  //매칭안됨						
+						break;
+					case 1:
+						cus_code = map_cuscode.get(0).get("Cus_Code");
+						connect_add5 = "1"; //매칭완료
+						str = config.getProperty("OKCODE");
+						break;	
+					default:
+						connect_add5 = "2";  //중복발생
+						
+						break;
+					}
+					
+					if(config.getProperty("EVENTCODE").equals("1")){
+						
+						String result_co = "";
+						try {
+							result_co = "api_key="+shop_key.toString()+"&mem_id="+mem_id+"&add2="+cus_code+"&add4="+URLEncoder.encode("연동중", "UTF-8");
+						} catch (UnsupportedEncodingException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}				
+						
+						//신규회원 등록 정보를 쇼핑몰에 올립니다.
+						new Trans_ShopAPI().setMember_Update(result_co, shop_key);		
+						
+						//결과전송 앱설치 회원 결과 보고					
+						push_list.put("Title", "매장회원 정보와 정상 연동 되었습니다. ");
+						push_list.put("Message", "매장회원 정보와 정상 연동 되었습니다. ");
+						push_list.put("Link", "");
+						push_list.put("Img_Url", "");
+						
+						push_list.put("Event", str);
+						
+						push_list.put("Mem_Id", "");
+						push_list.put("Mem_Only", "ALL");
+						push_list.put("Hp",  json.get("hp").toString().replace("-", ""));	
+						
+						//완료 내역을 회원에게 푸시 전송합니다.
+						new Trans_ShopAPI().setPushSubimt(push_list, shop_key);
+					}
+					break;
+				case "연동안함":	
 					break;
 				}
-				break;
-			case "연동안함":
-				break;
-			}
+				
+			}//매장자동연동기능 끝
 			
 			query_result = "Insert into e_Member values("
 					+"'"+json.get("mem_idx")+"', '"+json.get("mem_id")+"', '"+json.get("pwd")+"', '"+json.get("name")+"', '"+json.get("memlv")+"', '"+json.get("hp")+"',"
@@ -396,11 +426,13 @@ public class ShopReceiveData extends Thread {
 					+ " '"+json.get("homepage")+"', '"+json.get("add1")+"', '"+json.get("add2")+"', '"+json.get("add3")+"', '"+json.get("add4")+"', '"+json.get("add5")+"', '"+json.get("add6")+"',"
 					+ " '"+json.get("add7")+"', '"+json.get("add8")+"', '"+json.get("add9")+"', '"+json.get("add10")+"', '"+cus_code+"', '"+connect_add5+"' )";			
 			int result = mscon.connect_update(query_result);
+			
 			if(result == 0){
 				return true;
 			}else{
 				return false;
-			}			
+			}		
+			
 		}else{ //기존온라인회원
 			
 			query_result = "Update e_Member Set pwd='"+json.get("pwd")+"', name='"+json.get("name")+"', memlv='"+json.get("memlv")+"', hp='"+json.get("hp")
@@ -417,11 +449,11 @@ public class ShopReceiveData extends Thread {
 			}else{
 				return false;
 			}			
-		}    	
+		}
     }
     
     
-  //결과를 저장합니다.
+    //결과를 저장합니다.
     public boolean resultOrderSave(String data){
     	
     	ArrayList<String> orderquery_list = new ArrayList<String>();  //쿼리 리스트 입니다.
@@ -432,18 +464,12 @@ public class ShopReceiveData extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		    	
-		//System.out.println(json.toString());
 		
 		//기존 주문인지 확인 합니다.
-		String order_idx = (String)json.get("order_idx");
-		
-		String query = "Select * From e_OrderList Where idx='"+order_idx+"' ";
-		
+		String order_idx = (String)json.get("order_idx");		
+		String query = "Select * From e_OrderList Where idx='"+order_idx+"' ";		
 		HashMap<String, String> map = mscon.selectQueryOne(query);
-		if(map.size() > 0){ // 주문서 수정입니다.
-			
-			
+		if(map.size() > 0){ // 주문서 수정입니다.						
 			
 		}else{  //신규등록입니다.
 			
@@ -483,14 +509,15 @@ public class ShopReceiveData extends Thread {
 			for(int i=0; i < goods_info.size(); i++){			
 				try {
 					JSONObject temp = (JSONObject)JSONValue.parseWithException(goods_info.get(i).toString());
-					for(Object keymap:temp.keySet()){			
-						if(!keymap.toString().equals("goods_info")){
-							egoods_key += keymap.toString()+", ";
-							try{
-								egoods_value += " '"+json.get(keymap).toString()+"', ";
-							}catch(NullPointerException e){
-								egoods_value += " '', ";
-							}
+					egoods_key += order_idx+", ";
+					egoods_value += "'"+json.get("order_idx")+"', ";
+					
+					for(Object keymap:temp.keySet()){		
+						egoods_key += keymap.toString()+", ";
+						try{
+							egoods_value += " '"+json.get(keymap).toString()+"', ";
+						}catch(NullPointerException e){
+							egoods_value += " '', ";
 						}
 					}
 					
@@ -510,11 +537,10 @@ public class ShopReceiveData extends Thread {
 			case 0:
 				return true;			
 			default:				
-				break;
+				return false;
 			}
 			
-		}
-		
+		}		
 		return false;
     }
 }

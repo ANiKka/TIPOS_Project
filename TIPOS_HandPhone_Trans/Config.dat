@@ -1,9 +1,13 @@
 #\uD658\uACBD\uC124\uC815 \uC800\uC7A5
-#Tue Jan 19 02:01:11 KST 2016
-DBIP=localhost
+#Fri Jan 22 16:10:12 KST 2016
 DBPORT=16000
-Master_Path=c\:\\handy\\master
-RETIME=10
 CONNECT=1
+RETIME=10
+FAILCODE=189
+Master_Path=c\:\\handy\\master
+EVENTCODE=1
 MEMNUM=23
 Data_Path=c\:\\handy\\data
+DBIP=localhost
+OKCODE=190
+NEWCODE=188
