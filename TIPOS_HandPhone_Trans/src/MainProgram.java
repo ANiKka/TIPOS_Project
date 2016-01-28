@@ -61,8 +61,6 @@ public class MainProgram implements ActionListener{
 	DefaultListModel<String> listModel_handy_data = new DefaultListModel<String>();		//데이타파일
 	DefaultListModel<String> listModel_handy_log = new DefaultListModel<String>();		//전송상태
 	
-	JButton btnNewButton; 		//pc목록 새로고침	
-	
 	JLabel lblChandymaster; 			//master 경로
 	JLabel lblChandydata; 				//data 경로	
 	JLabel label_state;				//전송상태
@@ -92,7 +90,7 @@ public class MainProgram implements ActionListener{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {	
-					new MainProgram("TIPOS 소켓프로그램 Ver 1.0.4");
+					new MainProgram("TIPOS 소켓프로그램 Ver "+TranVersion.version);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -104,11 +102,13 @@ public class MainProgram implements ActionListener{
 	 * Create the application.
 	 */
 	public MainProgram(String strTrayTitle) {
+		
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) { 
 		    System.err.println("Cannot set look and feel:" + e.getMessage()); 
-		}
+		}		
+		
 		m_strTrayTitle = strTrayTitle;
 		initialize();
 		init();			
@@ -122,7 +122,7 @@ public class MainProgram implements ActionListener{
 	 * 체크시 폴더가 없으면 새로고침1, 새로고침2, 전체보기체크, 텍스트필드 1,2,3 전체 
 	 * Enable False 로합니다. 
 	 * 
-	 * */	
+	 * */
 	public void init(){	
 		
 		//환경설정 파일
@@ -145,9 +145,9 @@ public class MainProgram implements ActionListener{
 			config_file.load(new FileInputStream(file));
 			
 			lblChandymaster.setText("c:\\handy\\master"); //master path
-			filePath[0] = config_file.getProperty("Master_Path");
+			filePath[0] = config_file.getProperty("Master_Path", "c:\\handy\\master");
 			lblChandydata.setText("c:\\handy\\data"); //data_path
-			filePath[1] = config_file.getProperty("Data_Path");
+			filePath[1] = config_file.getProperty("Data_Path", "c:\\handy\\data");
 						
 		} catch (Exception e) {
 				e.printStackTrace();
@@ -163,7 +163,8 @@ public class MainProgram implements ActionListener{
 			//검색시 폴더가 없으면 contentEnable(true) 를 실행해서 막습니다.
 			System.out.println(filePath[i].toString());
 			fileDirList(filePath[i].toString(), gubun[i]);
-		}		
+		}
+		
 		initTray();
 		
 	}	
@@ -277,12 +278,6 @@ public class MainProgram implements ActionListener{
 		lblNewLabel_1.setBounds(10, 10, 81, 15);
 		panel_handphone.add(lblNewLabel_1);
 		lblNewLabel_1.setFont(new Font("맑은 고딕", Font.BOLD, 12));
-		
-		btnNewButton = new JButton("새로고침");
-		btnNewButton.setBounds(112, 6, 86, 23);
-		panel_handphone.add(btnNewButton);
-		btnNewButton.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
-		btnNewButton.addActionListener(this);
 		
 		JLabel lblNewLabel_2 = new JLabel("\uC804\uC1A1 \uC0C1\uD0DC \uD45C\uC2DC");
 		lblNewLabel_2.setBounds(223, 10, 97, 15);
@@ -435,9 +430,6 @@ public class MainProgram implements ActionListener{
 			resetSocket();			
 			//sendFileTransfer();
 			break;
-		case "새로고침":	
-			init();
-			break;			
 		case "지우기":
 			listModel_handy_log.clear();
 			break;

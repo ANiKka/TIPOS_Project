@@ -1,13 +1,21 @@
 #\uD658\uACBD\uC124\uC815 \uC800\uC7A5
-#Fri Jan 22 16:10:12 KST 2016
+#Wed Jan 27 21:09:49 KST 2016
+PCImagePath=D\:\\1) \uC0C1\uD488\uC774\uC9C0\uC9C0\\SHOP \uC5C5\uB85C\uB4DC\uC6A9(\uC0C1\uD488\uBA85)\\\uC815\uC721
 DBPORT=16000
+OKCODE=
+ServerPort=16000
+ServerDBname=tips
+NEWCODE=
+MEMNUM_GUBUN=1
+FAILCODE=
+ServerIp=localhost
+MEMNUM_LENGTH=8
 CONNECT=1
-RETIME=10
-FAILCODE=189
-Master_Path=c\:\\handy\\master
-EVENTCODE=1
-MEMNUM=23
-Data_Path=c\:\\handy\\data
+ServerDBpw=tips
+MEMNUM=10
+ServerDBid=sa
 DBIP=localhost
-OKCODE=190
-NEWCODE=188
+EVENTCODE=0
+Goods_TranYN=1
+Master_Path=c\:\\handy\\master
+Data_Path=c\:\\handy\\data

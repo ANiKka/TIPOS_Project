@@ -529,6 +529,8 @@ public class Main_Config extends JDialog implements ActionListener{
 				config_file.setProperty("Officepw", "");
 				config_file.setProperty("ShopKey", "");*/
 				
+				config_file.setProperty("Version", ManageVersion.version);
+				
 				config_file.store(new FileOutputStream(file), "환경설정");
 				
 				System.out.println("파일이 생성되었습니다.");
@@ -581,7 +583,8 @@ public class Main_Config extends JDialog implements ActionListener{
 	}
 	
 	private void setSave(){
-				
+						
+		config_file.setProperty("Version", ManageVersion.version);
 		config_file.setProperty("ServerIp", text_server_ip.getText());
 		config_file.setProperty("ServerPort", text_server_port.getText());
 		config_file.setProperty("ServerDBname", text_server_dbname.getText());

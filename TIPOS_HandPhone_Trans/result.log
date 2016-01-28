@@ -20,3 +20,41 @@
 {"result_msg":"회원 정보 수정 되었습니다.","result_code":"OK"}
 전송 시간 : 2016-01-19 13:28:41결과 
 {"result_msg":"회원 정보 수정 되었습니다.","result_code":"OK"}
+전송 시간 : 2016-01-22 16:34:47결과 
+{"result_msg":"회원 정보 수정 되었습니다.","result_code":"OK"}
+앱설치현황 출력 결과 호출위치 : 앱설치 현황전송 시간 : 2016-01-22 16:34:47 
+resultcode : OK result_msg : 정상 발송 하였습니다. result_cnt : []
+전송 시간 : 2016-01-22 16:44:29결과 
+{"result_msg":"회원 정보 수정 되었습니다.","result_code":"OK"}
+앱설치현황 출력 결과 호출위치 : 앱설치 현황전송 시간 : 2016-01-22 16:44:29 
+resultcode : OK result_msg : 정상 발송 하였습니다. result_cnt : []
+전송 시간 : 2016-01-22 16:47:40결과 
+{"result_msg":"회원 정보 수정 되었습니다.","result_code":"OK"}
+앱설치현황 출력 결과 호출위치 : 앱설치 현황전송 시간 : 2016-01-22 16:47:40 
+resultcode : OK result_msg : 정상 발송 하였습니다. result_cnt : []
+전송 시간 : 2016-01-22 16:50:59결과 
+{"result_msg":"회원 정보 수정 되었습니다.","result_code":"OK"}
+앱설치현황 출력 결과 호출위치 : 앱설치 현황전송 시간 : 2016-01-22 16:50:59 
+resultcode : OK result_msg : 정상 발송 하였습니다. result_cnt : ["ffffffff-f421-a1f9-0109-eb5149be8aa1 : "]
+앱설치현황 출력 결과 호출위치 : 앱설치 현황전송 시간 : 2016-01-22 16:58:24 
+resultcode : OK result_msg : 정상 발송 하였습니다. result_cnt : ["ffffffff-f421-a1f9-0109-eb5149be8aa1 : "]
+전송 시간 : 2016-01-26 21:15:09결과 
+{"result_msg":"회원 정보 수정 되었습니다.","result_code":"OK"}
+앱설치현황 출력 결과 호출위치 : 앱설치 현황전송 시간 : 2016-01-26 21:15:09 
+resultcode : OK result_msg : 정상 발송 하였습니다. result_cnt : []
+전송 시간 : 2016-01-27 19:11:55결과 
+{"result_msg":"회원 정보 수정 되었습니다.","result_code":"OK"}
+앱설치현황 출력 결과 호출위치 : 앱설치 현황전송 시간 : 2016-01-27 19:11:55 
+resultcode : OK result_msg : 정상 발송 하였습니다. result_cnt : []
+전송 시간 : 2016-01-27 19:16:47결과 
+{"result_msg":"회원 정보 수정 되었습니다.","result_code":"OK"}
+앱설치현황 출력 결과 호출위치 : 앱설치 현황전송 시간 : 2016-01-27 19:16:47 
+resultcode : OK result_msg : 정상 발송 하였습니다. result_cnt : []
+전송 시간 : 2016-01-27 19:31:00결과 
+{"result_msg":"회원 정보 수정 되었습니다.","result_code":"OK"}
+앱설치현황 출력 결과 호출위치 : 앱설치 현황전송 시간 : 2016-01-27 19:31:00 
+resultcode : OK result_msg : 정상 발송 하였습니다. result_cnt : []
+전송 시간 : 2016-01-27 19:43:58결과 
+{"result_msg":"회원 정보 수정 되었습니다.","result_code":"OK"}
+앱설치현황 출력 결과 호출위치 : 앱설치 현황전송 시간 : 2016-01-27 19:43:58 
+resultcode : OK result_msg : 정상 발송 하였습니다. result_cnt : []

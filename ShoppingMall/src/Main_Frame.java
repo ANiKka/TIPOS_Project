@@ -19,13 +19,14 @@ import java.awt.im.InputContext;
 import javax.swing.JButton;
 
 import javax.swing.JTabbedPane;
+import net.miginfocom.swing.MigLayout;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 
 public class Main_Frame extends JFrame implements ActionListener{
 	
 	private static final long serialVersionUID = 22513545765121L;
-	
-	private final String Version =  "Ver 1.0.3";
 	
 	private final String Shop_Manager = "¼îÇÎ¸ô°ü¸®"; 
 	private final String Pro_Manager = "»óÇ°°ü¸®";
@@ -44,6 +45,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 	private Event_Manage event_manage;
 	
 	JTabbedPane tabbedPane;
+	private final JPanel panel_topmenu = new JPanel();
 	/**
 	 * Launch the application.
 	 */
@@ -91,9 +93,9 @@ public class Main_Frame extends JFrame implements ActionListener{
     	
     	try{    		
 	    	if(Server_Config.getOFFICENAME().equals("")){    	
-	    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9 "+Version);
+	    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9 "+ManageVersion.version);
 	    	}else{
-	    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9 "+Version+" [ "+Server_Config.getOFFICECODE() +" "+Server_Config.getOFFICENAME()+" ]" );
+	    		setTitle("\uC1FC\uD551\uBAB0 \uC0C1\uD488\uC5F0\uB3D9 "+ManageVersion.version+" [ "+Server_Config.getOFFICECODE() +" "+Server_Config.getOFFICENAME()+" ]" );
 	    	}
     	}catch(NullPointerException e){
     		//ÇÁ·Î±×·¥ ÃÖÃÊ ½ÇÇà ½Ã º¸¿©Áý´Ï´Ù.
@@ -144,21 +146,122 @@ public class Main_Frame extends JFrame implements ActionListener{
 		//close_button(Shop_Manager);
 		
 		jdp.add(tabbedPane);
-		
-		JMenuBar menuBar = new JMenuBar();
-		menuBar.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
-		menuBar.setMargin(new Insets(0, 0, 10, 0));
-		setJMenuBar(menuBar);
+		panel_topmenu.setBackground(Color.WHITE);
+		getContentPane().add(panel_topmenu, BorderLayout.NORTH);
+    	panel_topmenu.setLayout(new MigLayout("", "[123px][123px][123px][137px][167px][123px][93px]", "[29px]"));
 		
     	JButton goods_ad = new JButton(Pro_Manager);
-    	menuBar.add(goods_ad);
+    	panel_topmenu.add(goods_ad, "cell 0 0,alignx left,aligny top");
     	goods_ad.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));    	
     	goods_ad.setIcon(new ImageIcon(getClass().getClassLoader().getResource("Icon/btn_goods.png")));
     	goods_ad.setIconTextGap(10);
     	
     	goods_ad.setFocusable(false);
     	
+    	JButton btn_order = new JButton(Ord_Manager);
+    	panel_topmenu.add(btn_order, "cell 1 0,alignx left,aligny top");
+    	btn_order.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_order.png")));
+    	btn_order.setIconTextGap(10);
+    	btn_order.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
+    	btn_order.setFocusable(false);
+    	
+    	JButton btn_member = new JButton(Mem_Manager);
+    	panel_topmenu.add(btn_member, "cell 2 0,alignx left,aligny top");
+    	btn_member.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_member.png")));
+    	btn_member.setIconTextGap(10);
+    	btn_member.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
+    	btn_member.setFocusable(false);
+    	
+    	JButton btn_message = new JButton(Msg_Manager);
+    	panel_topmenu.add(btn_message, "cell 3 0,alignx left,aligny top");
+    	btn_message.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_message.png")));
+    	btn_message.setIconTextGap(10);
+    	btn_message.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
+    	btn_message.setFocusable(false);
+    	
+    	JButton btn_cupon = new JButton(Evt_Manager);
+    	panel_topmenu.add(btn_cupon, "cell 4 0,alignx left,aligny top");
+    	btn_cupon.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_cupon.png")));
+    	btn_cupon.setIconTextGap(10);
+    	btn_cupon.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
+    	btn_cupon.setFocusable(false);
+    	
+    	JButton config_setting = new JButton("È¯°æ¼³Á¤");
+    	panel_topmenu.add(config_setting, "cell 5 0,alignx left,aligny top");
+    	config_setting.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
+    	config_setting.setIcon(new ImageIcon(getClass().getClassLoader().getResource("Icon/btn_config.png")));
+    	config_setting.setIconTextGap(10);
+    	config_setting.setFocusable(false);
+    	
+    	JButton main_close = new JButton("Á¾·á");
+    	panel_topmenu.add(main_close, "cell 6 0,alignx left,aligny top");
+    	main_close.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
+    	main_close.setIcon(new ImageIcon(getClass().getClassLoader().getResource("Icon/btn_main_cancel.png")));
+    	main_close.setIconTextGap(10);
+    	main_close.setFocusable(false);
+    	main_close.addActionListener(this);
+    	config_setting.addActionListener(this);
+    	btn_cupon.addActionListener(this);
+    	btn_message.addActionListener(this);
+    	//btn_message.setVisible(false);
+    	btn_member.addActionListener(this);
+    	//btn_member.setVisible(false);
+    	btn_order.addActionListener(this);
+    	
     	goods_ad.addActionListener(this);
+		
+		JMenuBar menuBar = new JMenuBar();
+		menuBar.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
+		menuBar.setMargin(new Insets(0, 0, 10, 0));
+		setJMenuBar(menuBar);
+		
+		JMenu mn_main_file = new JMenu("\uD30C\uC77C");
+		mn_main_file.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		menuBar.add(mn_main_file);
+		
+		JMenuItem mn_file_close = new JMenuItem("\uC885\uB8CC");
+		mn_file_close.addActionListener(this);
+		mn_main_file.add(mn_file_close);
+		
+		JMenu mn_main_goods = new JMenu("\uC0C1\uD488\uAD00\uB9AC");
+		mn_main_goods.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		menuBar.add(mn_main_goods);
+		
+		JMenuItem mn_goods_goods = new JMenuItem("\uC0C1\uD488\uAD00\uB9AC");
+		mn_main_goods.add(mn_goods_goods);
+		mn_goods_goods.addActionListener(this);
+		
+		JMenu mn_main_order = new JMenu("\uC8FC\uBB38\uAD00\uB9AC");
+		mn_main_order.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		menuBar.add(mn_main_order);
+				
+		JMenuItem mn_order_order = new JMenuItem("\uC8FC\uBB38\uAD00\uB9AC");
+		mn_main_order.add(mn_order_order);
+		mn_order_order.addActionListener(this);
+		
+		JMenu mn_main_member = new JMenu("\uD68C\uC6D0\uAD00\uB9AC");
+		mn_main_member.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		menuBar.add(mn_main_member);
+		
+		JMenuItem mn_member_member = new JMenuItem("\uD68C\uC6D0\uAD00\uB9AC");
+		mn_main_member.add(mn_member_member);
+		mn_member_member.addActionListener(this);
+		
+		JMenu mn_main_event = new JMenu("\uC774\uBCA4\uD2B8\uAD00\uB9AC");
+		mn_main_event.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		menuBar.add(mn_main_event);
+		
+		JMenuItem mn_event_event = new JMenuItem("\uCFE0\uD3F0\uC774\uBCA4\uD2B8\uAD00\uB9AC");
+		mn_main_event.add(mn_event_event);
+		mn_event_event.addActionListener(this);
+		
+		JMenu mn_main_config = new JMenu("\uC124\uC815\uAD00\uB9AC");
+		mn_main_config.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		menuBar.add(mn_main_config);
+		
+		JMenuItem mn_config_config = new JMenuItem("\uD658\uACBD\uC124\uC815");
+		mn_main_config.add(mn_config_config);
+		mn_config_config.addActionListener(this);
 		
 		/**JButton image_upload_1 = new JButton(Img_Manager);
 		menuBar.add(image_upload_1);
@@ -167,55 +270,6 @@ public class Main_Frame extends JFrame implements ActionListener{
 		image_upload_1.setIconTextGap(10);
 		image_upload_1.setFocusable(false);
 		image_upload_1.addActionListener(this);*/
-		
-		JButton btn_order = new JButton(Ord_Manager);
-		btn_order.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_order.png")));
-		btn_order.setIconTextGap(10);
-		btn_order.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
-		btn_order.setFocusable(false);
-		btn_order.addActionListener(this);
-		menuBar.add(btn_order);
-		
-		JButton btn_member = new JButton(Mem_Manager);
-		btn_member.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_member.png")));
-		btn_member.setIconTextGap(10);
-		btn_member.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
-		btn_member.setFocusable(false);
-		btn_member.addActionListener(this);
-		menuBar.add(btn_member);
-		btn_member.setVisible(false);
-		JButton btn_message = new JButton(Msg_Manager);
-		btn_message.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_message.png")));
-		btn_message.setIconTextGap(10);
-		btn_message.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
-		btn_message.setFocusable(false);
-		btn_message.addActionListener(this);
-		menuBar.add(btn_message);
-		btn_message.setVisible(false);
-		
-		JButton btn_cupon = new JButton(Evt_Manager);
-		btn_cupon.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_cupon.png")));
-		btn_cupon.setIconTextGap(10);
-		btn_cupon.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
-		btn_cupon.setFocusable(false);
-		btn_cupon.addActionListener(this);
-		menuBar.add(btn_cupon);
-		
-		JButton config_setting = new JButton("È¯°æ¼³Á¤");
-		menuBar.add(config_setting);
-		config_setting.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
-		config_setting.setIcon(new ImageIcon(getClass().getClassLoader().getResource("Icon/btn_config.png")));
-		config_setting.setIconTextGap(10);
-		config_setting.setFocusable(false);
-		config_setting.addActionListener(this);
-		
-    	JButton main_close = new JButton("Á¾·á");
-    	menuBar.add(main_close);
-    	main_close.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 15));
-    	main_close.setIcon(new ImageIcon(getClass().getClassLoader().getResource("Icon/btn_main_cancel.png")));
-    	main_close.setIconTextGap(10);
-    	main_close.setFocusable(false);
-    	main_close.addActionListener(this);
 		
     }	
     
@@ -335,7 +389,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 			tabbedPane.addTab(Pro_Manager, goods_manage);
 			close_button(Pro_Manager);
 			break;
-		case Img_Manager:			
+		case Img_Manager:		
 			//ÀÌ¹ÌÁö °ü¸®
 			/*image_upload = new Image_Upload();
 			tabbedPane.addTab(Img_Manager, image_upload);

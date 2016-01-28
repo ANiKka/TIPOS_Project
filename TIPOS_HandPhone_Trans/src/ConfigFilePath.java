@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 
@@ -39,6 +40,9 @@ import java.awt.BorderLayout;
 import javax.swing.JTabbedPane;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JRadioButton;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 
 @SuppressWarnings("serial")
 public class ConfigFilePath extends JFrame implements ActionListener {
@@ -63,6 +67,9 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 	private JTextField text_event_failcode;
 	private JTextField text_event_okcode;
 	private JCheckBox chkbox_shop_eventcode;
+	private JTextField text_shop_numlength;
+	private JRadioButton radiobtn_shop_startcardnum;
+	private JRadioButton radiobtn_shop_cardphonenum;
 	/**
 	 * Create the frame.
 	 */
@@ -86,7 +93,7 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		jfiledialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		
 		// 메인프레임 사이즈 선언		
-		setSize(400, 300);
+		setSize(450, 350);
 		setTitle("환경설정");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setUndecorated(true); 
@@ -114,7 +121,7 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		
 		JPanel panel_center_shop = new JPanel();
 		tabbedPane.addTab("\uC1FC\uD551\uBAB0 \uC635\uC158", null, panel_center_shop, null);
-		panel_center_shop.setLayout(new MigLayout("", "[][grow][][grow][][]", "[][][grow][][][][49.00][-31.00][][][grow]"));
+		panel_center_shop.setLayout(new MigLayout("", "[][][][][][][]", "[][][][10][grow][][10][][]"));
 		
 		JLabel label_shop_dbip = new JLabel("DB IP");
 		label_shop_dbip.setFont(new Font("맑은 고딕", Font.BOLD, 12));
@@ -122,40 +129,55 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		
 		text_shop_dbip = new JTextField();
 		text_shop_dbip.setText("localhost");
-		panel_center_shop.add(text_shop_dbip, "cell 1 0 3 1,growx");
-		text_shop_dbip.setColumns(30);
+		panel_center_shop.add(text_shop_dbip, "cell 1 0 4 1,growx");
+		text_shop_dbip.setColumns(20);
 		
 		JLabel label_shop_dbport = new JLabel("DB PORT");
 		label_shop_dbport.setFont(new Font("맑은 고딕", Font.BOLD, 12));
-		panel_center_shop.add(label_shop_dbport, "cell 4 0,alignx trailing");
+		panel_center_shop.add(label_shop_dbport, "cell 5 0,alignx trailing");
 		
 		text_shop_dbport = new JTextField();
 		text_shop_dbport.setText("1433");
-		panel_center_shop.add(text_shop_dbport, "cell 5 0");
+		panel_center_shop.add(text_shop_dbport, "cell 6 0");
 		text_shop_dbport.setColumns(5);
 		
 		JLabel label_shop_memnum = new JLabel("\uC2E0\uADDC \uACE0\uAC1D\uBC88\uD638");
 		label_shop_memnum.setFont(new Font("맑은 고딕", Font.BOLD, 12));
 		panel_center_shop.add(label_shop_memnum, "cell 0 1,alignx trailing");
 		
+		radiobtn_shop_startcardnum = new JRadioButton("\uC2DC\uC791\uBC88\uD638");
+		panel_center_shop.add(radiobtn_shop_startcardnum, "cell 1 1");
+		
 		text_shop_memnum = new JTextField();
 		text_shop_memnum.setText("10");
-		text_shop_memnum.setHorizontalAlignment(SwingConstants.CENTER);
-		panel_center_shop.add(text_shop_memnum, "cell 1 1 2 1,growx");
+		panel_center_shop.add(text_shop_memnum, "cell 2 1");
 		text_shop_memnum.setColumns(3);
 		
-		JLabel label_shop_memnum_info = new JLabel("\uC2E0\uADDC\uACE0\uAC1D \uACE0\uAC1D\uCE74\uB4DC \uC694\uCCAD \uC2DC \uC0DD\uC131 \uC2DC\uC791\uBC88\uD638");
-		panel_center_shop.add(label_shop_memnum_info, "cell 3 1 3 1,alignx center");
+		JLabel label_shop_numlength = new JLabel("\uCD1D \uAE38\uC774");
+		panel_center_shop.add(label_shop_numlength, "cell 3 1,alignx trailing");
+		
+		text_shop_numlength = new JTextField();
+		text_shop_numlength.setText("8");
+		panel_center_shop.add(text_shop_numlength, "cell 4 1");
+		text_shop_numlength.setColumns(3);
+		
+		radiobtn_shop_cardphonenum = new JRadioButton("\uD68C\uC6D0 \uC804\uD654\uBC88\uD638\uB85C \uCE74\uB4DC\uBC88\uD638 \uC0DD\uC131");		
+		radiobtn_shop_cardphonenum.setSelected(true);
+		panel_center_shop.add(radiobtn_shop_cardphonenum, "cell 1 2 6 1");
+		
+		ButtonGroup group = new ButtonGroup();
+		group.add(radiobtn_shop_cardphonenum);
+		group.add(radiobtn_shop_startcardnum);
 		
 		JLabel label_shop_eventcode = new JLabel("\uC774\uBCA4\uD2B8\uCF54\uB4DC \uC124\uC815");
 		label_shop_eventcode.setFont(new Font("맑은 고딕", Font.BOLD, 12));
-		panel_center_shop.add(label_shop_eventcode, "cell 0 2,alignx trailing");
+		panel_center_shop.add(label_shop_eventcode, "cell 0 4,alignx trailing");
 		
 		chkbox_shop_eventcode = new JCheckBox("\uD68C\uC6D0 \uC5F0\uB3D9 \uC2DC \uC774\uBCA4\uD2B8\uD478\uC26C \uC804\uC1A1 \uC635\uC158");
-		panel_center_shop.add(chkbox_shop_eventcode, "cell 1 2 5 1");
+		panel_center_shop.add(chkbox_shop_eventcode, "cell 1 4 6 1");
 		
 		JPanel panel_shop_event = new JPanel();
-		panel_center_shop.add(panel_shop_event, "cell 0 3 6 1,grow");
+		panel_center_shop.add(panel_shop_event, "cell 0 5 7 1,grow");
 		
 		JLabel label_event_newcode = new JLabel("\uC2E0\uADDC\uAC00\uC785");
 		panel_shop_event.add(label_event_newcode);
@@ -180,17 +202,17 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		
 		JLabel label_shop_con = new JLabel("\uD68C\uC6D0\uC790\uB3D9\uC5F0\uB3D9 \uC635\uC158");
 		label_shop_con.setFont(new Font("맑은 고딕", Font.BOLD, 12));
-		panel_center_shop.add(label_shop_con, "cell 0 4,alignx trailing");
+		panel_center_shop.add(label_shop_con, "cell 0 7,alignx trailing");
 		
 		chkbox_shop_connect = new JCheckBox("\uD68C\uC6D0\uAC00\uC785 \uBC0F \uC571 \uC124\uCE58 \uC2DC \uC790\uB3D9\uC5F0\uB3D9");
 		chkbox_shop_connect.setSelected(true);
-		panel_center_shop.add(chkbox_shop_connect, "cell 1 4 5 1,alignx left");
+		panel_center_shop.add(chkbox_shop_connect, "cell 1 7 6 1,alignx left");
 		
 		JLabel label_connect_info = new JLabel("<html>\uC1FC\uD551\uBAB0 \uC5F0\uB3D9\uC5D0 \uD544\uC694\uD55C \uC678\uBD80\uB0B4\uBD80 \uD3EC\uD2B8\uB294 8683\uBC88 \uC785\uB2C8\uB2E4.<br>\r\n\uC1FC\uD551\uBAB0\uAD00\uB9AC\uC790 \uD398\uC774\uC9C0 > API \uAC1C\uBC1C\uC13C\uD130 > API URL \uC124\uC815\uC5D0\uC11C <br>\r\n\uC11C\uBC84\uC678\uBD80 \uC544\uC774\uD53C \uB610\uB294 DDNS \uC8FC\uC18C\uB97C \uC785\uB825\uD574\uC8FC\uC138\uC694<br>\r\n\uC608) tips000.iptime.org:8683/appinstall <- \uC774\uB807\uAC8C \uC785\uB825\uD574\uC8FC\uC138\uC694<br>\r\ntips000.iptime.org:8683/member<br>\r\ntips000.iptime.org:8683/order<br>\r\n</html>");
 		label_connect_info.setHorizontalAlignment(SwingConstants.CENTER);
 		label_connect_info.setBackground(SystemColor.info);
 		label_connect_info.setOpaque(true);
-		panel_center_shop.add(label_connect_info, "cell 0 5 6 1,grow");
+		panel_center_shop.add(label_connect_info, "cell 0 8 7 1,grow");
 		
 		JPanel panel_center_handy = new JPanel();
 		tabbedPane.addTab("\uD578\uB4DC\uD3F0 \uD1B5\uC2E0\uC124\uC815", null, panel_center_handy, null);
@@ -292,7 +314,7 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		btnNewButton.setPreferredSize(new Dimension(100, 23));
 		panel_bottom.add(btnNewButton);
 		
-		JButton btnNewButton_1 = new JButton("종료");
+		JButton btnNewButton_1 = new JButton("닫기");
 		btnNewButton_1.setPreferredSize(new Dimension(100, 23));
 		panel_bottom.add(btnNewButton_1);
 		btnNewButton_1.addActionListener(this);
@@ -313,14 +335,20 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 				file.createNewFile();				
 				config_file.load(new FileInputStream(file));
 				
+				config_file.setProperty("TRAN_VERSION", "1.0.4");
+				
 				config_file.setProperty("Master_Path", "C:\\Handy\\Master"); //마스터
 				config_file.setProperty("Data_Path", "C:\\Handy\\Data"); //데이터
 				config_file.setProperty("DBIP", "Localhost"); //DBIP				
 				config_file.setProperty("DBPORT", "1433"); //DDPORT
-				config_file.setProperty("MEMNUM", "10"); //MEMNUM
-				//config_file.setProperty("RETIME", "10"); //RETIME
-				config_file.setProperty("CONNECT", "1"); //CONNECT
 				
+				//신규 회원등록 시 등록 생성 번호를 옵션으로 설정 합니다.				
+				config_file.setProperty("MEMNUM_GUBUN", "1"); // 0: 회원 시작번호 부여 , 1: 회원 전화번호로 부여			
+				config_file.setProperty("MEMNUM", "10"); //회원번호 시작 문자
+				config_file.setProperty("MEMNUM_LENGTH", "8"); //회원번호 길이
+				
+				//config_file.setProperty("RETIME", "10"); //RETIME		
+				config_file.setProperty("CONNECT", "1"); //CONNECT	
 				config_file.setProperty("EVENTCODE", "0"); //이벤트 푸쉬 사용여부
 				
 				config_file.setProperty("NEWCODE", ""); //신규가입회원전송코드
@@ -341,21 +369,28 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 			text_handy_masterpath.setText("c:\\handy\\master");
 			text_handy_datapath.setText("c:\\handy\\data");
 						
-			text_shop_dbip.setText(config_file.getProperty("DBIP"));
-			text_shop_dbport.setText(config_file.getProperty("DBPORT"));
-			text_shop_memnum.setText(config_file.getProperty("MEMNUM"));
+			text_shop_dbip.setText(config_file.getProperty("DBIP", "localhost"));
+			text_shop_dbport.setText(config_file.getProperty("DBPORT", "1433"));
 			
-			if(config_file.getProperty("EVENTCODE").equals("0")){
+			//회원카드번호 설정
+			if(config_file.getProperty("MEMNUM_GUBUN", "1").equals("0")){
+				radiobtn_shop_startcardnum.setSelected(true);
+			}			
+			text_shop_memnum.setText(config_file.getProperty("MEMNUM", "10"));
+			text_shop_numlength.setText(config_file.getProperty("MEMNUM_LENGTH", "8"));
+			
+			//회원 이벤트 코드 설정
+			if(config_file.getProperty("EVENTCODE", "0").equals("0")){
 				chkbox_shop_eventcode.setSelected(false);
 			}else{
 				chkbox_shop_eventcode.setSelected(true);
-			}
-			
-			text_event_newcode.setText(config_file.getProperty("NEWCODE"));
-			text_event_okcode.setText(config_file.getProperty("OKCODE"));
-			text_event_failcode.setText(config_file.getProperty("FAILCODE"));
+			}			
+			text_event_newcode.setText(config_file.getProperty("NEWCODE", ""));
+			text_event_okcode.setText(config_file.getProperty("OKCODE", ""));
+			text_event_failcode.setText(config_file.getProperty("FAILCODE", ""));
 						
-			if(config_file.getProperty("CONNECT").equals("0")){
+			//회원 자동연동 설정
+			if(config_file.getProperty("CONNECT", "1").equals("0")){
 				chkbox_shop_connect.setSelected(false);
 			}else{
 				chkbox_shop_connect.setSelected(true);
@@ -391,8 +426,7 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		}
 		catch (SocketException ex) {}
 		return null;
-	}
-	
+	}	
 	
 	public void configFileSave(){
 		//파일명 지정합니다. 매입 IPGO.DAT 반품 BANPUM.DAT 가격 PRICE.DAT 재고 JEGO.DAT 발주 BALJU.DAT
@@ -402,7 +436,15 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		config_file.setProperty("Data_Path", text_handy_datapath.getText()); //데이터
 		config_file.setProperty("DBIP", text_shop_dbip.getText()); //DBIP				
 		config_file.setProperty("DBPORT", text_shop_dbport.getText()); //DDPORT
+		
+		//회원 카드번호 사용여부 설정
+		if(radiobtn_shop_cardphonenum.isSelected()){
+			config_file.setProperty("MEMNUM_GUBUN", "1");
+		}else{
+			config_file.setProperty("MEMNUM_GUBUN", "0");
+		}
 		config_file.setProperty("MEMNUM", text_shop_memnum.getText()); //MEMNUM
+		config_file.setProperty("MEMNUM_LENGTH", text_shop_numlength.getText()); //MEMNUM
 		
 		String evt = "0"; //이벤트 코드 사용 여부
 		if(chkbox_shop_eventcode.isSelected()){
@@ -427,7 +469,8 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 			show_Dialog("저장 오류", e1.getMessage());
 			return;
 		}
-		show_Dialog("저장 완료", "저장이 완료 되었습니다.");
+		//show_Dialog("저장 완료", "저장이 완료 되었습니다.");
+		JOptionPane.showConfirmDialog(this, "프로그램이 종료 됩니다. 재실행 해주세요~!!", "설정저장 완료", JOptionPane.PLAIN_MESSAGE);
 	}
 	
 	/**
@@ -451,8 +494,7 @@ public class ConfigFilePath extends JFrame implements ActionListener {
         dlg_help_info.getContentPane().add(pan_info, "Center");
         //dlg_help_info.add(lbl_info_se,"Center"); 
         dlg_help_info.getContentPane().add(pan_info_btn, "South"); 
-         
-         
+                  
         //화면구성 
         int x = getX()+getWidth()/2-150; 
         int y = getY()+getHeight()/2-75; 
@@ -480,8 +522,9 @@ public class ConfigFilePath extends JFrame implements ActionListener {
 		
 		case "저장":
 			configFileSave();
+			System.exit(0);
 			break;
-		case "종료":
+		case "닫기":
 			this.dispose();
 			break;
 		}
