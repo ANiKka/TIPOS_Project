@@ -43,6 +43,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 	private Main_Config config;
 	private Member_Manage member_manage;
 	private Event_Manage event_manage;
+	private Order_Manage order_manage;
 	
 	JTabbedPane tabbedPane;
 	private final JPanel panel_topmenu = new JPanel();
@@ -397,8 +398,9 @@ public class Main_Frame extends JFrame implements ActionListener{
 			break;
 		case Ord_Manager:
 			//주문관리
-			
-			
+			order_manage = new Order_Manage();
+			tabbedPane.addTab(Ord_Manager, order_manage);
+			close_button(Ord_Manager);
 			break;
 			
 		case Mem_Manager:
