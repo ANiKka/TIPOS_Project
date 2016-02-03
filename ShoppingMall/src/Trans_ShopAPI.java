@@ -3,6 +3,8 @@ import java.net.*;
 import java.text.*;
 import java.util.*;
 
+import javax.swing.JOptionPane;
+
 import org.json.simple.*;
 import org.json.simple.parser.ParseException;
 
@@ -296,7 +298,6 @@ public class Trans_ShopAPI {
 	}
 	
 	
-	
 	/*//입금확인 처리시...
 	$post_str = "api_key=333d4794fbf4b1a9d2b4e26b0091df59&order_idx=주문번호&state=1";
 	//배송처리
@@ -305,10 +306,135 @@ public class Trans_ShopAPI {
 	$post_str = "api_key=333d4794fbf4b1a9d2b4e26b0091df59&order_idx=주문번호&state=3";
 	//주문취소
 	$post_str = "api_key=333d4794fbf4b1a9d2b4e26b0091df59&order_idx=주문번호&state=12&cancel_content=주문취소사유를 입력해주세요.";*/
-	String order_state = "https://ssl.anybuild.co.kr/API/shopping/order_state1.php";
+	public String order_Edit(String order_list){
 		
+		//주소등록
+		String order_state = "https://ssl.anybuild.co.kr/API/shopping/order_state1.php";
+		System.out.println(" 동기화를 시작합니다. 접속 주소 --> " + order_state);
+		
+		if( order_list.length() < 0){
+			JOptionPane.showMessageDialog(null, "정보를 입력해 주세요!!");
+			return "Fail";
+		}
+		
+		String[] temp_list = order_list.split(";"); 
+		
+		String shop_data = "";
+		String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+		switch(temp_list[0]){
+		case "1":
+			shop_data = "api_key="+shop_key.toString()+"&order_idx="+temp_list[1]+"&state=1";
+			break;
+		case "2":
+			shop_data = "api_key="+shop_key.toString()+"&order_idx="+temp_list[1]+"&state=2&move_code=98&move_num=&move_date="+today;
+			break;
+		case "3":
+			shop_data = "api_key="+shop_key.toString()+"&order_idx="+temp_list[1]+"&state=3";
+			break;
+		case "12":
+			shop_data = "api_key="+shop_key.toString()+"&order_idx="+temp_list[1]+"&state=12&cancel_content=관리자 주문취소";
+			/*try {
+				//shop_data = "api_key="+shop_key.toString()+"&order_idx="+URLEncoder.encode(json_data.toString(), "UTF-8");
+				shop_data = "api_key="+shop_key.toString()+"&order_idx="+temp_list[1]+"&state=12&cancel_content="+URLEncoder.encode("관리자 주문취소", "UTF-8");
+			} catch (UnsupportedEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}*/
+			break;
+		}		
+		System.out.println(shop_data);
+		
+		//기록을 남길 파일을 생성합니다.
+		File file = new File("result.log");
+				
+		if(!file.isFile()){
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+				
+		//결과를 전송 합니다.
+		//전송폼을 생성합니다.
+		try {
+			
+			URL url = new URL(order_state);
+			HttpURLConnection shop_url = (HttpURLConnection)url.openConnection();
+			
+			shop_url.setRequestMethod("POST");					
+			shop_url.setRequestProperty("Accept-Language", "ko-kr,ko;q=0.8,en-us;q=0.5,en;q=0.3");
+			shop_url.setDoInput(true);
+			shop_url.setDoOutput(true);
+						
+			System.out.println("전송상태 출력");			
+			System.out.println(" URL : "+shop_url.getURL());	
+			OutputStreamWriter output = new OutputStreamWriter(shop_url.getOutputStream());
+			output.write(shop_data);
+			
+			output.flush();			
+			output.close();
+			
+			//전송 결과 수신
+			InputStreamReader isr = new InputStreamReader(shop_url.getInputStream(), "UTF-8");	
+			JSONObject object = (JSONObject)JSONValue.parseWithException(isr);							
+						
+			isr.close();
+						
+			SimpleDateFormat formatter = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss", Locale.KOREA );
+			Date currentTime = new Date ();
+			String dTime = formatter.format ( currentTime );
+			
+			String sb = "전송 시간 : " + dTime + "결과 \r\n" ;
+					sb += object.toJSONString();
+			
+			char[] paser = sb.toCharArray();
+			
+			//로그파일을 작성합니다.
+			OutputStreamWriter bos = new OutputStreamWriter(new FileOutputStream(file, true), "euc-kr");					
+			StringBuffer result_str = new StringBuffer();
+			for(char str : paser){				
+				bos.write(str);
+				result_str.append(str);
+			}
+			System.out.println(result_str);
+			
+			bos.write('\r');
+			bos.write('\n');	
+			
+			bos.close();
+			System.out.println("전송이 완료 되었습니다.");
+			
+			//전송 결과를 확인 합니다. 
+			if(object.get("result_code").equals("OK")){
+				String query = "Update e_OrderList Set state='"+temp_list[0]+"', state_subject='"+temp_list[2]+"' Where order_idx='"+temp_list[1]+"' ";
+				
+				ms_connect.setMainSetting();
+				int result = ms_connect.connect_update(query);
+				
+				switch(result){	
+				case 0:					
+					System.out.println("주문 정보가 정상 수정  되었습니다.");
+					return "OK";					
+				default:
+					System.out.println("주문 정보 수정중 오류가 발생 되었습니다.\r\n"+ms_connect.errMsg);
+					return "Fail";						
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();		
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return "Fail";
+	}
+		
+	
 	/*// * 값을 입력한 필드에 대해서만 업데이트 합니다.
-
 	$post_str = "api_key=333d4794fbf4b1a9d2b4e26b0091df59";
 	$post_str .= "&mem_id=sky1004";
 	$post_str .= "&name=김길동";
