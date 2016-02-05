@@ -261,6 +261,38 @@ public class Ms_Connect {
 	}
 	
 	
+	public Connection getConnection(){
+		
+		//String [] query_multi;
+		errCode = 0;
+    	Connection conn = null;
+    	    	
+    	//통신체크
+    	if(connect_errorCheck()){    	
+    		
+	    	try {
+	    	    Class.forName("net.sourceforge.jtds.jdbc.Driver").newInstance();	    	    
+	
+	    	    String url = "jdbc:jtds:sqlserver://" +ip+":"+port+"/"+ dbname;
+	    	    conn = DriverManager.getConnection(url, dbid, dbpw);
+	    	    conn.setAutoCommit(false);
+	    	    
+	   	 	} catch (SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+	   	 		
+	    	    System.out.println("Error connection : " + e.getMessage());
+	    	    errCode = 1;
+	    	    errMsg = e.getMessage(); 
+	    	} 
+	    	
+    	}else{    		
+    		
+    		errCode = 3; //0 정상 , 1.Sql 오류 , 2 Exception 오류 , 3 커넥션오류
+    		return null;
+    	}
+		
+		return conn;
+	}
+	
 	public boolean connect_errorCheck(){
 		
 		//setMainSetting();

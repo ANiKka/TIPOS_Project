@@ -7,16 +7,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -27,13 +34,27 @@ import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import com.toedter.calendar.JDateChooser;
+
+import groovy.ui.SystemOutputInterceptor;
 import net.miginfocom.swing.MigLayout;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.fill.SimpleTextFormat;
+import net.sf.jasperreports.engine.util.JRLoader;
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
+import net.sf.jasperreports.swing.JRViewer;
+import net.sf.jasperreports.view.JasperViewer;
 
 
 public class Order_Manage extends JPanel implements ActionListener{
@@ -385,6 +406,7 @@ public class Order_Manage extends JPanel implements ActionListener{
 		btn_detail_print = new JButton("\uC778\uC1C4");
 		btn_detail_print.setEnabled(false);
 		panel_goods_detail.add(btn_detail_print, "cell 0 0");
+		btn_detail_print.addActionListener(this);
 		
 		btn_detail_state1 = new JButton("\uC785\uAE08\uB300\uAE30->\uBC30\uC1A1\uB300\uAE30");
 		btn_detail_state1.addActionListener(this);
@@ -1131,7 +1153,88 @@ public class Order_Manage extends JPanel implements ActionListener{
 		return true;	
 	}*/
 	
-	
+	//주문서 인쇄 하기
+	private void setOrderListPrint(String gubun){
+		
+		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		
+		Map<String, Object> map = new HashMap<String, Object>();
+		
+		if(gubun.equals("인쇄하기")){
+			
+			//여러개가 선택되었다면 여러개를 검색합니다.
+			int row = table_orderList.getSelectedRowCount();
+			
+			if(row <= 0){
+				JOptionPane.showMessageDialog(this, "주문 목록에서 인쇄할 주문서를 선택해 주세요! ");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return;
+			}
+			
+			String idx = "";
+			int[] order_idx = table_orderList.getSelectedRows();
+			
+			for(int i:order_idx){
+				String str = (String)dtm_orderList.getValueAt(i, 1);
+				idx += "'"+str+"', ";
+			}
+			idx = idx.substring(0, idx.length()-2);
+			System.out.println(idx);
+			map.put("ORDERIDX_IN", idx.toString());
+			
+		}else if(gubun.equals("인쇄")){
+			//한개만 넣는다면		
+			String idx = "'"+label_detailtext_jidx.getText()+"'";
+			if( idx.length() <= 0){
+				JOptionPane.showMessageDialog(this, "주문번호가 없습니다.");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return;
+			}
+			System.out.println(idx);
+			map.put("ORDERIDX_IN", idx.toString());
+		}else{
+			
+			//여러개가 선택되었다면 여러개를 검색합니다.
+			int row = table_orderList.getRowCount();
+			
+			if(row <= 0){
+				JOptionPane.showMessageDialog(this, " 주문서가 없습니다. ");
+				this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				return;
+			}
+			
+			String idx = "";
+			for(int i=0; i < row; i++){
+				String str = (String)dtm_orderList.getValueAt(i, 1);
+				idx += "'"+str+"', ";
+			}
+			idx = idx.substring(0, idx.length()-2);
+			System.out.println(idx);
+			map.put("ORDERIDX_IN", idx.toString());			
+		}	
+				
+		String reportFile = "./report/OrderList_report.jrxml";
+		
+		try {	
+			//First, compile jrxml file.
+	        JasperReport jasperReport = JasperCompileManager.compileReport(reportFile);
+	        //JasperReport jasperSubReport =    JasperCompileManager.compileReport(subreportFile);	        							
+	        //map.put("SUBREPORT_DIR", jasperSubReport);
+			JasperPrint print = JasperFillManager.fillReport(jasperReport, map, ms_conn.getConnection());
+			JasperViewer jrv = new JasperViewer(print, false);
+			//jrv.viewReport(print, false);			
+			jrv.setDefaultCloseOperation(JasperViewer.DISPOSE_ON_CLOSE);
+			jrv.setVisible(true);			
+			
+		} catch (JRException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		}
+		
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	}
+		
 	//상단 검색조회 새로고침
 	private void setSearchReSet(){
 		
@@ -1231,7 +1334,7 @@ public class Order_Manage extends JPanel implements ActionListener{
 					push_list.put("Img_Url", "");
 					push_list.put("Event", "");
 					
-					push_list.put("Mem_Id", label_detailtext_id.getText().trim());				
+					push_list.put("Mem_Id", label_detailtext_id.getText().trim());	
 					push_list.put("Mem_Only", "");
 					push_list.put("Hp", "");
 					
@@ -1342,16 +1445,17 @@ public class Order_Manage extends JPanel implements ActionListener{
 			System.out.println("입금대기->배송완료로 변경");
 			break;*/
 		case "인쇄하기":
+			setOrderListPrint("인쇄하기");
 			System.out.println("인쇄하기");
 			break;
 		case "인쇄":
+			setOrderListPrint("인쇄");
 			System.out.println("인쇄");
 			break;
 		case "전체 주문서 인쇄하기":
+			setOrderListPrint("전체 주문서 인쇄하기");			
 			System.out.println("전체 주문서 인쇄하기");
 			break;
-		}
-		
-	}
-	
+		}		
+	}	
 }

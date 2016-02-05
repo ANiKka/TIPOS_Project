@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="OrderList_sub_report" language="groovy" pageWidth="555" pageHeight="842" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="46f92a9d-ba33-4240-bf2f-2de8892b9c53">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<subDataset name="Table Dataset 1" uuid="50bad0f8-8824-475b-b572-ea5245d4aac6"/>
+	<parameter name="ORDER_IDX" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="MOVE_PRICE" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[Select *, cast(sale_price as int)/cast(t_price as int) as s_count, cast(t_price as int) as cast_tprice From e_ordergoods Where order_idx = $P{ORDER_IDX}]]>
+	</queryString>
+	<field name="order_idx" class="java.lang.String"/>
+	<field name="bu_id" class="java.lang.String"/>
+	<field name="add_price_str" class="java.sql.Clob"/>
+	<field name="option_m_str" class="java.lang.String"/>
+	<field name="sale_price" class="java.lang.String"/>
+	<field name="t_price" class="java.lang.String"/>
+	<field name="option_user" class="java.sql.Clob"/>
+	<field name="goods_img" class="java.lang.String"/>
+	<field name="goods_name" class="java.lang.String"/>
+	<field name="user_code" class="java.lang.String"/>
+	<field name="goods_idx" class="java.lang.String"/>
+	<field name="move_app_yn" class="java.lang.String"/>
+	<field name="move_app_price" class="java.lang.String"/>
+	<field name="md_move_num" class="java.lang.String"/>
+	<field name="md_move_date" class="java.lang.String"/>
+	<field name="md_move_sangho" class="java.lang.String"/>
+	<field name="s_count" class="java.lang.Integer"/>
+	<field name="cast_tprice" class="java.lang.Integer"/>
+	<variable name="Total_Price" class="java.lang.Integer" resetType="Column" calculation="Sum">
+		<variableExpression><![CDATA[$F{cast_tprice}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<columnHeader>
+		<band height="44">
+			<staticText>
+				<reportElement x="0" y="1" width="77" height="42" uuid="666c886f-b52f-47f2-a233-01a6a242489b"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[상품 이미지]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="77" y="1" width="214" height="21" uuid="048ddb46-c00f-4206-ba6a-840367820881"/>
+				<box>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[상품명]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="291" y="1" width="88" height="42" uuid="6ecb7b2c-9991-42ca-bb18-868193ffbee5"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[단가]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="379" y="1" width="64" height="42" uuid="9a74492b-9df0-44c1-ba97-9b01902a7a1f"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[수량]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="443" y="1" width="112" height="42" uuid="d115c715-01bc-496d-9348-b95b9766557c"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[합계]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="77" y="21" width="214" height="22" uuid="33fd8f90-5c15-41ca-a223-a083e34edf4d"/>
+				<box>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[바코드]]></text>
+			</staticText>
+			<line>
+				<reportElement x="1" y="43" width="555" height="1" uuid="3b852971-bfdc-45a8-b1cb-89cfdda0f2bd"/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="58" splitType="Stretch">
+			<textField>
+				<reportElement x="77" y="1" width="214" height="23" uuid="239442e1-3a35-4986-8462-42de7af711e1"/>
+				<box>
+					<leftPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<paragraph leftIndent="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{goods_name}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="77" y="24" width="123" height="33" uuid="d03bd6cc-6d21-4bc5-9971-5db7e887212e"/>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="true" checksumRequired="false" barHeight="50">
+					<jr:codeExpression><![CDATA[$F{user_code}]]></jr:codeExpression>
+				</jr:barbecue>
+			</componentElement>
+			<textField>
+				<reportElement x="291" y="1" width="88" height="56" uuid="d0648ca9-2af8-49a6-b0be-71106739d123"/>
+				<box>
+					<leftPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[String.format("%,d", Integer.parseInt($F{sale_price}))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="443" y="1" width="112" height="56" uuid="99d31c71-b8b4-427f-a10d-1a9802c5519d"/>
+				<box>
+					<leftPen lineWidth="0.25" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[String.format("%,d", Integer.parseInt($F{t_price}))]]></textFieldExpression>
+			</textField>
+			<image hAlign="Center" vAlign="Middle">
+				<reportElement x="14" y="12" width="48" height="38" uuid="4e31127d-78c2-44e8-97e7-d1575fd2bcbb"/>
+				<imageExpression><![CDATA[$F{goods_img}]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="379" y="1" width="64" height="56" uuid="5e94359a-a5d7-4c14-bda8-3ad9a67e1702"/>
+				<box>
+					<leftPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{s_count}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="0" width="555" height="1" uuid="497dd601-e4a0-467c-89c4-a8dfe21b540b"/>
+				<graphicElement>
+					<pen lineStyle="Dotted"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="0" y="0" width="77" height="57" uuid="26e8094b-4261-4663-9abd-bbb904a9ef49"/>
+				<box>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<text><![CDATA[]]></text>
+			</staticText>
+		</band>
+	</detail>
+	<summary>
+		<band height="72">
+			<textField>
+				<reportElement x="443" y="2" width="112" height="40" uuid="ff545669-3ee5-4341-aaa0-453b6a5dce51"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<paragraph rightIndent="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[String.format("%,d", Integer.parseInt($P{MOVE_PRICE}))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="42" width="443" height="30" backcolor="#CCE5FF" uuid="e62298d6-5049-4d37-a7dd-33994783b4b2"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<paragraph rightIndent="10"/>
+				</textElement>
+				<text><![CDATA[총 합계 : ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="2" width="443" height="41" uuid="f17cda5b-78bd-4310-a2f8-69d311772454"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<paragraph rightIndent="10"/>
+				</textElement>
+				<text><![CDATA[배송료 : ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement style="table_TD" x="443" y="43" width="112" height="29" backcolor="#CCE5FF" uuid="01102801-512c-40f6-b5f2-aabde5363e40"/>
+				<text><![CDATA[]]></text>
+			</staticText>
+			<textField>
+				<reportElement mode="Transparent" x="443" y="42" width="112" height="30" forecolor="#CC0033" uuid="bb63aeb6-38a1-4a44-b7b3-4aa0cd3f2506"/>
+				<box>
+					<pen lineWidth="0.25"/>
+					<topPen lineWidth="0.25"/>
+					<leftPen lineWidth="0.25"/>
+					<bottomPen lineWidth="0.25"/>
+					<rightPen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+					<paragraph rightIndent="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[String.format("%,d", $V{Total_Price})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="1" width="555" height="1" uuid="be0fcc60-b10a-435e-856b-be5d4ad9fbfd"/>
+			</line>
+		</band>
+	</summary>
+</jasperReport>

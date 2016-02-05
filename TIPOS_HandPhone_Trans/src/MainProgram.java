@@ -49,9 +49,7 @@ public class MainProgram implements ActionListener{
 	
 	//public Socket socket;	
 	public Thread masterFile_TranThread, dataFile_TranThread, app_thread; 
-	
 	private Properties config_file;
-	
 	public JFrame frame;
 	
 	// ***** 파일 패스 설정 *****
@@ -650,8 +648,7 @@ public class MainProgram implements ActionListener{
         dlg_help_info.getContentPane().add(pan_info, "Center");
         //dlg_help_info.add(lbl_info_se,"Center"); 
         dlg_help_info.getContentPane().add(pan_info_btn, "South"); 
-         
-         
+                  
         //화면구성 
         int x = frame.getX()+frame.getWidth()/2-150; 
         int y = frame.getY()+frame.getHeight()/2-75; 
