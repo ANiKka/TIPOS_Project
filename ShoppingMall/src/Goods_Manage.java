@@ -1419,7 +1419,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		detail_Renew();
 		
 		// 테이블의 선택된 행의 인덱스 번호 취득
-		int row = table.getSelectedRow();		
+		//int row = table.getSelectedRow();
+		int row = table.convertRowIndexToModel(table.getSelectedRow());
 		System.out.println(row);
 		int col = table.getColumnCount();
 		
@@ -1530,7 +1531,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
 	public void setSearchGoodsName(){		
 		this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
-		int row = table.getSelectedRow();
+		//int row = table.getSelectedRow();
+		int row = table.convertRowIndexToModel(table.getSelectedRow());
 		int col = table.getColumnCount();
 		
 		Vector<Object> temp = new Vector<Object>(); 
@@ -2422,11 +2424,11 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		        }
 		      }
 		    }
-		  });   //		
+		  });   //		*/
 	
 		table.setAutoCreateRowSorter(true);
 		TableRowSorter<TableModel> tsorter = new TableRowSorter<TableModel>(table.getModel());
-		table.setRowSorter(tsorter);*/	
+		table.setRowSorter(tsorter);	
 		
 		table.addMouseListener(new MouseListener() {
 			
@@ -2915,6 +2917,9 @@ public class Goods_Manage extends JPanel implements ActionListener {
 				
 				// 테이블의 선택된 행의 인덱스 번호 취득
 				int[] row = table.getSelectedRows();
+				for(int i =0; i < row.length; i++){
+					row[i] = table.convertRowIndexToModel(row[i]);
+				}				
 				
 				//int col = table.getColumnCount();
 				
@@ -3083,6 +3088,10 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		// 테이블의 선택된 행의 인덱스 번호 취득
 		int[] row = table.getSelectedRows();
 		//int col = table.getColumnCount();
+		
+		for(int i=0; i < row.length; i++){			
+			row[i] = table.convertRowIndexToModel(row[i]);
+		}
 		
 		ArrayList<String> query_list = new ArrayList<String>();
 		
@@ -3553,7 +3562,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 						//String tempPath=tempFile.getParent();
 						//확장자를 검사해서 그림 파일만 불러 옵니다.				
 						for(int i =0; i < FILE_EXTENSION.length; i++){
-							if(ext.equals(FILE_EXTENSION[i])){
+							if(ext.toLowerCase().equals(FILE_EXTENSION[i])){
 								//파일을 불러옵니다.				
 								map.put("Barcode", perfix); //이미지명
 								map.put("G_Name", perfix); //파일명
@@ -4236,7 +4245,12 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	
     	//컬럼 갯수를 불러옵니다.
     	int[] row_item = table.getSelectedRows();
-		int col = table.getColumnCount();
+    	
+    	for(int i=0; i < table.getSelectedRowCount(); i++){
+    		row_item[i] = table.convertRowIndexToModel(row_item[i]);
+    	}
+    	
+    	int col = table.getColumnCount();
 		
 		ArrayList<Vector<Object>> temp_list = new ArrayList<Vector<Object>>();
 		for(int j = 0; j < row; j++){

@@ -780,6 +780,11 @@ public class Order_Manage extends JPanel implements ActionListener{
 		String query = "Select * From e_OrderList Where "+state_use;		
 		ArrayList<HashMap<String, String>> map = ms_conn.connection(query);
 		
+		if(map == null){			
+			JOptionPane.showMessageDialog(this, ms_conn.errMsg);
+			return;
+		}
+		
 		// {0."순번", 1."주문상태", 2."회원ID", 3."주문자명", 4."휴대폰번호", 5."결제방식", 6."결제금액", 7."상품대체방식", 8."결제유형", 9."주문일"};
 		if(map.size() > 0){
 			for(int i =0; i < map.size(); i++){

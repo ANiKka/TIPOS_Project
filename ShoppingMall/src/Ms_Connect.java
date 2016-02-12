@@ -77,10 +77,12 @@ public class Ms_Connect {
     	    System.out.println("Error connection : " + e.getMessage());
     	    errCode = 1;
     	    errMsg = e.getMessage();
+    	    return null;
     	} catch (Exception e) {
     	    System.out.println("Error connection : " + e.getMessage());	
     	    errCode = 2;
     	    errMsg = e.getMessage();
+    	    return null;
     	}
     	return json;
     	}else{

@@ -219,9 +219,9 @@ public class Event_Manage extends JPanel implements ActionListener {
 	
 	private DefaultTableModel dtm_msglist;
 	
-	private String state_y = "출력 문자 내용이 잘릴수 있습니다.";
+	private String state_y = "<html>알림시 첫화면의 보기-닫기 버튼이<br> 잘릴수 있지만 전체 전송 내용은 앱의 <br>알림메세지 메뉴에서 전체 내용을<br> 확인 할수 있습니다.<html>";
 	private String state_n = "정상출력";
-	private int cut_cnt = 350;
+	private int cut_cnt = 450;
 	private JLabel tranimg_label_msgtitle;
 	private JLabel tranimg_label_imgpath;
 	private JTextField tranimg_text_imgpath;
@@ -277,8 +277,7 @@ public class Event_Manage extends JPanel implements ActionListener {
 		getTopSearchStart();
 		
 		//기본 셋팅합니다.
-		tranmsg_text_title.setText(Server_Config.getOFFICENAME());
-		tranimg_text_title.setText(Server_Config.getOFFICENAME());
+		tranmsg_text_title.setText(Server_Config.getOFFICENAME());		
 		
 		tranimg_btn_imgreset = new JButton("\uC0C8\uB85C\uC785\uB825");
 		tranimg_btn_imgreset.addActionListener(new ActionListener() {

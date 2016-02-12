@@ -44,6 +44,7 @@ public class Main_Frame extends JFrame implements ActionListener{
 	private Member_Manage member_manage;
 	private Event_Manage event_manage;
 	private Order_Manage order_manage;
+	private Message_Manage message_manage;
 	
 	JTabbedPane tabbedPane;
 	private final JPanel panel_topmenu = new JPanel();
@@ -248,6 +249,12 @@ public class Main_Frame extends JFrame implements ActionListener{
 		mn_main_member.add(mn_member_member);
 		mn_member_member.addActionListener(this);
 		
+		JMenu mn_main_message = new JMenu("\uBA54\uC138\uC9C0\uAD00\uB9AC");
+		menuBar.add(mn_main_message);
+		
+		JMenuItem mn_message_message = new JMenuItem("\uBA54\uC138\uC9C0\uAD00\uB9AC");
+		mn_main_message.add(mn_message_message);
+		
 		JMenu mn_main_event = new JMenu("\uC774\uBCA4\uD2B8\uAD00\uB9AC");
 		mn_main_event.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
 		menuBar.add(mn_main_event);
@@ -411,6 +418,9 @@ public class Main_Frame extends JFrame implements ActionListener{
 			break;
 		case Msg_Manager:
 			//메세지관리
+			message_manage = new Message_Manage();
+			tabbedPane.addTab(Msg_Manager, message_manage);
+			close_button(Msg_Manager);
 			break;
 		case Evt_Manager:
 			//이벤트관리			
