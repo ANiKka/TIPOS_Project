@@ -33,6 +33,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
@@ -266,7 +267,8 @@ public class MainProgram implements ActionListener{
 		panel_shoppingmall.add(label_shop_log, BorderLayout.NORTH);
 		
 		textArea_shop_log = new JTextArea();
-		panel_shoppingmall.add(textArea_shop_log, BorderLayout.CENTER);
+		JScrollPane scrollpane = new JScrollPane(textArea_shop_log);		
+		panel_shoppingmall.add(scrollpane, BorderLayout.CENTER);
 		
 		JPanel panel_handphone = new JPanel();
 		tabbedPane.addTab("\uD578\uB4DC\uD3F0", null, panel_handphone, null);
@@ -368,7 +370,7 @@ public class MainProgram implements ActionListener{
         		 frame.setVisible(true);
         	 }
          }
-     });     
+     });
         
      // 위에서 얻어온 SystemTray에 방금 막 생성한 TrayIcon의 인스턴스를 인자로 넣어줍니다.
      try{
@@ -467,18 +469,25 @@ public class MainProgram implements ActionListener{
 				
 				try { 	
 					while(!Thread.currentThread().isInterrupted()){
-						Socket app_Socket = appSocket.accept();					
+						Socket app_Socket = appSocket.accept();			
 						System.out.println("ShoppingMall Data Tran Client Connected!! ");
-		            	textArea_shop_log.append("쇼핑몰 연결 되었습니다. \r\n");
+		            	
+						//300줄에 한번씩 리셋합니다.
+						if(textArea_shop_log.getRows() > 300){
+		            		textArea_shop_log.setText("쇼핑몰에 연결 합니다. \r\n");
+		            	}else{
+		            		textArea_shop_log.append("쇼핑몰에 연결 합니다. \r\n");
+		            	}
+		            	
 						if(app_Socket.isConnected()){
-							ShopReceiveData srd = new ShopReceiveData(app_Socket);
-							srd.start();			
-							textArea_shop_log.append("자료수신 완료 \r\n");							
+							textArea_shop_log.append("연결중 \r\n");		
+							ShopReceiveData srd = new ShopReceiveData(app_Socket, textArea_shop_log);
+							srd.start();
 						}
-					}
-					
+					}					
 				} catch (IOException e) {
 		            e.printStackTrace();
+		            textArea_shop_log.append("연결실패 \r\n"+e.getMessage());
 		        }finally{
 		        	try {
 						appSocket.close();	
@@ -511,14 +520,13 @@ public class MainProgram implements ActionListener{
 					// 연결되면 통신용 소켓 생성
 					
 					while(!Thread.currentThread().isInterrupted()){
-						Socket socket = receivSocket.accept();
-						
+						Socket socket = receivSocket.accept();						
 						System.out.println("클라이언트와 연결되었습니다.");
 		            		            
 			            if(socket.isConnected()){
 				            // 파일 수신 작업 시작
 				            ReceiveFile rf = new ReceiveFile(socket);
-				            rf.start();
+				            rf.start();				            
 				            listModel_handy_log.addElement( "파일 수신완료");
 			            }	
 					}
@@ -537,14 +545,7 @@ public class MainProgram implements ActionListener{
 		});
 		masterFile_TranThread.start();		
 		
-		//파일전송 대기중		
-		File[] file = new File[listModel_handy_master.getSize()];
 		
-		for (int i =0; i < listModel_handy_master.getSize(); i++){
-			file[i] = new File( lblChandymaster.getText(), listModel_handy_master.get(i));
-		}
-		listModel_handy_log.clear();
-		listModel_handy_log.addElement( listModel_handy_master.getSize() + " 개 의 파일을 전송 합니다.");
 		
 		dataFile_TranThread = new Thread(new Runnable() {
 			
@@ -557,24 +558,41 @@ public class MainProgram implements ActionListener{
 					listModel_handy_log.addElement(" 전송 대기중... ");
 					listModel_handy_log.addElement( " 휴대폰의 수신 버튼을 눌러주세요 " );
 					while(!Thread.currentThread().isInterrupted()){
-					for(File f : file){
-					Socket socket = sendSocket.accept();
-				    System.out.println("클라이언트와 연결되었습니다.");
-		            		            
-		            // 파일 전송 작업 시작
-		            SendFile sf = new SendFile(socket, f);
-					sf.start();		
-					//i++;
-					}
-					listModel_handy_log.addElement( listModel_handy_master.getSize() + " 개 파일 전송완료");
+						
+						Socket socket = sendSocket.accept();				    
+						System.out.println("클라이언트와 연결되었습니다.");		
+						
+						//파일전송 대기중
+						File[] file = new File[listModel_handy_master.getSize()];
+						
+						for (int i =0; i < listModel_handy_master.getSize(); i++){
+							file[i] = new File( lblChandymaster.getText(), listModel_handy_master.get(i));
+						}
+						listModel_handy_log.clear();
+						listModel_handy_log.addElement( listModel_handy_master.getSize() + " 개 의 파일을 전송 합니다.");
+						
+						for(File f : file){							
+							// 파일 전송 작업 시작		            
+							SendFile sf = new SendFile(socket, f);					
+							sf.start();
+							//i++;
+							try {
+								sf.join();
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						
+						listModel_handy_log.addElement( listModel_handy_master.getSize() + " 개 파일 전송완료");
 					}
 				}catch(IOException e) {
 		            e.printStackTrace();
 		        }finally{			        	
 		        	try{
 		        		sendSocket.close();
-		        	//if( socket != null) socket.close();
-		        	//if(serverSocket != null) serverSocket.close();
+		        		//if( socket != null) socket.close();
+		        		//if(serverSocket != null) serverSocket.close();
 		        	}catch(Exception e){
 		        		e.printStackTrace();
 		        	}

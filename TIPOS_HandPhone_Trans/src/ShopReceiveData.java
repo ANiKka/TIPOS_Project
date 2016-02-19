@@ -13,13 +13,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Properties;
+
+import javax.swing.JTextArea;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class ShopReceiveData extends Thread {
@@ -30,7 +30,7 @@ public class ShopReceiveData extends Thread {
     private String mem = "member";
     private String ord = "order";
     
-    private String gubun = "";       //수신구분  멤버,주문,앱설치        
+    private String gubun = "";       //수신구분  멤버,주문,앱설치  
     private Ms_Connect mscon;
     
     //회원 저장용 값
@@ -45,19 +45,28 @@ public class ShopReceiveData extends Thread {
 	private String memNumLength;
 	private Properties config;	
 	
+	//로그리스트
+	private JTextArea textarea;
+	
 	//앱키
 	private String shop_key = "";
 	
-    public ShopReceiveData(Socket socket) {
+    public ShopReceiveData(Socket socket, JTextArea ta) {
         this.socket = socket;
+        textarea = ta;
+        textarea.append("연결성공\r\n");
+        
         mscon = new Ms_Connect();        
+        
         config = new Properties();
+        
         try {
 			config.load(new FileInputStream(new File("config.dat")));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+			textarea.append(e.getMessage()+"\r\n");
+		} 
         
 		memStartNum = config.getProperty("MEMNUM");
 		memNumLength=  config.getProperty("MEMNUM_LENGTH");
@@ -65,7 +74,8 @@ public class ShopReceiveData extends Thread {
 		String query = "Select Online_Key from office_user ";
 		HashMap<String, String> map = mscon.selectQueryOne(query); 
 		shop_key = map.get("Online_Key");
-		System.out.println(shop_key);
+		System.out.println(shop_key);		
+		textarea.append(shop_key+"\r\n");
 		
     }
  
@@ -91,6 +101,7 @@ public class ShopReceiveData extends Thread {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				textarea.append(e.getMessage()+"\r\n");
 			}
 		}
 		
@@ -105,8 +116,6 @@ public class ShopReceiveData extends Thread {
 			
 			String data ="OK";			
 	        System.err.println("client connect");
-
-	        
 	        
 	        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
@@ -134,6 +143,12 @@ public class ShopReceiveData extends Thread {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			textarea.append(e.getMessage()+"\r\n");
+		}
+		
+		if(result_data.getProperty("POST") == null){
+			textarea.append("연결테스트\r\n");
+			return;
 		}
 		
 		//어디서 전송되었는지 확인 합니다.
@@ -223,7 +238,7 @@ public class ShopReceiveData extends Thread {
 				phone_number = json.get("hp_num").toString();
 				connect_add5 = "1"; //매칭완료
 
-				query_result = "Update Customer_Info Set e_AppInstall_YN='1', e_PhoneNumber='"+phone_number+"' Where Cus_Code='"+cus_code+"' ";
+				query_result = "Update Customer_Info Set e_AppInstall_YN='1', e_PushSMS_YN='1', e_PhoneNumber='"+phone_number+"' Where Cus_Code='"+cus_code+"' ";
 				query_list.add(query_result);
 				break;	
 			default:
@@ -236,7 +251,7 @@ public class ShopReceiveData extends Thread {
 					+"', '"+json.get("devicemodel")+"', '"+json.get("deviceversion")+"', '"+json.get("hp_num")+"', '"+json.get("reg_time")+"', '"+cus_code+"', '"+connect_add5+"')";
 			query_list.add(query_result);			
 						
-			int result = mscon.connect_update(query_result);
+			int result = mscon.connect_update(query_list);
 			if(result == 0){
 				return true;
 			}else{
@@ -336,16 +351,16 @@ public class ShopReceiveData extends Thread {
 								+ "Cus_BirDay,Cus_RealDay,Pur_Pri,Cus_TPoint,Cus_Point,Cus_UsePoint,Dec_Pri,Vis_Count,Gift_Count,Edit_Check,"
 								+ "Zip_Code,Address1,Address2,Bigo,Cus_Date,Vis_Date,Write_Date,Edit_Date,Writer,EDitor,HPSend_YN,"
 								+ "Office_Name,Office_Num,Owner_Name,Uptae,JongMok,Address,Credit_YN,Cus_Use,Tax_Use,cPoint_Use,"
-								+ "TaxBill_YN,Email,TAX_Print_Use,TAX_AUTO_USE,TAX_Gubun,TAX_Number, e_AppInstall_YN, e_Member_YN, e_PushSMS_YN, e_PhoneNumber)" 
+								+ "TaxBill_YN,Email,TAX_Print_Use,TAX_AUTO_USE,TAX_Gubun,TAX_Number, e_AppInstall_YN, e_Member_YN, e_Member_ID, e_PushSMS_YN, e_PhoneNumber)" 
 								+ " Values('"+map_newmem.get("cus_code")+"', '"+json.get("name")+"', '정회원','1','"+json.get("tel")+"','"+json.get("hp")+"','1','','','0','0','0','0','0','0','0','1',"
 								+ "'"+json.get("zipcode")+"','"+json.get("addr1")+"','"+json.get("addr2")+"','',"
-								+ "'2016-01-14','','2016-01-14','2016-01-14','tips','tips','1','','','','','','','1','1','1','1','0','','0','0', '0', '', '', '1', '1', '') ";
+								+ "'2016-01-14','','2016-01-14','2016-01-14','tips','tips','1','','','','','','','1','1','1','1','0','','0','0', '0', '', '', '1', '"+json.get("mem_id")+"','1', '') ";
 						query_won[0] = query;
 					
 						query_won[1] = "Insert Into Customer_History(Regdate,q_sql,gubun)"
-											+"Values(convert(datetime,getdate(),120), '"+query.replace("'", "`")+"', '쇼핑몰관리')";					
+											+"Values(convert(datetime,getdate(),120), '"+query.replace("'", "`")+"', '쇼핑몰관리')";	
 						
-						mscon.connect_update(query_won);						
+						mscon.connect_update(query_won);
 						cus_code = map_newmem.get("cus_code");
 						connect_add5 = "1";						
 					}
@@ -384,16 +399,34 @@ public class ShopReceiveData extends Thread {
 					ArrayList<HashMap<String, String>> map_cuscode = mscon.connection(query);		
 					String str = config.getProperty("FAILCODE");
 					switch(map_cuscode.size()){
-					case 0:  //매칭안됨						
+					case 0:  //매칭안됨				
 						break;
 					case 1:
 						cus_code = map_cuscode.get(0).get("Cus_Code");
 						connect_add5 = "1"; //매칭완료
 						str = config.getProperty("OKCODE");
+						String query_mem = "Update Customer_Info set e_Member_YN='1', e_Member_ID='"+json.get("mem_id")+"' Where Cus_Code='"+cus_code+"' ";						
+						switch(mscon.connect_update(query_mem)){
+						case 0:
+							String result_data = "";
+							try {
+								result_data = "api_key="+shop_key.toString()+"&mem_id="+mem_id+"&add2="+cus_code+"&add4="+URLEncoder.encode("연동중", "UTF-8");
+							} catch (UnsupportedEncodingException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}				
+							
+							//신규회원 등록 정보를 쇼핑몰에 올립니다.
+							new Trans_ShopAPI().setMember_Update(result_data, shop_key);	
+							System.out.println("기존회원 연동 옵션 : 업데이트 성공");
+							break;
+						default:
+							System.out.println("기존회원 연동 옵션 : 실패");
+							break;
+						}
 						break;	
 					default:
-						connect_add5 = "2";  //중복발생
-						
+						connect_add5 = "2";  //중복발생				
 						break;
 					}
 					
@@ -546,7 +579,7 @@ public class ShopReceiveData extends Thread {
 				} catch (ParseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}			
+				}
 			}
 			
 			System.out.println(orderquery_list);
@@ -559,7 +592,7 @@ public class ShopReceiveData extends Thread {
 				return false;
 			}
 			
-		}		
+		}
 		return false;
     }
 }

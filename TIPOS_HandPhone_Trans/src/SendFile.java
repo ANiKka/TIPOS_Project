@@ -7,21 +7,16 @@ import java.net.Socket;
 
 
 public class SendFile extends Thread {
-    Socket socket;
-    DataOutputStream dos;
-    FileInputStream fis;
-    BufferedInputStream bis;
-    File file;
+	private Socket socket;
+    private DataOutputStream dos;
+    private FileInputStream fis;
+    private BufferedInputStream bis;
+    private File file;
  
     public SendFile(Socket socket, File file) {
         this.socket = socket;
         this.file = file;
-        try {
-            // 데이터 전송용 스트림 생성
-            dos = new DataOutputStream(socket.getOutputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+       
     }
         
     @Override
@@ -38,10 +33,16 @@ public class SendFile extends Thread {
                         
             //for(int i = 0; i < file.length; i++){
             
+            try {
+                // 데이터 전송용 스트림 생성
+                dos = new DataOutputStream(this.socket.getOutputStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            
 	            String fName = file.getName();//file.length + "," + file[i].getName();
 	            
-	            dos.writeUTF(fName);
-	            System.out.printf("파일 이름(%s)을 전송하였습니다.\n", fName);
+	            dos.writeUTF(fName);	            
 	 
 	            // 파일 내용을 읽으면서 전송
 	            //File f = new File(fName);
@@ -56,13 +57,14 @@ public class SendFile extends Thread {
 	            }
 	            
 	            dos.flush();
-                        
+	            System.out.printf("파일 (%s)을 전송하였습니다.\n", fName);        
            
             dos.close();
             bis.close();
             fis.close();
             System.out.println("파일 전송 작업을 완료하였습니다.");
             //System.out.println("보낸 파일의 사이즈 : " + file.length());
+           
         } catch (IOException e) {
             e.printStackTrace();
         }

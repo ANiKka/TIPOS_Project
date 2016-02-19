@@ -860,9 +860,12 @@ public class Goods_Manage extends JPanel implements ActionListener {
     private void getEventCodeCall() {
     	this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     	//목록을 호출합니다.
-    	String query = "Select Evt_Cd, Evt_Name, Evt_Use=Case When Evt_SDate <= Finish_date AND Evt_EDate > Finish_date Then '적용' ELSE '미적용' End, Count(*) Evt_cnt"
-    			+" From Evt_Mst, Finish"
-    			+" Group by Evt_Cd, Evt_Name, Evt_SDate, Evt_EDate, finish_date";
+    	
+    	String query = "Select Evt_Cd, Evt_Name, Evt_SDate, Evt_EDate, " 
+    					+ "Evt_Use=Case When "
+    					+ "DateAdd(dd, 1, Convert(char(10), Finish_date, 23)) Between Convert(char(10), Evt_SDate, 23) and Convert(char(10), Evt_EDate, 23) "
+    					+ "Then '적용' ELSE '미적용' End, Count(*) Evt_cnt From Evt_Mst, Finish Group by Evt_Cd, Evt_Name, Evt_SDate, Evt_EDate, finish_date "
+    					+ "order by Evt_Use desc ";
     	
     	ms_connect.setMainSetting();
     	ArrayList<HashMap<String, String>> temp_map = ms_connect.connection(query);
@@ -878,7 +881,10 @@ public class Goods_Manage extends JPanel implements ActionListener {
 		for(int i = 0; i < temp_map.size(); i++){
 			HashMap<String, String> map = temp_map.get(i);
 			System.out.println(map.toString());
-			String item = (i+1)+". "+map.get("Evt_Name")+" ["+map.get("Evt_Use")+"] "+map.get("Evt_cnt")+" 개";
+			
+			//String.format("%d . [%s] [%s] %s - %s 개", (i+1), map.get("Evt_Use"), map.get("Evt_EDate"), map.get("Evt_Name"), map.get("Evt_cnt") );
+			//String item = (i+1)+". "+map.get("Evt_Name")+" ["+map.get("Evt_Use")+"] "+map.get("Evt_cnt")+" 개"+" 종료일 : "+map.get("Evt_EDate");
+			String item = String.format("%d. [%s] [%s] %s - %s 개", (i+1), map.get("Evt_Use"), map.get("Evt_EDate"), map.get("Evt_Name"), map.get("Evt_cnt") );
 			list_item[i] = map.get("Evt_Cd");
 			list[i] = item;
 		}
@@ -1157,7 +1163,8 @@ public class Goods_Manage extends JPanel implements ActionListener {
 				// "8 분류코드", "9 대코드", "10 대명", "11 중코드", "12 중명", "13 소코드", "14 소명", "15 행사", "16 상품연동",
 				//"`17 쇼핑몰", "`18 진열유무", "`19 재고연동", "20 이미지설정", "21 이미지경로" };
 				
-				v.add(String.valueOf(i+1)); //0. 순번
+				//v.add(String.valueOf(i+1)); //0. 순번
+				v.add(i+1); //0. 순번
 				v.add(map.get("barcode")); //1. 바코드
 				v.add(map.get("g_name")); //2. 상품명
 				v.add(map.get("std_size")); //3. 규격
@@ -1376,11 +1383,10 @@ public class Goods_Manage extends JPanel implements ActionListener {
     		image_query += "'"+key.trim()+"', 'main_goods', '1', '', '"+file_map.get(key).trim()+"', '' )";   		
     		query_list.add(image_query);    		
     		cnt++;
-    		/*if(cnt%10 == 0){    			
-    			
+    		if(cnt%500 == 0){ 
     	    	int result = ms_connect.connect_update(query_list);
     	    	switch(result){
-    	    	case 0:    	    		
+    	    	case 0:	    		
     	    		query_list.clear();    	    		
     	    		break;
     	    	case 1:
@@ -1388,11 +1394,11 @@ public class Goods_Manage extends JPanel implements ActionListener {
     	    		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     	    		return;
     	    	}
-    		}    		*/
+    		}
     	}
     	
     	//나머지 처리합니다.
-    	//if(cnt%30 > 0){
+    	if(cnt%500 > 0){
     		
     		int result = ms_connect.connect_update(query_list);
 	    	switch(result){
@@ -1403,7 +1409,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 	    	case 1:
 	    		JOptionPane.showMessageDialog(this, "업로드에 실패 했습니다.");
 	    	}    		
-    	//}    	
+    	}    	
     	
     	this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
@@ -2951,7 +2957,7 @@ public class Goods_Manage extends JPanel implements ActionListener {
 					
 					Vector<Object> temp_one = new Vector<Object>();		
 					
-					temp_one.add(table.getModel().getValueAt(row[j], 1));			//바코드
+					temp_one.add(table.getModel().getValueAt(row[j], 1));		//바코드
 					temp_one.add(table.getModel().getValueAt(row[j], 21));       //이미지설정
 					
 					//System.out.println("21 : " +table.getModel().getValueAt(row[j], 21));
