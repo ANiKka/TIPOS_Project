@@ -174,6 +174,7 @@ public class Message_Manage extends JPanel implements ActionListener{
 	private JButton tranevt_btn_search;
 	
 	private DefaultTableModel dtm_tranevt;
+	private JButton tran_btn_testsubmit;
 
 	public Message_Manage(){
 		
@@ -194,7 +195,7 @@ public class Message_Manage extends JPanel implements ActionListener{
 		panel_coupontran_1 = new JPanel();
 		panel_coupontran_1.setBorder(new LineBorder(new Color(0, 0, 0)));
 		center_tabbed_coupontran.add(panel_coupontran_1, BorderLayout.WEST);
-		panel_coupontran_1.setLayout(new MigLayout("", "[][][grow]", "[30px][][][][][80px][30px][][][80px][30px][40px]"));		
+		panel_coupontran_1.setLayout(new MigLayout("", "[][][grow]", "[30px][][][][][80px][30px][][][80px][30px][40px][]"));		
 		event_CouponTran();
 			
 		//기본 셋팅합니다.
@@ -317,6 +318,14 @@ public class Message_Manage extends JPanel implements ActionListener{
 		tran_btn_submit = new JButton("\uC804\uC1A1");
 		tran_btn_submit.addActionListener(this);
 		panel_coupontran_1.add(tran_btn_submit, "cell 0 11 3 1,grow");
+		
+		tran_btn_testsubmit = new JButton("\uD14C\uC2A4\uD2B8\uC804\uC1A1");
+		tran_btn_testsubmit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println(new Trans_ShopAPI().tranNewPushSubimt().toJSONString());				
+			}
+		});
+		panel_coupontran_1.add(tran_btn_testsubmit, "cell 0 12 3 1,grow");
 		
 		panel_coupontran_2 = new JPanel();
 		center_tabbed_coupontran.add(panel_coupontran_2, BorderLayout.CENTER);

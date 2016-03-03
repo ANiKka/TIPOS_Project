@@ -469,8 +469,7 @@ public class Trans_ShopAPI {
 	String mem_edit = "https://ssl.anybuild.co.kr/API/member/mem_edit.php";
 	
 	//회원 정보 조회
-	String mem_info = "https://ssl.anybuild.co.kr/API/member/mem_info.php";
-	
+	String mem_info = "https://ssl.anybuild.co.kr/API/member/mem_info.php";	
 	public JSONArray getMemberManage(String hp, String mem_id){
 				
 		//환경설정
@@ -749,6 +748,171 @@ public class Trans_ShopAPI {
 			shop_data +="&push_title="+URLEncoder.encode(push_title, "UTF-8")+"&push_msg="+URLEncoder.encode(push_msg, "UTF-8")+"&push_link="+URLEncoder.encode(push_link, "UTF-8")
 			+"&push_img_url="+URLEncoder.encode(push_url, "UTF-8")+"&mem_id="+mem_id
 			+"&memlv="+memlv+"&mem_only="+mem_only+"&platform=&devicename=&devicemodel=&deviceversion=&hp_num="+hp_num+"&event_idx="+event_idx;
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		/*shop_data = "api_key="+shop_key;//+"&hp=01090077611";//+URLEncoder.encode("010-8619-7484", "UTF-8");
+		shop_data +="&push_title=게릴라이벤트&push_msg=지금 방문하시면 아메리카노1잔 서비스 제공합니다.&push_link=/main&push_img_url="
+				+"&memlv=&mem_only=ALL&platform=&devicename=&devicemodel=&deviceversion=&hp_num=01090077611";*/
+		System.out.println(shop_data);
+		
+		//기록을 남길 파일을 생성합니다.
+		File file = new File("result.log");
+				
+		if(!file.isFile()){
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		JSONObject object = new JSONObject();;
+		
+		//결과를 전송 합니다.
+		//전송폼을 생성합니다.
+		try {
+			
+			URL url = new URL(shop_address);
+			HttpURLConnection shop_url = (HttpURLConnection)url.openConnection();
+			
+			shop_url.setRequestMethod("POST");					
+			shop_url.setRequestProperty("Accept-Language", "ko-kr,ko;q=0.8,en-us;q=0.5,en;q=0.3");
+			
+			shop_url.setDoInput(true);
+			shop_url.setDoOutput(true);
+			
+			System.out.println("전송상태 출력");			
+			System.out.println(" URL : "+shop_url.getURL());			
+			
+			OutputStreamWriter output = new OutputStreamWriter(shop_url.getOutputStream());
+			
+			output.write(shop_data);				
+			
+			output.flush();			
+			output.close();		
+
+			//전송 결과 수신
+			InputStreamReader isr = new InputStreamReader(shop_url.getInputStream(), "UTF-8");	
+			object = (JSONObject)JSONValue.parseWithException(isr);							
+						
+			isr.close();
+			
+			//결과출력
+			System.out.println(object.toString());
+						
+			SimpleDateFormat formatter = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss", Locale.KOREA );
+			Date currentTime = new Date ( );
+			String dTime = formatter.format ( currentTime );
+			
+			String sb = "앱설치현황 출력 결과 호출위치 : 앱설치 현황"
+						+ "전송 시간 : " + dTime + " \r\n"; 
+					sb += "resultcode : "+object.get("result_code")+" result_msg : "+object.get("result_msg")+" result_cnt : "+object.get("result_log");					
+			
+			char[] paser = sb.toCharArray();
+			
+			//로그파일을 작성합니다.
+			OutputStreamWriter bos = new OutputStreamWriter(new FileOutputStream(file, true), "euc-kr");					
+			StringBuffer result_str = new StringBuffer();
+			
+			for(char str : paser){
+				bos.write(str);
+				result_str.append(str);
+			}	
+			System.out.println(result_str);
+			
+			bos.write('\r');
+			bos.write('\n');	
+			
+			bos.close();
+			System.out.println("조회가 완료 되었습니다.");
+						
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();			
+		}
+		
+		return object;
+	}	
+	
+	/* 검색 하려면 아래 변수를 뒤쪽에 추가하시면 됩니다. 아래 검색조건을 입력하지 않는 경우 모든 APP 설치 고객에게 메세지 전송되므로 주의 하시기 바랍니다.
+	&memlv=회원등급(빈값입력시 모두선택, 100,1000,1100....)&mem_id=회원아이디&mem_only=(ALL:전체 선택,Y:회원가입한회원만 선택,N:비회원만 선택)&platform=플랫폼&devicename=제조사명&devicemodel=제조사 모델명&deviceversion=플랫폼 버젼&hp_num=핸드폰번호	
+	"api_key=333d4794fbf4b1a9d2b4e26b0091df59&push_title=게릴라이벤트&push_msg=지금 방문하시면 아메리카노1잔 서비스 제공합니다."
+	+ "&push_link=/main&push_img_url=".urlencode('http://sskshop1.anybuild.com/thum_img/sskshop1/goods_img2/85b6f89b41cae26786ac72365fff771b_water_3afcaf174b6d740dcc3f8f859871184e_c1_w320_h320.jpg').""
+	+ "&memlv=&mem_only=ALL&platform=&devicename=&devicemodel=&deviceversion=&hp_num=");*/	
+	public JSONObject tranNewPushSubimt(){
+		
+		//환경설정
+		String shop_key = Server_Config.getSHOPKEY();
+		
+		//접속 쇼핑몰정보 정의하기
+		String shop_address = "https://ssl.anybuild.co.kr/API/app/push_submit.php";	
+		System.out.println(" 동기화를 시작합니다. 접속 주소 --> " + shop_address);				
+		System.out.println(shop_address);
+				
+		
+		/*
+		※ 전송할 메세지를 설정 하세요.
+		&push_title=페이지명 (최대 20byte)
+		&push_msg=실제 전송되는 푸시메세지 입니다. 50byte 이상인경우 ios는 차단되므로 주의 하시기 바랍니다.
+		&push_link=해당 푸시를 클릭시 이동할 페이지 경로를 입력하세요. 반드시 / 로 시작하고 해당계정에 존재하는 주소이어야 합니다.  http:// 시작하는 주소는 보안상 차단됩니다.
+		&push_noti_img_url=".urlencode('http://로 시작하는 이미지 전체 경로를 입력하세요.')." 안드로이드 노피케이션에서 이미지를 바로 출력 합니다. 용량이 300Kbyte 이상인경우 오류발생할수 있으므로 용량을 최대한 줄이시기 바랍니다. ios는 불가능 합니다.
+		&push_content_img_url=".urlencode('http://로 시작하는 이미지 전체 경로를 입력하세요.')." 안드로이드인 경우 바탕화면에서 확인 가능하며, ios는  불가능 합니다. 이미지 파일경로에 한글, 특수 문자, 띄어쓰기가 있는 경우 오류 발생되므로 영문 및 숫자로만 구성되어 있어야 합니다.
+		&content = ".urlencode('세부적인 내용을 입력하세요.')." 안드로이드 및 ios 모두 바탕화면에서 확인 불가능 합니다.
+		&content_mode = text or html
+		*/
+		
+		//&push_title=페이지명 (최대 20byte)
+		String push_title = "테스트입니다.";//(String)push_list.get("Title");
+		//&push_msg=실제 전송되는 푸시메세지 입니다. 50byte 이상인경우 ios는 차단되므로 주의 하시기 바랍니다.
+		String push_msg = "지금 보낼 메세지는 장문의 긴 메세지 입니다. 확인 할수 있을때 확인 바랍니다.";//(String)push_list.get("Message");
+		//&push_link=해당 푸시를 클릭시 이동할 페이지 경로를 입력하세요. 반드시 / 로 시작하고 해당계정에 존재하는 주소이어야 합니다.  http:// 시작하는 주소는 보안상 차단됩니다.
+		String push_link = "";//(String)push_list.get("Link");
+		//&push_noti_img_url=".urlencode('http://로 시작하는 이미지 전체 경로를 입력하세요.')." 안드로이드 노피케이션에서 이미지를 바로 출력 합니다. 용량이 300Kbyte 이상인경우 오류발생할수 있으므로 용량을 최대한 줄이시기 바랍니다. ios는 불가능 합니다.
+		String push_noti_img_url = "http://14.38.161.45:8080/image/0000001/333_sub.jpg";//(String)push_list.get("Img_Url");		
+		//&push_content_img_url=".urlencode('http://로 시작하는 이미지 전체 경로를 입력하세요.')." 안드로이드인 경우 바탕화면에서 확인 가능하며, ios는  불가능 합니다. 이미지 파일경로에 한글, 특수 문자, 띄어쓰기가 있는 경우 오류 발생되므로 영문 및 숫자로만 구성되어 있어야 합니다.
+		String push_content_img = "http://14.38.161.45:8080/image/0000001/333.jpg";//(String)push_list.get("Content_Img");
+		//&content = ".urlencode('세부적인 내용을 입력하세요.')." 안드로이드 및 ios 모두 바탕화면에서 확인 불가능 합니다.
+		String push_content = "매장오픈 기념 <br>"
+									+"1,000원 할인 행사 합니다. <br>"
+									+"<br>"									
+									+"<p style='text-align:center'>"
+									+"<img src='/API/barcodegen_v2.2.0/html/image.php?code=code128&o=1&dpi=72&t=30&r=3&rot=0&text={$bar_code}&f1=Arial.ttf&f2=12&a1=&a2=&a3={$bar_code}'><br>"
+									+"<img src='/API/barcodegen_v2.2.0/html/image.php?code=code128&o=1&dpi=72&t=30&r=3&rot=0&text=ABCD123&f1=Arial.ttf&f2=12&a1=&a2=&a3=ABCD123'><br>"
+									+"<img src=\"{@ echo qrcode_load($bar_code,3);  @}\" />"
+									+"<br>"
+									+"<br>"
+									+"디바이스 고유번호 : {$device_idx}<br>"
+									+"이벤트 고유번호 : {$event_idx}<br>"
+									+"자동생성 바코드 : {$bar_code}"
+									+"</p>";//(String)push_list.get("Content");
+		//&content_mode = text or html
+		String content_mode = "html";//(String)push_list.get("Content_Mode");
+				
+		String event_idx = "";//"&event_idx=76";//+(String)push_list.get("Event");		
+		
+		String mem_id = "";//(String)push_list.get("Mem_Id");
+		String memlv = "";
+		String mem_only = "";//(String)push_list.get("Mem_Only");
+		String hp_num = "01090077611";//(String)push_list.get("Hp");
+		
+		
+		String shop_data = "";
+		try {
+			shop_data = "api_key="+shop_key;			
+			shop_data +="&push_title="+URLEncoder.encode(push_title, "UTF-8")+"&push_msg="+URLEncoder.encode(push_msg, "UTF-8")+"&push_link="+URLEncoder.encode(push_link, "UTF-8")
+			+"&push_noti_img_url="+URLEncoder.encode(push_noti_img_url, "UTF-8")
+			+"&push_content_img="+URLEncoder.encode(push_content_img, "UTF-8")
+			+"&push_img_url="+URLEncoder.encode(push_content_img, "UTF-8")
+			+"&content="+URLEncoder.encode(push_content, "UTF-8")+"&content_mode="+content_mode
+			+"&mem_id="+mem_id
+			+"&memlv="+memlv+"&mem_only="+mem_only+"&platform=&devicename=&devicemodel=&deviceversion=&hp_num="+hp_num+event_idx;
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

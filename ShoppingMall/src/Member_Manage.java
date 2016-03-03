@@ -1,5 +1,8 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -10,6 +13,7 @@ import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -18,6 +22,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JViewport;
+import javax.swing.RowSorter;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -26,10 +33,6 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import net.miginfocom.swing.MigLayout;
-import javax.swing.ScrollPaneConstants;
-import java.awt.Dimension;
-import javax.swing.JCheckBox;
-import java.awt.Font;
 
 public class Member_Manage extends JPanel implements ActionListener {
 
@@ -44,14 +47,22 @@ public class Member_Manage extends JPanel implements ActionListener {
 	private JTextField text_top_search;
 	private JTabbedPane tab_member_list;
 		
-	private JTable table_offmem_list;
 	private DefaultTableModel dtm_offmem;
+	private JTable table_offmem_list;	
+	
 	private JComboBox combo_top_onmem;
 	private JComboBox combo_top_appin;
 	
 	private DefaultTableModel dtm_detailmem_list;
 	private JTextField text_detail_search;
 	private JTable table_dtailmem_list;
+	
+	private JCheckBox chkbox_detail_offlinemem;
+	private JCheckBox chkbox_detail_onlinemem;
+	private JCheckBox chkbox_detail_appin;
+	private JCheckBox chkbox_detail_shopping;
+	private JScrollPane scroll_offmem_list;
+	private JScrollPane scrollPane_detailmem_list;
 	
 	//회원관리프로그램
 	public Member_Manage(){
@@ -138,11 +149,15 @@ public class Member_Manage extends JPanel implements ActionListener {
 		panel_offline_mem.add(panel_offmem_list, BorderLayout.CENTER);
 		panel_offmem_list.setLayout(new BorderLayout(0, 0));
 		
-		JScrollPane scroll_offmem_list = new JScrollPane();
+		scroll_offmem_list = new JScrollPane();
 		panel_offmem_list.add(scroll_offmem_list);
 		
 		String[] columnNames = {"순번", "회원명", "회원번호", "포인트", "전화번호", "휴대폰번호", "온라인 회원", "앱설치 회원", "회원 ID", "온라인주문", "알림수신여부", "알림수신번호"};
-		dtm_offmem = new DefaultTableModel(null, columnNames){
+		dtm_offmem = new DefaultTableModel(null, columnNames){			
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1568435434999L;
 			@Override
 			public boolean isCellEditable(int roe, int column){
 				/**if(column == 4){
@@ -152,7 +167,19 @@ public class Member_Manage extends JPanel implements ActionListener {
 				}*/
 				return false;
 			}
-		};	
+			public Class getColumnClass(int column) {
+				 /*Class returnValue;
+				 if ((column >= 0) && (column < getColumnCount())) {
+				    returnValue = getValueAt(0, column).getClass();
+				 } else {
+				    returnValue = Object.class;
+				 }
+				 return (returnValue==null?Object.class:returnValue.getClass());*/
+				     
+			    Object value=this.getValueAt(0,column);
+			    return (value==null?Object.class:value.getClass());			   				
+			}			
+		};
 		
 		DefaultTableCellRenderer celAlignCenter = new DefaultTableCellRenderer();
 		celAlignCenter.setHorizontalAlignment(JLabel.CENTER);
@@ -171,9 +198,12 @@ public class Member_Manage extends JPanel implements ActionListener {
 		table_offmem_list.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);  //가로 스크롤
 		table_offmem_list.getTableHeader().setReorderingAllowed(false);  //이동불가
 		
-		table_offmem_list.setAutoCreateRowSorter(true);
-		TableRowSorter<TableModel> tsorter = new TableRowSorter<TableModel>(table_offmem_list.getModel());
-		table_offmem_list.setRowSorter(tsorter);	
+		/*table_offmem_list.setAutoCreateRowSorter(true);
+		TableRowSorter<TableModel> tsorter_main = new TableRowSorter<TableModel>(table_offmem_list.getModel());
+		table_offmem_list.setRowSorter(tsorter_main);*/	
+		
+		table_offmem_list.setAutoCreateRowSorter(true);;
+		
 		
 		table_offmem_list.addMouseListener(new MouseListener() {
 			
@@ -285,7 +315,10 @@ public class Member_Manage extends JPanel implements ActionListener {
 	//상단 검색 하기
 	private void topSearchStart(){
 		
-		dtm_offmem.setRowCount(0);
+		//dtm_offmem.setRowCount(0);		
+		refreshTable(dtm_offmem);
+		setScrollReSet("Main");
+		
 		//검색 정보 불러오기
 		String text_search = text_top_search.getText();
 		int shopmem = combo_top_onmem.getSelectedIndex();
@@ -391,16 +424,17 @@ public class Member_Manage extends JPanel implements ActionListener {
 		label_detail_search.setFont(new Font("맑은 고딕", Font.BOLD, 13));
 		panel_detail_search.add(label_detail_search, "cell 0 0 5 1,alignx center");
 		
-		JCheckBox chkbox_detail_offlinemem = new JCheckBox("\uB9E4\uC7A5\uD68C\uC6D0");
+		chkbox_detail_offlinemem = new JCheckBox("\uB9E4\uC7A5\uD68C\uC6D0");
+		chkbox_detail_offlinemem.setSelected(true);
 		panel_detail_search.add(chkbox_detail_offlinemem, "cell 0 1 2 1");
 		
-		JCheckBox chkbox_detail_onlinemem = new JCheckBox("\uC628\uB77C\uC778\uD68C\uC6D0");
+		chkbox_detail_onlinemem = new JCheckBox("\uC628\uB77C\uC778\uD68C\uC6D0");
 		panel_detail_search.add(chkbox_detail_onlinemem, "cell 2 1");
 		
-		JCheckBox chkbox_detail_appin = new JCheckBox("\uC571\uC124\uCE58\uD68C\uC6D0");
+		chkbox_detail_appin = new JCheckBox("\uC571\uC124\uCE58\uD68C\uC6D0");
 		panel_detail_search.add(chkbox_detail_appin, "cell 3 1");
 		
-		JCheckBox chkbox_detail_shopping = new JCheckBox("\uC1FC\uD551\uBAB0\uAC80\uC0C9");
+		chkbox_detail_shopping = new JCheckBox("\uC1FC\uD551\uBAB0\uAC80\uC0C9");
 		panel_detail_search.add(chkbox_detail_shopping, "cell 4 1");
 		
 		JLabel label_detail_searchinfo = new JLabel("\uAC80\uC0C9\uC5B4");
@@ -411,9 +445,10 @@ public class Member_Manage extends JPanel implements ActionListener {
 		text_detail_search.setColumns(10);
 		
 		JButton btn_detail_search = new JButton("\uD68C\uC6D0\uAC80\uC0C9");
+		btn_detail_search.addActionListener(this);
 		panel_detail_search.add(btn_detail_search, "cell 4 2");
 		
-		JScrollPane scrollPane_detailmem_list = new JScrollPane();
+		scrollPane_detailmem_list = new JScrollPane();
 		scrollPane_detailmem_list.setPreferredSize(new Dimension(0, 0));
 		scrollPane_detailmem_list.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane_detailmem_list.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -421,6 +456,11 @@ public class Member_Manage extends JPanel implements ActionListener {
 		
 		String[] columnNames = {"순번", "구분", "회원명", "회원ID", "휴대폰번호"};
 		dtm_detailmem_list = new DefaultTableModel(null, columnNames){
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 15648433354488L;
+
 			@Override
 			public boolean isCellEditable(int roe, int column){
 				/**if(column == 4){
@@ -430,6 +470,17 @@ public class Member_Manage extends JPanel implements ActionListener {
 				}*/
 				return false;
 			}
+			
+			public Class getColumnClass(int column) {
+				 Class returnValue;
+				 if ((column >= 0) && (column < getColumnCount())) {
+				    returnValue = getValueAt(0, column).getClass();
+				 } else {
+				    returnValue = Object.class;
+				 }
+				 return returnValue;
+			}
+			
 		};	
 		
 		DefaultTableCellRenderer celAlignCenter = new DefaultTableCellRenderer();
@@ -456,7 +507,7 @@ public class Member_Manage extends JPanel implements ActionListener {
 			
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub				
+				// TODO Auto-generated method stub
 			}
 			
 			@Override
@@ -496,6 +547,12 @@ public class Member_Manage extends JPanel implements ActionListener {
 		});
 		
     	//  {"순번", "구분", "회원명", "회원ID", "휴대폰번호"};
+		
+		//컬럼넓이 조정
+		table_dtailmem_list.getColumn("순번").setPreferredWidth(25);
+		table_dtailmem_list.getColumn("구분").setPreferredWidth(35);
+		table_dtailmem_list.getColumn("회원명").setPreferredWidth(40);
+		table_dtailmem_list.getColumn("회원ID").setPreferredWidth(50);
     	
 		//컬럼 정렬   	
 		table_dtailmem_list.getColumn("순번").setCellRenderer(celAlignCenter);
@@ -509,13 +566,104 @@ public class Member_Manage extends JPanel implements ActionListener {
 		
 		JPanel panel_detail_orderlist = new JPanel();
 		tab_east_detail.addTab("\uAD6C\uB9E4\uB0B4\uC5ED", null, panel_detail_orderlist, null);
+								
+	}
 		
+	//우측 상세 화면에서 회원을 검색 합니다.
+	private void searchMember(){
 		
+		//dtm_detailmem_list.setRowCount(0);
+		refreshTable(dtm_detailmem_list);
+		setScrollReSet("Detail");
+		String str = text_detail_search.getText();
 		
-				
+		String query =  "";
+		
+		if(chkbox_detail_offlinemem.isSelected()){			
+			//검색어로 회원명 회원ID 전화번호로 검색이 가능합니다.
+			query += "Select '매장' as Cus_Gubun, Cus_Name, Cus_Code, Cus_Mobile as Cus_Hp"
+					+ " From customer_info Where Cus_Name Like '%"+str+"%' or replace(Cus_Mobile, '-', '') Like '%"+str+"%' or Cus_Code Like '%"+str+"%' ";		
+		}
+		
+		if(chkbox_detail_onlinemem.isSelected()){
+			
+			if(query.length() > 10 ){
+				query += " Union all ";
+			}
+			
+			//검색어로 회원명 회원ID 전화번호로 검색이 가능합니다.
+			query += "Select '온라인' as Cus_Gubun, name as Cus_Name, mem_id as Cus_Code, hp as Cus_Hp"
+					+ " From e_Member Where name Like '%"+str+"%' or replace(hp, '-', '') Like '%"+str+"%' or mem_id Like '%"+str+"%' ";
+		}
+			
+		
+		if(chkbox_detail_appin.isSelected()){
+			
+			if(query.length() > 10 ){
+				query += " Union all ";
+			}
+			
+			//검색어로 회원명 회원ID 전화번호로 검색이 가능합니다.
+			query += "Select '앱설치' as Cus_Gubun, mem_id as Cus_Name, convert(nvarchar, idx) as Cus_Code, hp_num as Cus_Hp "
+					+ " From e_AppInstall Where mem_id Like '%"+str+"%' or replace(hp_num, '-', '') Like '%"+str+"%' or idx Like '%"+str+"%' ";			
+		}
+		
+		ms_connect.setMainSetting();
+		ArrayList<HashMap<String, String>> map = ms_connect.connection(query);
+		
+		if( map == null || map.size() <= 0 ){			
+			JOptionPane.showMessageDialog(this, "검색된 결과가 없습니다.");
+			return;
+		}
+		
+		for(int i =0; i < map.size(); i++){
+			HashMap<String, String> temp = map.get(i);
+			Vector<Object> v = new Vector<Object>();
+			
+			v.addElement(i+1);
+			v.addElement(temp.get("Cus_Gubun"));
+			v.addElement(temp.get("Cus_Name"));
+			v.addElement(temp.get("Cus_Code"));
+			v.addElement(temp.get("Cus_Hp"));			
+			
+			dtm_detailmem_list.addRow(v);
+		}		
 	}
 	
+	//테이블 초기화
+	private void refreshTable(DefaultTableModel model) {
+
+	   int rowCount= model.getRowCount();	  
+	   for(int i=0;i<rowCount;i++ ){
+	        model.removeRow(0);	    
+	   }
+	}
 	
+	//스크롤을 상단으로 조정합니다.
+	private void setScrollReSet(String gubun){
+		
+		
+		JViewport jv1 = scroll_offmem_list.getViewport();		
+		
+		if(gubun.equals("All")){			
+		
+			jv1.setViewPosition(new Point(0,0));
+			
+			jv1 = scrollPane_detailmem_list.getViewport();
+			jv1.setViewPosition(new Point(0,0));
+						
+		}else if(gubun.equals("Main")){
+						
+			jv1.setViewPosition(new Point(0,0));
+			
+		}else if(gubun.equals("Detail")){
+			
+			jv1 = scrollPane_detailmem_list.getViewport();
+			jv1.setViewPosition(new Point(0,0));
+			
+		}
+	}
+    
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -525,6 +673,9 @@ public class Member_Manage extends JPanel implements ActionListener {
 		switch(commend){
 		case "검색":
 			topSearchStart();
+			break;
+		case "회원검색":
+			searchMember();
 			break;
 		}
 		
