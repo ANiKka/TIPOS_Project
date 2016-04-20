@@ -7,11 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.File;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,7 +18,6 @@ import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -34,29 +28,45 @@ import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.toedter.calendar.JDateChooser;
 
-import groovy.ui.SystemOutputInterceptor;
 import net.miginfocom.swing.MigLayout;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.fill.SimpleTextFormat;
-import net.sf.jasperreports.engine.util.JRLoader;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
-import net.sf.jasperreports.swing.JRViewer;
 import net.sf.jasperreports.view.JasperViewer;
+import javax.swing.JToggleButton;
+import javax.swing.ImageIcon;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 
-
+/**
+ * 주문접수 관리 목록
+ * <pre>
+ * 	쇼핑몰 연동 프로그램 
+ * 	 주문접수 관리목록 
+ *   주문조회, 수정, 삭제, 인쇄 기능
+ * </pre>
+ *
+ * <pre>
+ * <b>History:</b>
+ *    작성자 ANikka , 1.0.1, 2015.9.11 초기작성
+ * </pre>
+ *
+ * @author 최종 수정자 ANikka
+ * @version 1.0.5, 2016.4.11 상품상세보기 누락 시 호출기능 추가
+ * @see    None
+ */
 public class Order_Manage extends JPanel implements ActionListener{
 	
 	/**
@@ -553,6 +563,7 @@ public class Order_Manage extends JPanel implements ActionListener{
 		table_goodsList.getColumn("합계").setCellRenderer(celAlignCenter);
 		
 		startSearch();
+		
 	}
 
 	//선택 상품리스트를 표시합니다.
@@ -570,8 +581,64 @@ public class Order_Manage extends JPanel implements ActionListener{
 		ArrayList<HashMap<String, String>> orderList = ms_conn.connection(query);
 		
 		if(orderList.size() <= 0){
-			JOptionPane.showMessageDialog(this, "주문된 상품이 없습니다. 삭제된 주문서인지 다시 확인해 주세요!!");
-			return;
+			
+			String data = "&order_idx="+order_idx;
+			//data += "&mem_id=&j_name&s_name&order_date=";			
+			JSONArray result = trans_shopapi.order_Info(data);
+			
+			System.out.println(result.size());
+			//result.toJSONString();
+			if(result.size() <= 0){
+				JOptionPane.showMessageDialog(this, "주문된 상품이 없습니다. 삭제된 주문서인지 다시 확인해 주세요!!");
+				return;
+			}
+						
+			ArrayList<String> d_query = new ArrayList<String>();
+			JSONArray temp = new JSONArray();
+			for(int i=0;i<result.size(); i++){				
+				JSONObject object = (JSONObject)result.get(i);
+				
+				if(object.containsKey("goods_info")){
+					temp = (JSONArray)object.get("goods_info");
+				}				
+			}
+				
+			System.out.println(temp.toJSONString());
+			d_query.add("Delete From e_OrderGoods Where order_idx='"+order_idx+"' ");
+			for(int i=0; i<temp.size(); i++){			
+				
+				JSONObject d_temp = (JSONObject)temp.get(i);
+				
+				String egoods_key = "Insert Into e_OrderGoods ( ";
+				String egoods_value =  " Values( ";
+				egoods_key += "order_idx, ";
+				egoods_value += "'"+order_idx+"', ";
+				
+				for(Object keymap:d_temp.keySet()){		
+					egoods_key += keymap.toString()+", ";
+					try{
+						egoods_value += " '"+d_temp.get(keymap).toString()+"', ";
+					}catch(NullPointerException e){
+						egoods_value += " '', ";
+					}
+				}
+				
+				egoods_key = egoods_key.substring(0, egoods_key.length()-2)+") ";
+				egoods_value = egoods_value.substring(0, egoods_value.length()-2)+") ";
+				
+				d_query.add(egoods_key+egoods_value);				
+			}
+			
+			int result_code = ms_conn.connect_update(d_query);
+			switch(result_code){
+			case 0:				
+				break;
+			default:				
+				JOptionPane.showMessageDialog(this, "데이터 베이스에 저장하지 못했습니다. \r\n Error : "+ms_conn.errMsg);
+				return;				
+			}
+			
+			orderList = ms_conn.connection(query);
 		}		
 		
 		HashMap<String, String> detail_map = orderList.get(0);
@@ -669,7 +736,7 @@ public class Order_Manage extends JPanel implements ActionListener{
 				total_price += t_price;
 				count = t_price/sale_price;
 				total_count += count;				
-			}catch(NumberFormatException e){
+			}catch(ArithmeticException | NumberFormatException e){
 				e.printStackTrace();
 			}
 			
@@ -1229,7 +1296,7 @@ public class Order_Manage extends JPanel implements ActionListener{
 			JasperViewer jrv = new JasperViewer(print, false);
 			//jrv.viewReport(print, false);			
 			jrv.setDefaultCloseOperation(JasperViewer.DISPOSE_ON_CLOSE);
-			jrv.setVisible(true);			
+			jrv.setVisible(true);	
 			
 		} catch (JRException e) {
 			// TODO Auto-generated catch block

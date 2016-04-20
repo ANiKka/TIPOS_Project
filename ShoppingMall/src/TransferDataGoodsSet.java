@@ -50,7 +50,7 @@ public class TransferDataGoodsSet {
 		}
 				
 		String query = "Select X.Barcode, X.ShoppingMall_use, X.UpLoad, X.Shop_View, X.Sto_Use, X.Pro_Sto, X.img_path, "
-						+"X.Img_path_use, X.Edit_Tran, X.Img_Name, X.Shop_MainCode, X.G_Name, X.Pur_Pri, "
+						+"X.Img_path_use, X.Edit_Tran, X.Img_Name, X.Shop_MainCode, X.G_Name, X.Pur_Pri, X.Std_Size, "
 						+"'Sell_Pri' = Case "
 						+"When X.Length4 = '1' Then Z.H_SellPri "
 						+"When X.Scale_Use = '1' Then Z.H_SellPri "
@@ -59,14 +59,14 @@ public class TransferDataGoodsSet {
 						+"X.Real_Sto, X.Sale_Pur, X.Sale_Sell, X.Sale_Use, X.Scale_Use, X.Length4, X.Write_Date, X.Goods_Cate "
 						+"From "
 						+"( "
-						+"Select C.Barcode, C.ShoppingMall_use, C.UpLoad, C.Shop_View, C.Sto_Use, C.Pro_Sto, C.img_path, C.Img_path_use, C.Edit_Tran, C.Img_Name, C.Shop_MainCode, D.G_Name, D.Pur_Pri, D.Sell_Pri, D.Real_Sto, D.Sale_Pur, D.Sale_Sell, D.Sale_Use, D.Scale_Use, D.Length4, D.Write_Date, D.Goods_Cate "
+						+"Select C.Barcode, C.ShoppingMall_use, C.UpLoad, C.Shop_View, C.Sto_Use, C.Pro_Sto, C.img_path, C.Img_path_use, C.Edit_Tran, C.Img_Name, C.Shop_MainCode, D.G_Name, D.Pur_Pri, D.Sell_Pri, D.Std_Size, D.Real_Sto, D.Sale_Pur, D.Sale_Sell, D.Sale_Use, D.Scale_Use, D.Length4, D.Write_Date, D.Goods_Cate "
 						+"From ( "  
 						+		"Select * From goods_info Where edit_tran='1' and img_path <> '' and shoppingmall_use='1' and barcode='"+barcode.trim()+"' "  
 						+		") C "
 						+		"inner join ( "  
-						+				"Select A.Barcode, A.G_Name, A.Pur_Pri, A.Sell_Pri, A.Real_Sto, A.Sale_Pur, A.Sale_Sell, A.Sale_Use, A.Scale_Use, A.Length4, A.Write_Date, B.Goods_NewCate as Goods_Cate "  
+						+				"Select A.Barcode, A.G_Name, A.Pur_Pri, A.Sell_Pri, A.Std_Size, A.Real_Sto, A.Sale_Pur, A.Sale_Sell, A.Sale_Use, A.Scale_Use, A.Length4, A.Write_Date, B.Goods_NewCate as Goods_Cate "  
 						+				"From ( "  
-						+					"Select BarCode, G_Name, Pur_Pri, Sell_Pri, (L_Code+M_Code+S_Code) + Replicate('0', 8 - Len(L_Code+M_Code+S_Code) ) as Goods_Cate, Real_Sto, Sale_Pur, Sale_Sell, Sale_Use, Write_Date, Scale_use, 'Length4' =  CASE  WHEN Len(Barcode) = 4 THEN '1'  ELSE '0' END "  
+						+					"Select BarCode, G_Name, Pur_Pri, Sell_Pri, Std_Size, (L_Code+M_Code+S_Code) + Replicate('0', 8 - Len(L_Code+M_Code+S_Code) ) as Goods_Cate, Real_Sto, Sale_Pur, Sale_Sell, Sale_Use, Write_Date, Scale_use, 'Length4' =  CASE  WHEN Len(Barcode) = 4 THEN '1'  ELSE '0' END "  
 						+					"From Goods " 
 						+				") A "
 						+				"inner join ( "  
@@ -110,9 +110,10 @@ public class TransferDataGoodsSet {
 			JSONObject obj = new JSONObject();
 			
 			obj.put("goods_cate", map.get("Goods_Cate"));
-			obj.put("goods_img", map.get("img_path"));			
+			obj.put("goods_img", map.get("img_path"));
 			obj.put("goods_name", map.get("G_Name"));
-			obj.put("user_code", map.get("Barcode"));						
+			obj.put("user_code", map.get("Barcode"));
+			obj.put("add_column1", map.get("Std_Size"));  //규격 추가
 			obj.put("view_yn", map.get("Shop_View"));			
 			obj.put("goods_regdate", map.get("Write_Date"));
 			

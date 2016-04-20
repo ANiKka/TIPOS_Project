@@ -38,6 +38,8 @@ public class Server_Config {
 	//상품전송방식
 	private static String GOODS_TRANYN="1";
 	
+	//알람설정
+	private static String ALARM_USE="0";
 	
 	//SERVER
 	public static void setSERVER_DBID(String sERVER_DBID) {
@@ -242,6 +244,14 @@ public class Server_Config {
 
 	public static void setGOODS_TRANYN(String gOODS_TRANYN) {
 		GOODS_TRANYN = gOODS_TRANYN;
+	}
+
+	public static String getALARM_USE() {
+		return ALARM_USE;
+	}
+
+	public static void setALARM_USE(String aLARM_USE) {
+		ALARM_USE = aLARM_USE;
 	}
 	
 }

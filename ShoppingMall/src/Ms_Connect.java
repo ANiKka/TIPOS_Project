@@ -13,6 +13,22 @@ import java.util.HashMap;
 
 import javax.swing.JOptionPane;
 
+
+/**
+ * DB접속 프로그램
+ * <pre>
+ * TIPOS 매장 연결 DB 작성
+ * </pre>
+ *
+ * <pre>
+ * <b>History:</b>
+ *    작성자 ANikka , 1.0.5, 2016.4.11 초기작성
+ * </pre>
+ *
+ * @author 최종 수정자 ANikka
+ * @version 1.0.5, 2016.4.11 주석 수정
+ * @see    None
+ */
 public class Ms_Connect {
 	
 	int errCode =0;
@@ -29,9 +45,12 @@ public class Ms_Connect {
 	private String query;
 	//private JSONArray json;
 	
-	/*
-	 * 서버정보를 셋팅 합니다.
-	 * 
+	/**
+	 * 서버 정보를 저장합니다.
+	 *
+	 * @param ip 매장 ip주소
+	 * @return void
+ 	 * @exception none
 	 */
 	public void setImageSetting(){
 		ip = Server_Config.getIMAGE_IP();		
@@ -51,6 +70,13 @@ public class Ms_Connect {
 		dbpw = Server_Config.getSERVER_DBPW();
 	}
 	
+	/**
+	 * DB접속 Select문
+	 *
+	 * @param query 검색 쿼리를 넘겨야 합니다.
+	 * @return ArrayList<HashMap<String, String>>
+	 * @exception 0 : 정상, 1: SQLException, 2: Exception
+	 */
 	public ArrayList<HashMap<String, String>> connection(String query) {
 		
 		this.query = query;
@@ -90,7 +116,13 @@ public class Ms_Connect {
     	}
     }	
 	
-	
+	/**
+	 * DB접속 한줄검색 문
+	 *
+	 * @param query 검색 쿼리를 넘겨야 합니다.
+	 * @return HashMap<String, String>
+	 * @exception 0 : 정상, 1: SQLException, 2: Exception
+	 */
 	public HashMap<String, String> selectQueryOne(String query) {			
 			this.query = query;
 			errCode = 0;
@@ -127,7 +159,13 @@ public class Ms_Connect {
 	    	}
 	    }	
 	
-	
+	/**
+	 * DB접속 Update문
+	 *
+	 * @param query 검색 쿼리를 넘겨야 합니다.
+	 * @return int : 결과 전송
+	 * @exception 0 : 정상, 1: SQLException, 2: Exception
+	 */
 	public int connect_update(String query) {
 		
 		this.query = query;
@@ -167,6 +205,14 @@ public class Ms_Connect {
     	}
     }	
 	
+	
+	/**
+	 * DB접속 배열 다중 Insert,Update문
+	 *
+	 * @param query_won 저장 쿼리를 넘겨야 합니다.
+	 * @return int : 결과 전송
+	 * @exception 0 : 정상, 1: SQLException, 2: Exception
+	 */
 	public int connect_update(String[] query_won){
 		
 		//String [] query_multi;
@@ -215,6 +261,14 @@ public class Ms_Connect {
     	}
 	}
 	
+	
+	/**
+	 * DB접속 List Insert,Update문
+	 *
+	 * @param query_won 자장 쿼리를 넣어야 합니다.
+	 * @return int : 결과 전송
+	 * @exception 0 : 정상, 1: SQLException, 2: Exception
+	 */
 	public int connect_update(ArrayList<String> query_won){
 	
 		//String [] query_multi;

@@ -47,7 +47,10 @@ public class Main_Frame extends JFrame implements ActionListener{
 	private Message_Manage message_manage;
 	
 	JTabbedPane tabbedPane;
+	
 	private final JPanel panel_topmenu = new JPanel();
+	private JButton btn_order;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -57,6 +60,26 @@ public class Main_Frame extends JFrame implements ActionListener{
 				try {
 					Main_Frame frame = new Main_Frame();
 					frame.setVisible(true);
+					
+					//주문 알림 설정 시 실행 됩니다.
+					if("1".equals(Server_Config.getALARM_USE())){
+						
+						Thread th = new Thread(new Runnable() {
+							
+							@Override
+							public void run() {
+								try {
+									new Alarm_Chkeck(frame);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+									JOptionPane.showMessageDialog(frame, "주문 알림 오류 : \r\n"+e.getMessage());
+								}					
+							}
+						});						
+						th.start();
+					}
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -88,7 +111,8 @@ public class Main_Frame extends JFrame implements ActionListener{
 		System.out.println("메인서버");
 		System.out.println(Server_Config.getSERVER_IP());		
 				
-	}		
+		
+	}
 	
 	// 종료 & 화면중앙
     private void initLocation() {    	
@@ -160,7 +184,7 @@ public class Main_Frame extends JFrame implements ActionListener{
     	
     	goods_ad.setFocusable(false);
     	
-    	JButton btn_order = new JButton(Ord_Manager);
+    	btn_order = new JButton(Ord_Manager);
     	panel_topmenu.add(btn_order, "cell 1 0,alignx left,aligny top");
     	btn_order.setIcon(new ImageIcon(Main_Frame.class.getResource("/Icon/btn_order.png")));
     	btn_order.setIconTextGap(10);

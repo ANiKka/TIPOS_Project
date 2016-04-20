@@ -29,7 +29,7 @@
 	</parameter>
 	<parameter name="MOVE_PRICE" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[Select *, cast(sale_price as int)/cast(t_price as int) as s_count, cast(t_price as int) as cast_tprice From e_ordergoods Where order_idx = $P{ORDER_IDX}]]>
+		<![CDATA[Select *, s_count=case sale_price when '0' then sale_price else cast(sale_price as int)/cast(t_price as int) end, cast(t_price as int) as cast_tprice From e_ordergoods Where order_idx = $P{ORDER_IDX}]]>
 	</queryString>
 	<field name="order_idx" class="java.lang.String"/>
 	<field name="bu_id" class="java.lang.String"/>

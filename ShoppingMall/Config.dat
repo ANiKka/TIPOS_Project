@@ -1,10 +1,11 @@
 #\uD658\uACBD\uC124\uC815 \uC800\uC7A5
-#Thu Jan 28 18:32:22 KST 2016
-PCImagePath=D\:\\1) \uC0C1\uD488\uC774\uC9C0\uC9C0\\SHOP \uC5C5\uB85C\uB4DC\uC6A9(\uC0C1\uD488\uBA85)\\\uC815\uC721
+#Tue Apr 19 18:20:29 KST 2016
+Version=1.0.6
+ServerPort=16000
+Alarm_Use=1
+ServerDBid=sa
+PCImagePath=C\:\\
+Goods_TranYN=1
+ServerDBname=tips
 ServerIp=localhost
 ServerDBpw=tips
-ServerPort=16000
-Version=1.0.4
-ServerDBname=tips
-Goods_TranYN=1
-ServerDBid=sa

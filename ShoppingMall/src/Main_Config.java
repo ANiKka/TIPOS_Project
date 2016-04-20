@@ -85,6 +85,7 @@ public class Main_Config extends JDialog implements ActionListener{
 	
 	//환경설정 설명서
 	private JLabel label_info;
+	private JCheckBox chkbox_alarm_use;
 	
 	/**
 	 * Create the panel.
@@ -431,7 +432,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		label_info = new JLabel("New label");
 		label_info.setHorizontalAlignment(SwingConstants.CENTER);
 		label_info.setFont(new Font("맑은 고딕", Font.PLAIN, 12));
-		label_info.setBounds(12, 10, 298, 290);
+		label_info.setBounds(12, 93, 298, 207);
 		panel.add(label_info);
 		btn_server_save.addActionListener(this);
 				
@@ -464,6 +465,20 @@ public class Main_Config extends JDialog implements ActionListener{
 		
 		label_info.setText("<HTML>\r\n<h2>\uC1FC\uD551\uBAB0 \uD658\uACBD\uC124\uC815</h2>\r\n\uB9E4\uC7A5\uACFC \uC1FC\uD551\uBAB0\uC758 \uC5F0\uB3D9 \uC124\uC815\uC744 \uC704\uD574\uC11C<br> \r\n\uC1FC\uD551\uBAB0\uC758 \uAD00\uB9AC\uC790 \uD398\uC774\uC9C0 > \uD504\uB85C\uADF8\uB7A8\uC0F5 > <br>\r\n\uC678\uBD80 DB\uC5F0\uB3D9 > MS-SQL DB\uC5F0\uB3D9\uC124\uC815 \uC5D0\uC11C <br>\r\n\uD604\uC7AC \uB9E4\uC7A5\uC758 \uC11C\uBC84 IP\uC8FC\uC18C\uB97C \uC785\uB825\uD574 <br>\r\n\uC8FC\uC154\uC57C \uC815\uC0C1 \uC791\uB3D9 \uD569\uB2C8\uB2E4.\r\n</HTML>");
 		
+		JLabel label_alarm_info = new JLabel("\uC1FC\uD551\uBAB0 \uC8FC\uBB38\uC2DC \uC54C\uB78C \uAE30\uB2A5 \uC0AC\uC6A9");
+		label_alarm_info.setHorizontalAlignment(SwingConstants.CENTER);
+		label_alarm_info.setFont(new Font("맑은 고딕", Font.BOLD, 14));
+		label_alarm_info.setBounds(12, 10, 298, 33);
+		panel.add(label_alarm_info);
+		
+		chkbox_alarm_use = new JCheckBox("\uC54C\uB78C \uC0AC\uC6A9( 10\uBD84 \uB9C8\uB2E4 \uCCB4\uD06C )");
+		chkbox_alarm_use.setBounds(77, 49, 233, 23);
+		panel.add(chkbox_alarm_use);
+		
+		JLabel label_alarm_title = new JLabel("\uC54C\uB9BC\uC120\uD0DD");
+		label_alarm_title.setBounds(12, 53, 57, 15);
+		panel.add(label_alarm_title);
+		
 	}
 		
 	//설정을 배치합니다.
@@ -474,6 +489,7 @@ public class Main_Config extends JDialog implements ActionListener{
 			if(config_file.isEmpty()){
 				config_file.load(new FileInputStream(file));	
 			}
+			
 			//서버 환경설정 불러오기
 			text_server_ip.setText(config_file.getProperty("ServerIp"));
 			text_server_port.setText(config_file.getProperty("ServerPort"));
@@ -483,6 +499,13 @@ public class Main_Config extends JDialog implements ActionListener{
 			
 			//pc이미지 폴더 설정
 			text_pcimage_path.setText(config_file.getProperty("PCImagePath", "C:\\"));
+			
+			//알람설정 화면
+			if(config_file.getProperty("Alarm_Use", "0").equals("1")){
+				chkbox_alarm_use.setSelected(true);
+			}else{
+				chkbox_alarm_use.setSelected(false);
+			}			
 			
 			//상품 전송 방식 선택
 			boolean tranyn = true;
@@ -520,6 +543,7 @@ public class Main_Config extends JDialog implements ActionListener{
 				
 				config_file.setProperty("PCImagePath", "C:\\");
 				config_file.setProperty("Goods_TranYN", "1");
+				config_file.setProperty("Alarm_Use", "0");
 				/*config_file.setProperty("FTPdan", "");
 				
 				config_file.setProperty("OfficeCode", "");				
@@ -558,6 +582,8 @@ public class Main_Config extends JDialog implements ActionListener{
 		
 		Server_Config.setPCIMAGE_PATH(config_file.getProperty("PCImagePath"));
 		Server_Config.setGOODS_TRANYN(config_file.getProperty("Goods_TranYN"));
+		Server_Config.setALARM_USE(config_file.getProperty("Alarm_Use"));
+		
 	}
 	
 	private void setOnlineValues(){
@@ -594,6 +620,7 @@ public class Main_Config extends JDialog implements ActionListener{
 		
 		config_file.setProperty("PCImagePath", text_pcimage_path.getText());
 		config_file.setProperty("Goods_TranYN", chkbx_config_tranyn.isSelected()?"1":"0");
+		config_file.setProperty("Alarm_Use", chkbox_alarm_use.isSelected()?"1":"0");
 		
 		try{
 			config_file.store(new FileOutputStream(file), "환경설정 저장");
